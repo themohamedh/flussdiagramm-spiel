@@ -3,157 +3,157 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tarifkonflikt – Flussdiagramm Lernspiel</title>
+  <title>Tarifkonflikt Whiteboard Lernspiel</title>
   <style>
     :root {
-      --bg: #f5f7fb;
+      --board: #f9fcff;
+      --ink: #213047;
+      --line: #5f6f86;
+      --muted: #6f7d90;
+      --ok-bg: #e7f7eb;
+      --ok-bd: #2e9b56;
+      --bad-bg: #fdeceb;
+      --bad-bd: #cc3d35;
+      --slot-bd: #8ea4bf;
       --card: #ffffff;
-      --line: #bfd1ea;
-      --text: #1e2a3a;
-      --muted: #607089;
-      --accent: #2f6fed;
-      --ok: #27ae60;
-      --bad: #e74c3c;
-      --shadow: 0 10px 30px rgba(30, 42, 58, 0.08);
-      --radius: 14px;
+      --accent: #2c72e7;
+      --shadow: 0 10px 24px rgba(24, 43, 68, 0.14);
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
-      color: var(--text);
-      background: radial-gradient(circle at top, #ffffff, var(--bg) 50%);
-      min-height: 100vh;
-      padding: 20px;
+      padding: 18px;
+      background: linear-gradient(180deg, #f3f7ff, #eef4fb);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
     }
 
     .app {
-      max-width: 1200px;
+      max-width: 1280px;
       margin: 0 auto;
       display: grid;
-      gap: 18px;
+      gap: 14px;
     }
 
     .panel {
       background: var(--card);
-      border-radius: var(--radius);
+      border-radius: 14px;
       box-shadow: var(--shadow);
-      padding: 18px;
+      border: 1px solid #d9e3f0;
+      padding: 14px;
     }
 
     h1 {
       margin: 0 0 6px;
-      font-size: clamp(1.2rem, 2.6vw, 1.8rem);
+      font-size: clamp(1.2rem, 2vw, 1.7rem);
     }
 
-    .hint {
+    .sub {
       margin: 0;
       color: var(--muted);
-      font-size: 0.96rem;
-      line-height: 1.4;
+      font-size: 0.95rem;
     }
 
-    .flow-wrapper {
-      overflow-x: auto;
+    .board-wrap {
+      overflow: auto;
       padding-bottom: 6px;
     }
 
-    /* Diagramm-Canvas mit SVG-Linien + Feldern */
-    .flow {
+    .board {
       position: relative;
-      width: 1080px;
-      min-height: 820px;
+      width: 1120px;
+      height: 820px;
       margin: 0 auto;
-      border: 1px solid #e5ecf7;
-      border-radius: 16px;
-      background: linear-gradient(180deg, #fbfdff, #f3f7ff);
+      border: 2px solid #cfdbea;
+      border-radius: 12px;
+      background:
+        repeating-linear-gradient(0deg, transparent 0 39px, rgba(133, 154, 182, 0.08) 39px 40px),
+        repeating-linear-gradient(90deg, transparent 0 39px, rgba(133, 154, 182, 0.08) 39px 40px),
+        var(--board);
     }
 
-    .connections {
+    .branch-sign {
       position: absolute;
-      inset: 0;
-      pointer-events: none;
+      font-weight: 800;
+      font-size: 2rem;
+      color: #6b7d95;
+      z-index: 2;
+      user-select: none;
     }
 
-    .connections path,
-    .connections line {
-      stroke: var(--line);
-      stroke-width: 3;
-      fill: none;
-      marker-end: url(#arrow);
-    }
+    .minus { left: 300px; top: 130px; }
+    .plus { left: 792px; top: 130px; }
 
     .node {
       position: absolute;
-      width: 260px;
-      min-height: 62px;
+      z-index: 3;
+      border: 2px dashed var(--slot-bd);
+      border-radius: 11px;
       background: #fff;
-      border: 2px solid #d8e4f7;
-      border-radius: 12px;
+      width: 230px;
+      min-height: 68px;
+      padding: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 10px 12px;
-      font-weight: 600;
-      line-height: 1.25;
-      transition: transform .15s ease, border-color .15s ease, background .15s ease;
-    }
-
-    .slot {
-      border-style: dashed;
-      border-color: #9eb4d6;
-      background: repeating-linear-gradient(
-        -45deg,
-        #fff,
-        #fff 10px,
-        #f8fbff 10px,
-        #f8fbff 20px
-      );
+      font-weight: 700;
+      line-height: 1.2;
       cursor: pointer;
-      user-select: none;
+      transition: 0.15s ease;
     }
 
-    .slot.empty::before {
-      content: "Hier einsetzen";
-      color: #7f91ab;
+    .node.cloud {
+      border-radius: 50px;
+      min-height: 84px;
+      clip-path: polygon(7% 58%, 11% 39%, 22% 30%, 29% 17%, 42% 11%, 56% 15%, 66% 8%, 78% 13%, 86% 24%, 95% 36%, 95% 56%, 88% 72%, 78% 81%, 63% 87%, 47% 90%, 33% 87%, 21% 80%, 11% 70%);
+      padding: 16px;
+      border-style: solid;
+      border-color: #a8bfd8;
+      background: linear-gradient(180deg, #ffffff, #f2f8ff);
+    }
+
+    .node.empty::before {
+      content: "Begriff hier einsetzen";
+      color: #7f8ea3;
       font-weight: 500;
-      font-size: .88rem;
+      font-size: 0.86rem;
     }
 
-    .slot.drag-over {
+    .node.drag-over {
       border-color: var(--accent);
-      background: #eef4ff;
+      background: #eef5ff;
       transform: scale(1.01);
     }
 
-    .slot.correct {
+    .node.correct {
       border-style: solid;
-      border-color: var(--ok);
-      background: #ecfbf2;
-      color: #1f7a48;
+      border-color: var(--ok-bd);
+      background: var(--ok-bg);
+      color: #1f6c3c;
     }
 
-    .slot.wrong {
+    .node.wrong {
       border-style: solid;
-      border-color: var(--bad);
-      background: #fff0ee;
-      color: #9f2f22;
+      border-color: var(--bad-bd);
+      background: var(--bad-bg);
+      color: #8b2d27;
     }
 
-    .badge {
+    svg.lines {
       position: absolute;
-      top: 8px;
-      right: 8px;
-      background: #eef3ff;
-      color: #33539d;
-      font-size: .75rem;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-weight: 700;
-      border: 1px solid #d8e5ff;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .lines path, .lines line {
+      stroke: var(--line);
+      stroke-width: 3;
+      fill: none;
+      marker-end: url(#arrow);
     }
 
     .controls {
@@ -161,47 +161,49 @@
       flex-wrap: wrap;
       gap: 10px;
       align-items: center;
+      margin-bottom: 8px;
     }
 
     button {
-      border: none;
+      border: 0;
       border-radius: 10px;
       padding: 10px 14px;
       font-weight: 700;
       cursor: pointer;
-      transition: transform .12s ease, filter .12s ease;
     }
 
-    button:hover { transform: translateY(-1px); filter: brightness(1.03); }
-    button:active { transform: translateY(0); }
+    .check { background: #2c72e7; color: #fff; }
+    .reset { background: #dbe5f3; color: #223046; }
+    .solve { background: #f6e2a8; color: #5a4618; }
 
-    .btn-check { background: #2f6fed; color: #fff; }
-    .btn-reset { background: #e8edf7; color: #22324a; }
-    .btn-solution { background: #f7e7ba; color: #6e5416; }
-
-    .result {
+    .progress {
       margin-left: auto;
-      font-weight: 700;
-      color: #24416f;
-      background: #edf3ff;
-      border: 1px solid #d7e5ff;
+      background: #eef4ff;
+      border: 1px solid #d0def6;
       border-radius: 999px;
-      padding: 8px 12px;
+      padding: 7px 12px;
+      font-weight: 700;
+    }
+
+    .status {
+      min-height: 22px;
+      color: #3c526f;
+      margin-bottom: 10px;
+      font-weight: 600;
     }
 
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 10px;
-      margin-top: 12px;
     }
 
     .card {
-      background: linear-gradient(135deg, #ffffff, #f8fbff);
-      border: 2px solid #d7e5ff;
-      border-radius: 12px;
-      padding: 12px;
-      min-height: 60px;
+      border: 2px solid #cdddf3;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fff, #f8fbff);
+      min-height: 58px;
+      padding: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -209,323 +211,309 @@
       font-weight: 700;
       cursor: grab;
       user-select: none;
-      box-shadow: 0 4px 12px rgba(47, 111, 237, 0.08);
-      transition: transform .12s ease, border-color .12s ease, opacity .12s ease;
     }
 
-    .card:hover { transform: translateY(-1px); border-color: #aac4f5; }
+    .card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(44, 114, 231, 0.2); }
+    .card.used { opacity: 0.45; filter: grayscale(1); cursor: not-allowed; text-decoration: line-through; }
 
-    .card.selected {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.18);
-    }
-
-    .card.used {
-      opacity: .45;
-      filter: grayscale(1);
-      cursor: not-allowed;
-      text-decoration: line-through;
-    }
-
-    .status {
-      margin-top: 8px;
-      min-height: 24px;
-      color: #3d516f;
-      font-weight: 600;
-    }
-
-    @media (max-width: 700px) {
-      body { padding: 12px; }
-      .panel { padding: 14px; }
-      .result { width: 100%; margin-left: 0; text-align: center; }
+    @media (max-width: 900px) {
+      body { padding: 10px; }
+      .panel { padding: 12px; }
+      .progress { width: 100%; margin-left: 0; text-align: center; }
     }
   </style>
 </head>
 <body>
-  <div class="app">
+  <main class="app">
     <section class="panel">
-      <h1>Lernspiel: Ablauf eines Tarifkonflikts</h1>
-      <p class="hint">Setze die sichtbaren Wortkarten per Drag &amp; Drop oder per Klick in die passenden Lücken. Korrekte Begriffe werden dauerhaft übernommen.</p>
+      <h1>Whiteboard-Lernspiel: Ablauf von Tarifverhandlungen</h1>
+      <p class="sub">Ziehe die Begriffskarten in die passenden Felder oder nutze Klick-Auswahl + Klick auf ein Feld.</p>
     </section>
 
-    <section class="panel flow-wrapper">
-      <div class="flow" id="flow">
-        <svg class="connections" viewBox="0 0 1080 820" preserveAspectRatio="none">
+    <section class="panel board-wrap">
+      <div class="board" id="board">
+        <!-- Verbindungs-Linien für den Tafelbild-Aufbau -->
+        <svg class="lines" viewBox="0 0 1120 820" aria-hidden="true">
           <defs>
             <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L0,6 L9,3 z" fill="#bfd1ea"></path>
+              <path d="M0,0 L0,6 L9,3 z" fill="#5f6f86"></path>
             </marker>
           </defs>
 
-          <!-- Hauptfluss (vertikal) -->
-          <line x1="540" y1="80" x2="540" y2="145"></line>
-          <line x1="540" y1="205" x2="540" y2="270"></line>
-          <line x1="540" y1="330" x2="540" y2="395"></line>
-          <line x1="540" y1="455" x2="540" y2="520"></line>
-          <line x1="540" y1="580" x2="540" y2="645"></line>
-          <line x1="540" y1="705" x2="540" y2="770"></line>
+          <!-- Start zu linker und rechter Verzweigung -->
+          <line x1="560" y1="102" x2="300" y2="178"></line>
+          <line x1="560" y1="102" x2="820" y2="178"></line>
 
-          <!-- Verzweigung nach rechts (Aussperrung) -->
-          <path d="M670 552 L840 552 L840 630 L670 630"></path>
+          <!-- Konfliktweg links nach unten -->
+          <line x1="300" y1="238" x2="300" y2="316"></line>
+          <line x1="300" y1="376" x2="300" y2="454"></line>
+          <line x1="300" y1="514" x2="300" y2="592"></line>
 
-          <!-- Frühphase-Hinweis Warnstreiks (seitlich links) -->
-          <path d="M410 205 L245 205 L245 285 L410 285"></path>
+          <!-- Von linker Urabstimmung nach Streik und weiter zu Aussperrung -->
+          <line x1="420" y1="626" x2="560" y2="626"></line>
+          <line x1="680" y1="626" x2="878" y2="626"></line>
+
+          <!-- Einigungsweg rechts -->
+          <line x1="820" y1="246" x2="820" y2="324"></line>
+          <line x1="820" y1="384" x2="820" y2="462"></line>
         </svg>
 
-        <!-- Hauptkette -->
-        <div class="node slot empty" data-key="1" style="left: 410px; top: 20px;"></div>
-        <div class="badge" style="top: 24px; left: 690px; right: auto;">1</div>
+        <div class="branch-sign minus">−</div>
+        <div class="branch-sign plus">+</div>
 
-        <div class="node slot empty" data-key="2" style="left: 410px; top: 145px;"></div>
-        <div class="badge" style="top: 149px; left: 690px; right: auto;">2</div>
+        <!-- Knoten: bewusst manuell positioniert -->
+        <div class="node empty" data-key="start" style="left:445px; top:30px;"></div>
 
-        <div class="node slot empty" data-key="3" style="left: 410px; top: 270px;"></div>
-        <div class="badge" style="top: 274px; left: 690px; right: auto;">3</div>
+        <div class="node empty" data-key="scheitern" style="left:185px; top:178px;"></div>
+        <div class="node empty" data-key="schlichtung" style="left:185px; top:316px;"></div>
+        <div class="node empty" data-key="friedenspflicht" style="left:185px; top:454px;"></div>
+        <div class="node empty" data-key="urabstimmung_links" style="left:185px; top:592px;"></div>
 
-        <div class="node slot empty" data-key="4" style="left: 410px; top: 395px;"></div>
-        <div class="badge" style="top: 399px; left: 690px; right: auto;">4</div>
+        <div class="node empty" data-key="streik" style="left:450px; top:592px;"></div>
+        <div class="node empty" data-key="aussperrung" style="left:878px; top:592px;"></div>
 
-        <div class="node slot empty" data-key="5" style="left: 410px; top: 520px;"></div>
-        <div class="badge" style="top: 524px; left: 690px; right: auto;">5</div>
-
-        <div class="node slot empty" data-key="6" style="left: 410px; top: 645px;"></div>
-        <div class="badge" style="top: 649px; left: 690px; right: auto;">6</div>
-
-        <div class="node slot empty" data-key="8" style="left: 410px; top: 770px;"></div>
-        <div class="badge" style="top: 774px; left: 690px; right: auto;">8</div>
-
-        <div class="node slot empty" data-key="9" style="left: 760px; top: 770px;"></div>
-        <div class="badge" style="top: 774px; left: 1040px; right: auto;">9</div>
-
-        <div class="node slot empty" data-key="10" style="left: 760px; top: 645px;"></div>
-        <div class="badge" style="top: 649px; left: 1040px; right: auto;">10</div>
-
-        <!-- Seitliche Felder -->
-        <div class="node slot empty" data-key="7" style="left: 760px; top: 520px;"></div>
-        <div class="badge" style="top: 524px; left: 1040px; right: auto;">7</div>
-
-        <div class="node slot empty" data-key="warn" style="left: 80px; top: 245px;"></div>
-        <div class="badge" style="top: 249px; left: 360px; right: auto;">Begleitend</div>
+        <div class="node empty cloud" data-key="tarifvertrag" style="left:705px; top:178px;"></div>
+        <div class="node empty" data-key="urabstimmung_rechts" style="left:705px; top:316px;"></div>
+        <div class="node empty" data-key="neue_verhandlung" style="left:705px; top:454px;"></div>
       </div>
     </section>
 
     <section class="panel">
       <div class="controls">
-        <button class="btn-check" id="checkBtn">Prüfen</button>
-        <button class="btn-reset" id="resetBtn">Zurücksetzen</button>
-        <button class="btn-solution" id="solutionBtn">Lösung anzeigen</button>
-        <div class="result" id="result">0 / 11 richtig</div>
+        <button id="checkBtn" class="check">Prüfen</button>
+        <button id="resetBtn" class="reset">Zurücksetzen</button>
+        <button id="solveBtn" class="solve">Lösung anzeigen</button>
+        <div class="progress" id="progress">0 / 10 richtig</div>
       </div>
-      <div class="status" id="status">Wähle eine Karte oder ziehe sie in ein Feld.</div>
-
+      <div class="status" id="status">Wähle eine Karte oder ziehe sie in ein leeres Feld.</div>
       <div class="cards" id="cards"></div>
     </section>
-  </div>
+  </main>
 
   <script>
-    // Lösungen fest eingebaut
-    const solutions = {
-      1: "Tarifverhandlungen beginnen",
-      2: "Scheitern wird erklärt",
-      3: "Schlichtungsverfahren möglich",
-      4: "Ende der Friedenspflicht",
-      5: "Urabstimmung der Gewerkschaftsmitglieder",
-      6: "Streik",
-      7: "Eventuell Aussperrung",
-      8: "Erneute Verhandlungen",
-      9: "Urabstimmung über Ergebnis",
-      10: "Neuer Tarifvertrag",
-      warn: "Warnstreiks"
+    // Erwartete Lösung für jedes Feld
+    const SOLUTIONS = {
+      start: "Tarifverhandlungen beginnen",
+      scheitern: "Scheitern",
+      schlichtung: "Schlichtung",
+      friedenspflicht: "Ende der Friedenspflicht",
+      urabstimmung_links: "Urabstimmung",
+      streik: "Streik",
+      aussperrung: "Aussperrung",
+      tarifvertrag: "Tarifvertrag",
+      urabstimmung_rechts: "Urabstimmung",
+      neue_verhandlung: "Neue Verhandlung"
     };
 
-    const allWords = Object.values(solutions);
+    // Sichtbare Wortkarten unten
+    const WORD_CARDS = [
+      "Tarifverhandlungen beginnen",
+      "Scheitern",
+      "Schlichtung",
+      "Ende der Friedenspflicht",
+      "Urabstimmung",
+      "Urabstimmung",
+      "Streik",
+      "Aussperrung",
+      "Tarifvertrag",
+      "Neue Verhandlung"
+    ];
 
-    const cardsEl = document.getElementById("cards");
-    const slots = Array.from(document.querySelectorAll(".slot"));
-    const resultEl = document.getElementById("result");
-    const statusEl = document.getElementById("status");
+    const slots = [...document.querySelectorAll('.node')];
+    const cardsBox = document.getElementById('cards');
+    const statusEl = document.getElementById('status');
+    const progressEl = document.getElementById('progress');
 
-    let selectedWord = null;
-    let placed = {}; // key -> word
-    let lockedCorrect = new Set();
+    let selectedCardId = null;
+    let placed = {}; // key -> cardId
+
+    function createCardId(word, index) {
+      return `${word}__${index}`;
+    }
+
+    const cardData = WORD_CARDS.map((word, index) => ({ id: createCardId(word, index), word }));
+
+    function isCardUsed(cardId) {
+      return Object.values(placed).includes(cardId);
+    }
 
     function renderCards() {
-      cardsEl.innerHTML = "";
-      allWords.forEach(word => {
-        const used = Object.values(placed).includes(word) || lockedCorrectHasWord(word);
-        const card = document.createElement("div");
-        card.className = "card" + (used ? " used" : "");
-        card.textContent = word;
-        card.draggable = !used;
-        card.dataset.word = word;
+      cardsBox.innerHTML = '';
 
-        card.addEventListener("click", () => {
+      cardData.forEach(card => {
+        const used = isCardUsed(card.id);
+        const div = document.createElement('div');
+        div.className = `card${used ? ' used' : ''}${selectedCardId === card.id ? ' selected' : ''}`;
+        div.textContent = card.word;
+        div.draggable = !used;
+        div.dataset.cardId = card.id;
+
+        div.addEventListener('click', () => {
           if (used) return;
-          document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
-          card.classList.add("selected");
-          selectedWord = word;
-          statusEl.textContent = `Ausgewählt: „${word}“. Klicke nun auf eine Lücke.`;
+          selectedCardId = card.id;
+          renderCards();
+          statusEl.textContent = `Ausgewählt: „${card.word}“. Jetzt Feld anklicken.`;
         });
 
-        card.addEventListener("dragstart", (e) => {
+        div.addEventListener('dragstart', event => {
           if (used) {
-            e.preventDefault();
+            event.preventDefault();
             return;
           }
-          selectedWord = word;
-          e.dataTransfer.setData("text/plain", word);
-          e.dataTransfer.effectAllowed = "move";
+          selectedCardId = card.id;
+          event.dataTransfer.setData('text/plain', card.id);
+          event.dataTransfer.effectAllowed = 'move';
         });
 
-        cardsEl.appendChild(card);
+        cardsBox.appendChild(div);
       });
     }
 
-    function lockedCorrectHasWord(word) {
-      for (const key of lockedCorrect) {
-        if (solutions[key] === word) return true;
-      }
-      return false;
-    }
-
-    function updateSlotView(slot) {
-      const key = slot.dataset.key;
-      const value = placed[key];
-      slot.classList.remove("empty");
-      if (!value) {
-        slot.textContent = "";
-        slot.classList.add("empty");
+    function setSlotText(slot, text) {
+      if (!text) {
+        slot.textContent = '';
+        slot.classList.add('empty');
       } else {
-        slot.textContent = value;
+        slot.textContent = text;
+        slot.classList.remove('empty');
       }
     }
 
-    function clearFeedback() {
-      slots.forEach(s => s.classList.remove("wrong"));
-    }
+    function placeCardIntoSlot(slot, cardId) {
+      if (!cardId) return;
 
-    function placeWord(slot, word) {
       const key = slot.dataset.key;
-      if (!word || lockedCorrect.has(key)) return;
+      const card = cardData.find(c => c.id === cardId);
+      if (!card) return;
 
-      // Falls im Ziel bereits ein nicht gesperrtes Wort liegt, zurück in die Liste geben
-      if (placed[key] && !lockedCorrect.has(key)) {
-        placed[key] = undefined;
+      // Karte eventuell aus altem Feld entfernen
+      const existingKey = Object.keys(placed).find(k => placed[k] === cardId);
+      if (existingKey) {
+        const old = slots.find(s => s.dataset.key === existingKey);
+        delete placed[existingKey];
+        old.classList.remove('correct', 'wrong');
+        setSlotText(old, '');
       }
 
-      placed[key] = word;
-      updateSlotView(slot);
-      clearFeedback();
+      // Bestehende Karte im Zielfeld freigeben
+      if (placed[key]) {
+        delete placed[key];
+      }
 
-      // Sofort-Validierung: falsches Wort direkt zurückgeben
-      if (solutions[key] !== word) {
-        slot.classList.add("wrong");
-        placed[key] = undefined;
-        updateSlotView(slot);
-        statusEl.textContent = `„${word}“ passt dort nicht und wurde zurückgelegt.`;
+      placed[key] = cardId;
+      slot.classList.remove('correct', 'wrong');
+      setSlotText(slot, card.word);
+
+      // Sofort-Feedback
+      if (card.word === SOLUTIONS[key]) {
+        slot.classList.add('correct');
+        statusEl.textContent = `Richtig: „${card.word}“.`;
       } else {
-        slot.classList.remove("wrong");
-        slot.classList.add("correct");
-        lockedCorrect.add(key);
-        statusEl.textContent = `Richtig: „${word}“ wurde fixiert.`;
+        slot.classList.add('wrong');
+        statusEl.textContent = `Noch nicht richtig: „${card.word}“ passt hier nicht.`;
       }
 
-      selectedWord = null;
-      document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+      selectedCardId = null;
       renderCards();
-      updateResult();
+      updateProgress();
     }
 
-    function updateResult() {
-      const correctCount = [...lockedCorrect].length;
-      resultEl.textContent = `${correctCount} / ${slots.length} richtig`;
+    function updateProgress() {
+      let correct = 0;
+      slots.forEach(slot => {
+        const key = slot.dataset.key;
+        const cardId = placed[key];
+        if (!cardId) return;
+        const card = cardData.find(c => c.id === cardId);
+        if (card && card.word === SOLUTIONS[key]) correct += 1;
+      });
+      progressEl.textContent = `${correct} / ${slots.length} richtig`;
     }
 
     slots.forEach(slot => {
-      slot.addEventListener("dragover", (e) => {
-        if (lockedCorrect.has(slot.dataset.key)) return;
-        e.preventDefault();
-        slot.classList.add("drag-over");
+      slot.addEventListener('dragover', event => {
+        event.preventDefault();
+        slot.classList.add('drag-over');
       });
 
-      slot.addEventListener("dragleave", () => slot.classList.remove("drag-over"));
+      slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
 
-      slot.addEventListener("drop", (e) => {
-        slot.classList.remove("drag-over");
-        if (lockedCorrect.has(slot.dataset.key)) return;
-        e.preventDefault();
-        const droppedWord = e.dataTransfer.getData("text/plain");
-        placeWord(slot, droppedWord);
+      slot.addEventListener('drop', event => {
+        event.preventDefault();
+        slot.classList.remove('drag-over');
+        const droppedCardId = event.dataTransfer.getData('text/plain');
+        placeCardIntoSlot(slot, droppedCardId);
       });
 
-      // Klick-Einfügen mit ausgewählter Karte
-      slot.addEventListener("click", () => {
-        if (lockedCorrect.has(slot.dataset.key)) return;
-        if (!selectedWord) {
-          statusEl.textContent = "Bitte zuerst eine Wortkarte auswählen.";
+      slot.addEventListener('click', () => {
+        if (!selectedCardId) {
+          statusEl.textContent = 'Bitte zuerst eine Karte auswählen.';
           return;
         }
-        placeWord(slot, selectedWord);
+        placeCardIntoSlot(slot, selectedCardId);
       });
     });
 
-    document.getElementById("checkBtn").addEventListener("click", () => {
-      let correctNow = 0;
+    document.getElementById('checkBtn').addEventListener('click', () => {
+      let correct = 0;
       slots.forEach(slot => {
         const key = slot.dataset.key;
-        if (lockedCorrect.has(key) && placed[key] === solutions[key]) {
-          correctNow++;
-          slot.classList.add("correct");
-          slot.classList.remove("wrong");
-        } else if (placed[key]) {
-          // Dieser Fall ist selten, da falsche Wörter sofort zurückgehen
-          if (placed[key] === solutions[key]) {
-            lockedCorrect.add(key);
-            slot.classList.add("correct");
-            slot.classList.remove("wrong");
-            correctNow++;
-          } else {
-            slot.classList.add("wrong");
-          }
+        const cardId = placed[key];
+        slot.classList.remove('correct', 'wrong');
+
+        if (!cardId) {
+          setSlotText(slot, '');
+          return;
+        }
+
+        const card = cardData.find(c => c.id === cardId);
+        if (card.word === SOLUTIONS[key]) {
+          slot.classList.add('correct');
+          correct += 1;
+        } else {
+          slot.classList.add('wrong');
         }
       });
-      updateResult();
-      statusEl.textContent = `Prüfung abgeschlossen: ${correctNow} korrekt fixierte Felder.`;
+      progressEl.textContent = `${correct} / ${slots.length} richtig`;
+      statusEl.textContent = `Prüfung abgeschlossen: ${correct} Felder korrekt.`;
       renderCards();
     });
 
-    document.getElementById("resetBtn").addEventListener("click", () => {
+    document.getElementById('resetBtn').addEventListener('click', () => {
       placed = {};
-      lockedCorrect.clear();
-      selectedWord = null;
+      selectedCardId = null;
       slots.forEach(slot => {
-        slot.classList.remove("correct", "wrong", "drag-over");
-        slot.textContent = "";
-        slot.classList.add("empty");
+        slot.classList.remove('correct', 'wrong', 'drag-over');
+        setSlotText(slot, '');
       });
+      statusEl.textContent = 'Zurückgesetzt. Starte neu!';
       renderCards();
-      updateResult();
-      statusEl.textContent = "Alles zurückgesetzt. Starte neu!";
+      updateProgress();
     });
 
-    document.getElementById("solutionBtn").addEventListener("click", () => {
+    document.getElementById('solveBtn').addEventListener('click', () => {
+      placed = {};
       slots.forEach(slot => {
         const key = slot.dataset.key;
-        placed[key] = solutions[key];
-        lockedCorrect.add(key);
-        slot.classList.remove("wrong", "empty");
-        slot.classList.add("correct");
-        slot.textContent = solutions[key];
+        const neededWord = SOLUTIONS[key];
+        const freeCard = cardData.find(c => c.word === neededWord && !Object.values(placed).includes(c.id));
+        if (freeCard) {
+          placed[key] = freeCard.id;
+          setSlotText(slot, freeCard.word);
+          slot.classList.remove('wrong');
+          slot.classList.add('correct');
+        }
       });
-      selectedWord = null;
+      selectedCardId = null;
+      statusEl.textContent = 'Lösung wird angezeigt.';
       renderCards();
-      updateResult();
-      statusEl.textContent = "Komplette Lösung angezeigt.";
+      updateProgress();
     });
 
-    // Initialisierung
+    // Initialzustand
+    slots.forEach(slot => setSlotText(slot, ''));
     renderCards();
-    updateResult();
+    updateProgress();
   </script>
 </body>
 </html>
