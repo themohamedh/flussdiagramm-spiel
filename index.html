@@ -23,13 +23,32 @@
     * { box-sizing: border-box; }
 
     body {
-      margin: 0;
-      font-family: "Inter", "Segoe UI", Arial, sans-serif;
-      color: var(--text);
-      background: linear-gradient(180deg, #f7faff 0%, var(--bg) 100%);
+          margin: 0;
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    color: var(--text);
+    background-image: url("./C9BD4168-EDB7-44C9-8257-97976AA34FB8.png");
+    background-size: cover;
+    background-position: center;
+        background-repeat: no-repeat;
+    min-height: 100vh;
+    position: relative;
+    isolation: isolate;
+
     }
 
-    .app {
+  
+    body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(137, 238, 224, 0.22), transparent 48%),
+      radial-gradient(circle at 80% 18%, rgba(160, 202, 255, 0.2), transparent 44%),
+      rgba(250, 255, 255, 0.68);
+    pointer-events: none;
+}
+.app {
       max-width: 1400px;
       margin: 0 auto;
       padding: 16px;
