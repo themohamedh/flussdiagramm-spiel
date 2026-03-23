@@ -335,10 +335,6 @@
     .slot[data-key="s14"] { left: 670px; top: 950px; width: 220px; }
     .slot[data-key="s15"] { left: 520px; top: 1040px; width: 220px; }
 
-    /* Rechter Unterast rechts (Einigung) */
-    .slot[data-key="s16"] { left: 980px; top: 950px; width: 220px; }
-    .slot[data-key="s17"] { left: 980px; top: 1040px; width: 220px; }
-
     /* Nebenpfad von Streik */
     .slot[data-key="side1"] { left: 880px; top: 430px; width: 240px; }
 
@@ -446,21 +442,16 @@
 
           <!-- Rechter Ast nach unten -->
           <line class="connector" data-active-for="s13" x1="960" y1="794" x2="960" y2="820"></line>
+          <path class="connector" data-active-for="s13" d="M410,762 L520,762 L520,852 L830,852"></path>
           <path class="connector" data-active-for="s14" d="M960,884 L780,884 L780,950"></path>
-          <path class="connector" data-active-for="s16" d="M960,884 L1090,884 L1090,950"></path>
 
           <!-- Kein Ergebnis -> Neustart -> zurück zu 2. Verhandlungsrunde -->
           <path class="connector" data-active-for="s15" d="M780,1014 L630,1014 L630,1040"></path>
           <path class="connector" data-active-for="s15" d="M630,1104 L460,1104 L460,622 L490,622"></path>
-
-          <!-- Einigung -> Urabstimmung -->
-          <line class="connector" data-active-for="s17" x1="1090" y1="1014" x2="1090" y2="1040"></line>
         </svg>
 
         <div class="legend" style="left:520px;top:675px;">Verzweigung ab 2. Verhandlungsrunde</div>
         <div class="legend" style="left:891px;top:400px;">Nebenpfad</div>
-        <div class="legend" style="left:663px;top:916px;">Verzweigung nach neuer Verhandlungsrunde</div>
-
         <div class="slot empty" data-key="s1"></div>
         <div class="slot empty" data-key="s2"></div>
         <div class="slot empty" data-key="s3"></div>
@@ -478,8 +469,6 @@
         <div class="slot empty" data-key="s13"></div>
         <div class="slot empty" data-key="s14"></div>
         <div class="slot empty" data-key="s15"></div>
-        <div class="slot empty" data-key="s16"></div>
-        <div class="slot empty" data-key="s17"></div>
 
         <div class="slot empty" data-key="side1"></div>
       </div>
@@ -492,7 +481,7 @@
   </main>
 
   <script>
-    // Alle Karten (inklusive doppeltem Begriff "Urabstimmung beginnt" als zwei eigene Karten-Instanzen)
+    // Alle Karten für die aktuell sichtbaren Felder im Diagramm
     const CARD_ITEMS = [
       { id: "c1", label: "Kündigung TV" },
       { id: "c2", label: "1. Verhandlungsrunde" },
@@ -509,12 +498,10 @@
       { id: "c13", label: "neue Verhandlungsrunde" },
       { id: "c14", label: "Kein Ergebnis" },
       { id: "c15", label: "Neustart" },
-      { id: "c16", label: "Einigung" },
-      { id: "c17", label: "Urabstimmung beginnt", variant: "B" },
       { id: "c18", label: "AG kann aussperren" }
     ];
 
-    // Zielbelegung pro Slot (wichtig: doppelte Urabstimmung über eigene IDs)
+    // Zielbelegung pro Slot
     const SOLUTION = {
       s1: "c1",
       s2: "c2",
@@ -531,8 +518,6 @@
       s13: "c13",
       s14: "c14",
       s15: "c15",
-      s16: "c16",
-      s17: "c17",
       side1: "c18"
     };
 
