@@ -38,19 +38,28 @@
       margin: 0;
       font-family: "Inter", "Segoe UI", Arial, sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at 15% 20%, rgba(137, 238, 224, 0.25), transparent 45%),
-        radial-gradient(circle at 80% 18%, rgba(160, 202, 255, 0.25), transparent 42%),
-        linear-gradient(160deg, var(--bg-soft-1) 0%, var(--bg-soft-2) 48%, var(--bg-soft-3) 100%);
+      background-image:
+        linear-gradient(rgba(250, 253, 255, 0.72), rgba(250, 253, 255, 0.72)),
+        radial-gradient(circle at 15% 20%, rgba(137, 238, 224, 0.22), transparent 48%),
+        radial-gradient(circle at 80% 18%, rgba(160, 202, 255, 0.2), transparent 44%),
+        url("./C9BD4168-EDB7-44C9-8257-97976AA34FB8.png");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       min-height: 100vh;
     }
 
     .app {
       max-width: 1400px;
-      margin: 0 auto;
+      margin: clamp(14px, 3vh, 30px) auto;
       padding: clamp(16px, 2vw, 26px);
       display: grid;
       gap: 16px;
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid rgba(215, 230, 238, 0.9);
+      border-radius: 26px;
+      box-shadow: 0 20px 45px rgba(31, 61, 87, 0.2);
+      backdrop-filter: blur(4px);
     }
 
     .panel {
