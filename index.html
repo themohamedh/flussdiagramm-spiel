@@ -5,19 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flussdiagramm-Spiel: Tarifrunde & Streik</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     :root {
-      --bg: #eef3fa;
-      --panel: #ffffff;
-      --text: #1f2937;
-      --muted: #64748b;
-      --line: #365980;
-      --accent: #2563eb;
-      --ok: #1f9d57;
-      --ok-bg: #e9f9ef;
-      --bad: #c0392b;
-      --bad-bg: #fdeceb;
-      --slot: #93acc8;
-      --shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+      --bg-soft-1: #ecfbfb;
+      --bg-soft-2: #eff6ff;
+      --bg-soft-3: #f4fdfa;
+      --panel: rgba(255, 255, 255, 0.84);
+      --panel-border: #d5e8eb;
+      --text: #173049;
+      --muted: #55728f;
+      --line: #8ea7c4;
+      --line-active: #4d9cff;
+      --line-correct: #2eb67d;
+      --accent: #2f81ff;
+      --accent-soft: #e8f2ff;
+      --ok: #2a9b6d;
+      --ok-bg: #e8faf2;
+      --bad: #d45757;
+      --bad-bg: #fff1f1;
+      --slot: #9ab8ca;
+      --shadow-panel: 0 18px 38px rgba(53, 91, 120, 0.13);
+      --shadow-card: 0 8px 20px rgba(20, 60, 90, 0.12);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 12px;
     }
 
     * { box-sizing: border-box; }
@@ -26,47 +38,66 @@
       margin: 0;
       font-family: "Inter", "Segoe UI", Arial, sans-serif;
       color: var(--text);
-      background: linear-gradient(180deg, #f7faff 0%, var(--bg) 100%);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(137, 238, 224, 0.25), transparent 45%),
+        radial-gradient(circle at 80% 18%, rgba(160, 202, 255, 0.25), transparent 42%),
+        linear-gradient(160deg, var(--bg-soft-1) 0%, var(--bg-soft-2) 48%, var(--bg-soft-3) 100%);
+      min-height: 100vh;
     }
 
     .app {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 16px;
+      padding: clamp(16px, 2vw, 26px);
       display: grid;
-      gap: 14px;
+      gap: 16px;
     }
 
     .panel {
       background: var(--panel);
-      border: 1px solid #d7e3f4;
-      border-radius: 14px;
-      box-shadow: var(--shadow);
-      padding: 14px;
+      backdrop-filter: blur(9px);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-panel);
+      padding: clamp(14px, 2.1vw, 22px);
     }
 
-    h1 { margin: 0 0 6px; font-size: clamp(1.15rem, 2.5vw, 1.7rem); }
-    .subtitle { margin: 0; color: var(--muted); }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.25rem, 2.7vw, 1.9rem);
+      letter-spacing: -0.01em;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1rem, 1.6vw, 1.18rem);
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
 
     .top-grid {
       display: grid;
-      gap: 12px;
+      gap: 16px;
       grid-template-columns: 1.15fr 1fr;
     }
 
     .reference-box {
       min-height: 140px;
-      border: 1px dashed #bdd0ea;
-      border-radius: 10px;
-      padding: 12px;
-      background: #f8fbff;
+      border: 1px dashed #b9d5e4;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      background: linear-gradient(160deg, #f8fdff, #f1fbff);
       display: grid;
-      gap: 8px;
+      gap: 10px;
       align-content: start;
     }
 
-    .reference-box h2 { margin: 0; font-size: 1rem; }
-    .reference-box p { margin: 0; color: #4b5f7a; }
+    .reference-box p { margin: 0; color: #4d6b87; line-height: 1.45; }
 
     .controls {
       display: flex;
@@ -76,43 +107,68 @@
     }
 
     button {
-      border: none;
-      border-radius: 10px;
-      padding: 10px 14px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 10px 16px;
       font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
       cursor: pointer;
+      transition: transform .18s ease, box-shadow .2s ease, filter .2s ease, border-color .2s ease;
+      box-shadow: 0 6px 16px rgba(35, 68, 98, 0.15);
     }
 
-    #checkBtn { background: var(--accent); color: #fff; }
-    #resetBtn { background: #dbe8ff; color: #1f2e4d; }
-    #solveBtn { background: #fde68a; color: #5a4604; }
+    button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.02);
+    }
+
+    button:active { transform: translateY(0); }
+
+    #checkBtn {
+      background: linear-gradient(140deg, #3d93ff, #2b79eb);
+      color: #fff;
+    }
+
+    #resetBtn {
+      background: linear-gradient(140deg, #e9f3ff, #d7e9ff);
+      color: #234570;
+      border-color: #bfd5ef;
+    }
+
+    #solveBtn {
+      background: linear-gradient(140deg, #fff4cc, #ffe59f);
+      color: #6e5612;
+      border-color: #f0d28c;
+    }
 
     .progress {
       margin-left: auto;
-      border: 1px solid #ccd9ee;
-      background: #eff5ff;
+      border: 1px solid #cde0ef;
+      background: linear-gradient(130deg, #f1f8ff, #eaf4ff);
       border-radius: 999px;
-      padding: 8px 12px;
+      padding: 8px 14px;
       font-weight: 700;
-      color: #21456f;
+      color: #215277;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
     }
 
     .status {
-      margin-top: 10px;
+      margin-top: 12px;
       font-weight: 600;
-      color: #274465;
-      min-height: 20px;
+      color: #284e70;
+      min-height: 22px;
     }
 
     .feedback {
       margin-top: 10px;
-      border-left: 4px solid #9db3d3;
-      background: #f6f9ff;
-      border-radius: 8px;
-      padding: 10px 12px;
-      min-height: 48px;
-      color: #263f61;
-      line-height: 1.35;
+      border-left: 4px solid #99bdda;
+      background: linear-gradient(160deg, #f5fbff, #edf7ff);
+      border-radius: 10px;
+      padding: 11px 13px;
+      min-height: 52px;
+      color: #2d4f70;
+      line-height: 1.45;
     }
 
     .board-wrap { overflow: auto; }
@@ -122,9 +178,9 @@
       width: 1240px;
       height: 1220px;
       margin: 0 auto;
-      border: 1px solid #d4e0f1;
-      border-radius: 12px;
-      background: #fbfdff;
+      border: 1px solid #d5e8ef;
+      border-radius: 18px;
+      background: linear-gradient(165deg, #fbffff 0%, #f4fbff 65%, #f2fbf8 100%);
     }
 
     .flow {
@@ -132,25 +188,51 @@
       inset: 0;
       pointer-events: none;
       z-index: 1;
+      filter: drop-shadow(0 2px 3px rgba(85, 128, 160, 0.2));
     }
 
-    .flow line, .flow path {
+    .flow .connector {
       stroke: var(--line);
-      stroke-width: 3;
+      stroke-width: 4.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
       fill: none;
       marker-end: url(#arrow);
+      transition: stroke .22s ease, opacity .22s ease;
+      opacity: 0.7;
+    }
+
+    .flow .connector.active {
+      stroke: var(--line-active);
+      opacity: 1;
+      stroke-dasharray: 8 8;
+      animation: flowPulse .95s linear infinite;
+    }
+
+    .flow .connector.correct {
+      stroke: var(--line-correct);
+      opacity: 1;
+      stroke-dasharray: none;
+      animation: none;
+    }
+
+    @keyframes flowPulse {
+      from { stroke-dashoffset: 0; }
+      to { stroke-dashoffset: -16; }
     }
 
     .legend {
       position: absolute;
       z-index: 3;
-      border: 1px solid #c9dbf5;
-      background: #edf4ff;
-      color: #27476f;
+      border: 1px solid #c8e0eb;
+      background: rgba(241, 250, 255, 0.95);
+      color: #2f5e83;
       border-radius: 999px;
-      padding: 3px 8px;
-      font-size: 0.8rem;
+      padding: 4px 10px;
+      font-size: 0.78rem;
       font-weight: 700;
+      letter-spacing: 0.01em;
+      box-shadow: 0 6px 12px rgba(83, 116, 143, 0.12);
     }
 
     .slot {
@@ -159,29 +241,57 @@
       width: 260px;
       min-height: 64px;
       border: 2px dashed var(--slot);
-      border-radius: 10px;
-      background: #fff;
-      padding: 9px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(165deg, #ffffff, #f3fbff);
+      box-shadow: var(--shadow-card);
+      padding: 11px 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
+      font-size: 0.95rem;
       font-weight: 700;
       cursor: pointer;
-      transition: all .14s ease;
-      line-height: 1.25;
+      transition: transform .16s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+      line-height: 1.35;
+    }
+
+    .slot:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(29, 76, 112, 0.2);
+      border-color: #86adca;
     }
 
     .slot.empty::before {
       content: "Begriff einsetzen";
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 500;
-      color: #7f93ac;
+      color: #7d95ad;
     }
 
-    .slot.drag-over { border-color: var(--accent); background: #ebf2ff; }
-    .slot.correct { border-style: solid; border-color: var(--ok); background: var(--ok-bg); color: #0f5c33; }
-    .slot.wrong { border-style: solid; border-color: var(--bad); background: var(--bad-bg); color: #7d241b; }
+    .slot.drag-over,
+    .slot.is-active {
+      border-color: var(--accent);
+      background: linear-gradient(170deg, #eef6ff, #e4f2ff);
+      box-shadow: 0 0 0 4px rgba(47, 129, 255, 0.2), 0 12px 26px rgba(56, 97, 136, 0.22);
+      transform: translateY(-2px);
+    }
+
+    .slot.correct {
+      border-style: solid;
+      border-color: var(--ok);
+      background: linear-gradient(160deg, #f2fff8, var(--ok-bg));
+      color: #0e6842;
+      box-shadow: 0 0 0 4px rgba(42, 155, 109, 0.2), 0 12px 26px rgba(42, 155, 109, 0.2);
+    }
+
+    .slot.wrong {
+      border-style: solid;
+      border-color: var(--bad);
+      background: linear-gradient(160deg, #fff7f7, var(--bad-bg));
+      color: #923535;
+      box-shadow: 0 0 0 4px rgba(212, 87, 87, 0.16), 0 12px 26px rgba(189, 88, 88, 0.16);
+    }
 
     /* Hauptpfad */
     .slot[data-key="s1"] { left: 490px; top: 30px; }
@@ -214,29 +324,49 @@
     .slot[data-key="side1"] { left: 880px; top: 430px; width: 240px; }
 
     .cards {
-      margin-top: 10px;
+      margin-top: 12px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 10px;
+      gap: 12px;
     }
 
     .card {
-      border: 2px solid #cddbf1;
-      border-radius: 10px;
-      padding: 10px;
-      background: linear-gradient(180deg, #ffffff, #f7fbff);
+      border: 1px solid #c8ddee;
+      border-radius: 13px;
+      padding: 12px;
+      background: linear-gradient(168deg, #ffffff, #eef7ff);
       font-weight: 700;
+      color: #214d72;
       text-align: center;
       user-select: none;
       cursor: grab;
+      transition: transform .16s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, opacity .2s ease;
+      box-shadow: 0 8px 16px rgba(67, 103, 132, 0.14);
     }
 
-    .card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #8bb6e8;
+      box-shadow: 0 12px 22px rgba(60, 95, 126, 0.2);
+    }
+
+    .card.selected {
+      border-color: var(--accent);
+      background: linear-gradient(165deg, #f3f9ff, #eaf3ff);
+      box-shadow: 0 0 0 4px rgba(47, 129, 255, 0.22), 0 12px 22px rgba(42, 91, 137, 0.23);
+    }
+
     .card.used { opacity: 0.45; cursor: not-allowed; filter: grayscale(.75); text-decoration: line-through; }
 
     @media (max-width: 960px) {
       .top-grid { grid-template-columns: 1fr; }
       .progress { margin-left: 0; width: 100%; text-align: center; }
+    }
+
+    @media (max-width: 640px) {
+      .panel { border-radius: 16px; }
+      .controls button { flex: 1 1 100%; }
+      .cards { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -270,42 +400,42 @@
       <div class="board">
         <svg class="flow" viewBox="0 0 1240 1220" aria-hidden="true">
           <defs>
-            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L0,6 L9,3 z" fill="#365980"></path>
+            <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,8 L11,4 z" fill="#7b9cbd"></path>
             </marker>
           </defs>
 
           <!-- Hauptablauf -->
-          <line x1="620" y1="94" x2="620" y2="110"></line>
-          <line x1="620" y1="174" x2="620" y2="190"></line>
-          <line x1="620" y1="254" x2="620" y2="270"></line>
-          <line x1="620" y1="334" x2="620" y2="350"></line>
-          <line x1="620" y1="414" x2="620" y2="430"></line>
-          <line x1="620" y1="494" x2="620" y2="510"></line>
-          <line x1="620" y1="574" x2="620" y2="590"></line>
+          <line class="connector" data-active-for="s2" x1="620" y1="94" x2="620" y2="110"></line>
+          <line class="connector" data-active-for="s3" x1="620" y1="174" x2="620" y2="190"></line>
+          <line class="connector" data-active-for="s4" x1="620" y1="254" x2="620" y2="270"></line>
+          <line class="connector" data-active-for="s5" x1="620" y1="334" x2="620" y2="350"></line>
+          <line class="connector" data-active-for="s6" x1="620" y1="414" x2="620" y2="430"></line>
+          <line class="connector" data-active-for="s7" x1="620" y1="494" x2="620" y2="510"></line>
+          <line class="connector" data-active-for="s8" x1="620" y1="574" x2="620" y2="590"></line>
 
           <!-- Nebenpfad Streik -> AG kann aussperren -->
-          <path d="M750,462 L880,462"></path>
+          <path class="connector" data-active-for="side1" d="M750,462 L880,462"></path>
 
           <!-- Ast von 2. Verhandlungsrunde -->
-          <path d="M620,654 L280,654 L280,730"></path>
-          <path d="M620,654 L960,654 L960,730"></path>
+          <path class="connector" data-active-for="s9" d="M620,654 L280,654 L280,730"></path>
+          <path class="connector" data-active-for="s12" d="M620,654 L960,654 L960,730"></path>
 
           <!-- Linker Ast nach unten -->
-          <line x1="280" y1="794" x2="280" y2="820"></line>
-          <line x1="280" y1="884" x2="280" y2="910"></line>
+          <line class="connector" data-active-for="s10" x1="280" y1="794" x2="280" y2="820"></line>
+          <line class="connector" data-active-for="s11" x1="280" y1="884" x2="280" y2="910"></line>
 
           <!-- Rechter Ast nach unten -->
-          <line x1="960" y1="794" x2="960" y2="820"></line>
-          <path d="M960,884 L780,884 L780,950"></path>
-          <path d="M960,884 L1090,884 L1090,950"></path>
+          <line class="connector" data-active-for="s13" x1="960" y1="794" x2="960" y2="820"></line>
+          <path class="connector" data-active-for="s14" d="M960,884 L780,884 L780,950"></path>
+          <path class="connector" data-active-for="s16" d="M960,884 L1090,884 L1090,950"></path>
 
           <!-- Kein Ergebnis -> Neustart -> zurück zu 2. Verhandlungsrunde -->
-          <path d="M780,1014 L630,1014 L630,1040"></path>
-          <path d="M630,1104 L460,1104 L460,622 L490,622"></path>
+          <path class="connector" data-active-for="s15" d="M780,1014 L630,1014 L630,1040"></path>
+          <path class="connector" data-active-for="s15" d="M630,1104 L460,1104 L460,622 L490,622"></path>
 
           <!-- Einigung -> Urabstimmung -->
-          <line x1="1090" y1="1014" x2="1090" y2="1040"></line>
+          <line class="connector" data-active-for="s17" x1="1090" y1="1014" x2="1090" y2="1040"></line>
         </svg>
 
         <div class="legend" style="left:520px;top:675px;">Verzweigung ab 2. Verhandlungsrunde</div>
@@ -392,6 +522,7 @@
     const statusEl = document.getElementById("status");
     const feedbackEl = document.getElementById("feedback");
     const progressEl = document.getElementById("progress");
+    const connectors = [...document.querySelectorAll(".connector")];
 
     let selectedCardId = null;
     let placed = {}; // slotKey -> cardId
@@ -450,6 +581,32 @@
 
         cardsEl.appendChild(el);
       });
+      updateSlotHighlight();
+    }
+
+    function updateSlotHighlight() {
+      slots.forEach((slot) => {
+        if (selectedCardId && !placed[slot.dataset.key]) {
+          slot.classList.add("is-active");
+        } else {
+          slot.classList.remove("is-active");
+        }
+      });
+    }
+
+    function updateConnectors() {
+      connectors.forEach((connector) => {
+        const relatedKeys = (connector.dataset.activeFor || "")
+          .split(",")
+          .map((key) => key.trim())
+          .filter(Boolean);
+
+        const hasPlaced = relatedKeys.some((key) => placed[key]);
+        const isCorrect = relatedKeys.some((key) => placed[key] && placed[key] === SOLUTION[key]);
+
+        connector.classList.toggle("active", hasPlaced && !isCorrect);
+        connector.classList.toggle("correct", isCorrect);
+      });
     }
 
     function removeFromSlot(slot) {
@@ -462,6 +619,7 @@
       selectedCardId = null;
       renderCards();
       updateProgress();
+      updateConnectors();
       statusEl.textContent = `„${removed.label}“ wurde entfernt.`;
       feedbackEl.textContent = "Karte entfernt. Du kannst sie neu einsetzen.";
     }
@@ -502,6 +660,7 @@
       selectedCardId = null;
       renderCards();
       updateProgress();
+      updateConnectors();
     }
 
     function updateProgress() {
@@ -542,6 +701,7 @@
       feedbackEl.innerHTML = lines.join("<br>");
       updateProgress();
       renderCards();
+      updateConnectors();
     }
 
     function resetAll() {
@@ -556,6 +716,7 @@
       feedbackEl.textContent = "Starte neu und ordne die Begriffe im Diagramm.";
       renderCards();
       updateProgress();
+      updateConnectors();
     }
 
     function solveAll() {
@@ -573,6 +734,7 @@
       feedbackEl.textContent = "Alle Felder wurden korrekt ausgefüllt.";
       renderCards();
       updateProgress();
+      updateConnectors();
     }
 
     slots.forEach((slot) => {
@@ -610,6 +772,7 @@
     slots.forEach((slot) => setSlotText(slot));
     renderCards();
     updateProgress();
+    updateConnectors();
   </script>
 </body>
 </html>
