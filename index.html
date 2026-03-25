@@ -468,7 +468,28 @@
       .panel { border-radius: 16px; }
       .controls button { flex: 1 1 100%; }
       .cards { grid-template-columns: 1fr; }
+      .page-footer { font-size: 0.78rem; }
     }
+
+    .page-footer {
+      margin: 10px auto 18px;
+      width: min(1400px, calc(100% - 32px));
+      padding: 12px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(170, 197, 216, 0.55);
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(3px);
+      color: #3a5b78;
+      text-align: center;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      box-shadow: 0 8px 20px rgba(46, 81, 111, 0.1);
+    }
+
+    .page-footer p {
+      margin: 2px 0;
+    }
+
   </style>
 </head>
 <body>
@@ -569,6 +590,12 @@
       <div id="cards" class="cards" aria-live="polite"></div>
     </section>
   </main>
+
+  <footer class="page-footer" aria-label="Credits">
+    <p>© 2026 Mohamed Hachelaf</p>
+    <p>Konzept und Umsetzung durch Mohamed Hachelaf</p>
+    <p>Erstellt im Auftrag von Christine Schmück</p>
+  </footer>
 
   <script>
     // Alle Karten für die aktuell sichtbaren Felder im Diagramm
