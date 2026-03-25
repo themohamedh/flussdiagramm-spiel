@@ -124,6 +124,7 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 10px;
+      margin-bottom: 10px;
     }
 
     button {
@@ -173,6 +174,31 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
     }
 
+    .progress-track {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid #cfe3f2;
+      background: linear-gradient(170deg, #edf6ff, #e4f0ff);
+      box-shadow: inset 0 1px 3px rgba(33, 77, 114, 0.08);
+      margin-bottom: 8px;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(120deg, #46bc86, #2d9e71);
+      transition: width .35s ease;
+    }
+
+    .step-indicator {
+      color: #2f6085;
+      font-weight: 700;
+      font-size: 0.92rem;
+      margin-bottom: 6px;
+    }
+
     .status {
       margin-top: 12px;
       font-weight: 600;
@@ -189,6 +215,18 @@
       min-height: 52px;
       color: #2d4f70;
       line-height: 1.45;
+      transition: background .25s ease, border-color .25s ease, transform .2s ease;
+      transform-origin: top;
+    }
+
+    .feedback.is-positive {
+      border-left-color: var(--ok);
+      background: linear-gradient(160deg, #f1fff8, #e8faf2);
+    }
+
+    .feedback.is-negative {
+      border-left-color: var(--bad);
+      background: linear-gradient(160deg, #fff7f7, #fff1f1);
     }
 
     .board-wrap { overflow: auto; }
@@ -212,13 +250,18 @@
     }
 
     .flow .connector {
-      stroke: var(--line);
+      stroke: var(--line-soft);
       stroke-width: 3.8;
       stroke-linecap: round;
       stroke-linejoin: round;
       fill: none;
       marker-end: url(#arrow);
       transition: stroke .22s ease, opacity .22s ease, stroke-width .22s ease;
+      opacity: 0.2;
+    }
+
+    .flow .connector.revealed {
+      stroke: var(--line);
       opacity: 0.92;
     }
 
@@ -330,6 +373,7 @@
       background: linear-gradient(160deg, #f2fff8, var(--ok-bg));
       color: #0e6842;
       box-shadow: 0 0 0 4px rgba(42, 155, 109, 0.2), 0 12px 26px rgba(42, 155, 109, 0.2);
+      animation: markIn .25s ease;
     }
 
     .slot.wrong {
@@ -338,6 +382,20 @@
       background: linear-gradient(160deg, #fff7f7, var(--bad-bg));
       color: #923535;
       box-shadow: 0 0 0 4px rgba(212, 87, 87, 0.16), 0 12px 26px rgba(189, 88, 88, 0.16);
+      animation: shake .25s ease;
+    }
+
+    @keyframes markIn {
+      from { transform: translateY(-1px) scale(0.99); }
+      to { transform: translateY(0) scale(1); }
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-2px); }
+      50% { transform: translateX(2px); }
+      75% { transform: translateX(-1px); }
+      100% { transform: translateX(0); }
     }
 
     /* Hauptpfad */
@@ -430,9 +488,13 @@
       <div>
         <div class="controls">
           <button id="checkBtn">Prüfen</button>
-          <button id="resetBtn">Zurücksetzen</button>
+          <button id="resetBtn">Neu starten</button>
           <button id="solveBtn">Lösung anzeigen</button>
-          <span id="progress" class="progress">0 / 18 richtig</span>
+          <span id="progress" class="progress">0 / 16 richtig</span>
+        </div>
+        <div class="step-indicator" id="stepIndicator">Schritt 1 von 16</div>
+        <div class="progress-track" aria-hidden="true">
+          <div id="progressFill" class="progress-fill"></div>
         </div>
         <div id="status" class="status">Wähle eine Karte aus und setze sie in ein Feld.</div>
         <div id="feedback" class="feedback">Feedback erscheint hier nach dem Einsetzen oder Prüfen.</div>
@@ -554,10 +616,31 @@
     const statusEl = document.getElementById("status");
     const feedbackEl = document.getElementById("feedback");
     const progressEl = document.getElementById("progress");
+    const progressFillEl = document.getElementById("progressFill");
+    const stepIndicatorEl = document.getElementById("stepIndicator");
     const connectors = [...document.querySelectorAll(".connector")];
 
     let selectedCardId = null;
     let placed = {}; // slotKey -> cardId
+    const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15", "side1"];
+    const EXPLANATIONS = {
+      s1: "Mit der Kündigung des Tarifvertrags startet die neue Tarifrunde.",
+      s2: "In der ersten Verhandlungsrunde werden die Forderungen vorgestellt.",
+      s3: "Bleibt eine Einigung aus, geht der Prozess in die nächste Eskalationsstufe.",
+      s4: "Nach Ende der Friedenspflicht sind Arbeitskampfmaßnahmen erlaubt.",
+      s5: "Der Streik ist ein zentrales Druckmittel der Beschäftigten.",
+      s6: "Aktionen begleiten und verstärken die Mobilisierung im Konflikt.",
+      s7: "Die Tarifrunde läuft mit weiteren Aktivitäten weiter.",
+      s8: "In der zweiten Runde entscheidet sich, ob ein Ergebnis möglich ist.",
+      s9: "Ein Ergebnis beendet den Konfliktpfad auf dem linken Ast.",
+      s10: "Die Urabstimmung legitimiert weitere Arbeitskampfmaßnahmen.",
+      s11: "Mit dem Abschluss ist der Tarifkonflikt beendet.",
+      s12: "Schlichtung ist ein strukturierter Versuch zur Einigung.",
+      s13: "Eine neue Verhandlungsrunde führt zurück in den Prozess.",
+      s14: "Ohne Ergebnis ist ein weiterer Anlauf notwendig.",
+      s15: "Der Neustart führt in den Zyklus zurück.",
+      side1: "Als Reaktion auf Streik kann der Arbeitgeber aussperren."
+    };
 
     const GAME_MAP = {
       nodes: slots.map((slot) => ({
@@ -661,10 +744,19 @@
 
         const hasPlaced = relatedKeys.some((key) => placed[key]);
         const isCorrect = relatedKeys.some((key) => placed[key] && placed[key] === SOLUTION[key]);
+        const isRevealed = relatedKeys.some((key) => placed[key] && placed[key] === SOLUTION[key]);
 
+        connector.classList.toggle("revealed", isRevealed);
         connector.classList.toggle("active", hasPlaced && !isCorrect);
         connector.classList.toggle("correct", isCorrect);
       });
+    }
+
+    function setFeedbackState(type, message) {
+      feedbackEl.classList.remove("is-positive", "is-negative");
+      if (type === "positive") feedbackEl.classList.add("is-positive");
+      if (type === "negative") feedbackEl.classList.add("is-negative");
+      feedbackEl.textContent = message;
     }
 
     function removeFromSlot(slot) {
@@ -679,7 +771,7 @@
       updateProgress();
       updateConnectors();
       statusEl.textContent = `„${removed.label}“ wurde entfernt.`;
-      feedbackEl.textContent = "Karte entfernt. Du kannst sie neu einsetzen.";
+      setFeedbackState(null, "Karte entfernt. Du kannst sie neu einsetzen.");
     }
 
     function moveCardToSlot(slot, cardId) {
@@ -709,10 +801,13 @@
 
       if (SOLUTION[key] === card.id) {
         slot.classList.add("correct");
-        feedbackEl.textContent = `✅ „${card.label}“ ist hier korrekt.`;
+        setFeedbackState("positive", `✅ Richtig: „${card.label}“. ${EXPLANATIONS[key]}`);
       } else {
         slot.classList.add("wrong");
-        feedbackEl.textContent = `❌ „${card.label}“ passt hier nicht. Prüfe Reihenfolge oder Zweig.`;
+        const expectedCard = getCardById(SOLUTION[key]);
+        const correctSlot = Object.keys(SOLUTION).find((slotKey) => SOLUTION[slotKey] === card.id);
+        const hint = correctSlot ? `Diese Karte gehört eher zu Schritt „${correctSlot}“.` : "Prüfe Reihenfolge oder Zweig.";
+        setFeedbackState("negative", `❌ Nicht korrekt: Hier passt „${expectedCard.label}“. ${hint}`);
       }
 
       selectedCardId = null;
@@ -727,7 +822,13 @@
         const key = slot.dataset.key;
         if (placed[key] && placed[key] === SOLUTION[key]) correct += 1;
       });
+      const percent = Math.round((correct / slots.length) * 100);
       progressEl.textContent = `${correct} / ${slots.length} richtig`;
+      progressFillEl.style.width = `${percent}%`;
+
+      const solvedStepsInOrder = STEP_ORDER.findIndex((key) => placed[key] !== SOLUTION[key]);
+      const currentStep = solvedStepsInOrder === -1 ? STEP_ORDER.length : solvedStepsInOrder + 1;
+      stepIndicatorEl.textContent = `Schritt ${currentStep} von ${STEP_ORDER.length}`;
     }
 
     function checkAll() {
@@ -756,6 +857,7 @@
       });
 
       statusEl.textContent = `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`;
+      feedbackEl.classList.remove("is-positive", "is-negative");
       feedbackEl.innerHTML = lines.join("<br>");
       updateProgress();
       renderCards();
@@ -771,7 +873,7 @@
         setSlotText(slot);
       });
       statusEl.textContent = "Zurückgesetzt. Alle Karten wurden neu gemischt.";
-      feedbackEl.textContent = "Starte neu und ordne die Begriffe im Diagramm.";
+      setFeedbackState(null, "Starte neu und ordne die Begriffe im Diagramm.");
       renderCards();
       updateProgress();
       updateConnectors();
@@ -789,7 +891,7 @@
       });
       selectedCardId = null;
       statusEl.textContent = "Lösung wird angezeigt.";
-      feedbackEl.textContent = "Alle Felder wurden korrekt ausgefüllt.";
+      setFeedbackState("positive", "Alle Felder wurden korrekt ausgefüllt.");
       renderCards();
       updateProgress();
       updateConnectors();
