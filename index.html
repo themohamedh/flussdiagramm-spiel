@@ -226,6 +226,16 @@
       transform-origin: top;
     }
 
+    .feedback.flash {
+      animation: feedbackPulse .34s ease;
+    }
+
+    @keyframes feedbackPulse {
+      from { transform: scale(0.995); }
+      50% { transform: scale(1.01); }
+      to { transform: scale(1); }
+    }
+
     .feedback.is-positive {
       border-left-color: var(--ok);
       background: linear-gradient(160deg, #f1fff8, #e8faf2);
@@ -246,6 +256,27 @@
       border: 1px solid #d5e8ef;
       border-radius: 18px;
       background: linear-gradient(165deg, #fbffff 0%, #f4fbff 65%, #f2fbf8 100%);
+      transition: filter .32s ease, transform .32s ease;
+    }
+
+    .board.focus-active .slot,
+    .board.focus-active .legend,
+    .board.focus-active .info-btn {
+      opacity: 0.42;
+      transition: opacity .28s ease, filter .28s ease, transform .22s ease;
+    }
+
+    .board.focus-active .slot.is-focus-target,
+    .board.focus-active .legend.is-focus-target,
+    .board.focus-active .info-btn.is-focus-target {
+      opacity: 1;
+      filter: saturate(1.06);
+    }
+
+    .board.focus-active .slot.is-focus-target {
+      box-shadow: 0 0 0 4px rgba(47, 129, 255, 0.24), 0 14px 28px rgba(38, 88, 128, 0.24);
+      transform: translateY(-3px);
+      animation: breathe .95s ease-in-out infinite alternate;
     }
 
     .flow {
@@ -288,9 +319,22 @@
       animation: none;
     }
 
+    .flow.focus-active .connector {
+      opacity: 0.12;
+    }
+
+    .flow.focus-active .connector.is-focus-target {
+      opacity: 0.95;
+    }
+
     @keyframes flowPulse {
       from { stroke-dashoffset: 0; }
       to { stroke-dashoffset: -16; }
+    }
+
+    @keyframes breathe {
+      from { transform: translateY(-1px) scale(1); }
+      to { transform: translateY(-3px) scale(1.01); }
     }
 
     .legend {
@@ -535,6 +579,12 @@
       box-shadow: 0 8px 16px rgba(67, 103, 132, 0.14);
     }
 
+    .card.is-focus-card {
+      border-color: #75aef0;
+      box-shadow: 0 0 0 3px rgba(47, 129, 255, 0.16), 0 12px 22px rgba(60, 95, 126, 0.2);
+      transform: translateY(-2px);
+    }
+
     .card:hover {
       transform: translateY(-2px);
       border-color: #8bb6e8;
@@ -549,6 +599,95 @@
 
     .card.used { opacity: 0.45; cursor: not-allowed; filter: grayscale(.75); text-decoration: line-through; }
 
+    .final-stats {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    }
+
+    .stat-chip {
+      border: 1px solid #d3e5f4;
+      border-radius: 12px;
+      padding: 10px;
+      background: linear-gradient(160deg, #f8fcff, #eef6ff);
+      text-align: center;
+    }
+
+    .stat-chip .value {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1d4a71;
+    }
+
+    .stat-chip .label {
+      font-size: 0.8rem;
+      color: #56728f;
+      margin-top: 4px;
+    }
+
+    .stats-visual {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1.3fr 1fr;
+      align-items: center;
+    }
+
+    .bar-chart {
+      display: grid;
+      gap: 8px;
+    }
+
+    .bar-row {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 120px 1fr auto;
+      align-items: center;
+      font-size: 0.84rem;
+      color: #2d4f70;
+    }
+
+    .bar-track {
+      height: 10px;
+      border-radius: 999px;
+      background: #e6eef7;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: var(--value, 0%);
+      border-radius: inherit;
+      transition: width .5s ease;
+    }
+
+    .bar-fill.good { background: linear-gradient(130deg, #36ba82, #229565); }
+    .bar-fill.bad { background: linear-gradient(130deg, #f08d8d, #d65b5b); }
+
+    .pie-chart {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      margin: 0 auto;
+      background: conic-gradient(#36ba82 var(--good, 0%), #f08d8d 0);
+      box-shadow: inset 0 0 0 14px #ffffff, 0 8px 18px rgba(54, 95, 130, 0.16);
+      position: relative;
+    }
+
+    .pie-chart::after {
+      content: attr(data-label);
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 0.8rem;
+      color: #2f5372;
+      font-weight: 700;
+      white-space: pre-line;
+      text-align: center;
+    }
+
     @media (max-width: 960px) {
       .top-grid { grid-template-columns: 1fr; }
       .progress { margin-left: 0; width: 100%; text-align: center; }
@@ -559,6 +698,9 @@
       .controls button { flex: 1 1 100%; }
       .cards { grid-template-columns: 1fr; }
       .page-footer { font-size: 0.78rem; }
+      .stats-visual { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 1fr; gap: 4px; }
+      .pie-chart { width: 118px; height: 118px; }
     }
 
     .page-footer {
@@ -618,8 +760,8 @@
     </section>
 
     <section class="panel board-wrap">
-      <div class="board">
-        <svg class="flow" viewBox="0 0 1240 1220" aria-hidden="true">
+      <div class="board" id="board">
+        <svg class="flow" id="flowSvg" viewBox="0 0 1240 1220" aria-hidden="true">
           <defs>
             <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
               <path d="M1,1 L11,5 L1,9 Q3,5 1,1 z" fill="#7b9cbd"></path>
@@ -711,6 +853,19 @@
     <div class="final-card">
       <h3>Spiel erfolgreich abgeschlossen</h3>
       <p id="finalStats">Du hast das Spiel abgeschlossen.</p>
+      <div class="final-stats">
+        <div class="stat-chip"><div class="value" id="statRight">0</div><div class="label">Richtige Entscheidungen</div></div>
+        <div class="stat-chip"><div class="value" id="statWrong">0</div><div class="label">Falsche Entscheidungen</div></div>
+        <div class="stat-chip"><div class="value" id="statClicks">0</div><div class="label">Klicks gesamt</div></div>
+        <div class="stat-chip"><div class="value" id="statTime">0:00</div><div class="label">Benötigte Zeit</div></div>
+      </div>
+      <div class="stats-visual">
+        <div class="bar-chart" aria-label="Balkendiagramm der Entscheidungen">
+          <div class="bar-row"><span>Richtig</span><div class="bar-track"><div id="barRight" class="bar-fill good"></div></div><strong id="barRightLabel">0%</strong></div>
+          <div class="bar-row"><span>Falsch</span><div class="bar-track"><div id="barWrong" class="bar-fill bad"></div></div><strong id="barWrongLabel">0%</strong></div>
+        </div>
+        <div class="pie-chart" id="pieStats" data-label="0%&#10;Trefferquote" aria-hidden="true"></div>
+      </div>
       <div class="popup-actions">
         <button id="finalRestartBtn" type="button">Neu starten</button>
       </div>
@@ -771,13 +926,28 @@
     const infoTextEl = document.getElementById("infoText");
     const finalOverlayEl = document.getElementById("finalOverlay");
     const finalStatsEl = document.getElementById("finalStats");
+    const boardEl = document.getElementById("board");
+    const flowSvgEl = document.getElementById("flowSvg");
+    const statRightEl = document.getElementById("statRight");
+    const statWrongEl = document.getElementById("statWrong");
+    const statClicksEl = document.getElementById("statClicks");
+    const statTimeEl = document.getElementById("statTime");
+    const barRightEl = document.getElementById("barRight");
+    const barWrongEl = document.getElementById("barWrong");
+    const barRightLabelEl = document.getElementById("barRightLabel");
+    const barWrongLabelEl = document.getElementById("barWrongLabel");
+    const pieStatsEl = document.getElementById("pieStats");
     const connectors = [...document.querySelectorAll(".connector")];
+    const infoButtons = [...document.querySelectorAll(".info-btn")];
+    const legends = [...document.querySelectorAll(".legend")];
 
     let selectedCardId = null;
     let placed = {}; // slotKey -> cardId
     let wrongAttempts = 0;
     let rightDecisions = 0;
     let wrongDecisions = 0;
+    let totalClicks = 0;
+    let gameStartTimestamp = Date.now();
     let didComplete = false;
     const MAX_WRONG_ATTEMPTS = 3;
     let soundEnabled = true;
@@ -857,6 +1027,23 @@
       playTone({ frequency: 260, duration: 0.12, type: "sawtooth", volume: 0.035 });
     }
 
+    function formatDuration(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = String(totalSeconds % 60).padStart(2, "0");
+      return `${minutes}:${seconds}`;
+    }
+
+    function registerInteraction() {
+      totalClicks += 1;
+    }
+
+    function pulseFeedback() {
+      feedbackEl.classList.remove("flash");
+      void feedbackEl.offsetWidth;
+      feedbackEl.classList.add("flash");
+    }
+
     function handleNodeClick(slot) {
       const nodeType = slot.dataset.nodeType || "process";
       const nodeLabel = slot.textContent?.trim() || `Schritt ${slot.dataset.key}`;
@@ -896,16 +1083,20 @@
 
     function renderCards() {
       cardsEl.innerHTML = "";
+      const focusKey = getCurrentFocusKey();
+      const expectedCardId = focusKey ? SOLUTION[focusKey] : null;
       deck.forEach((card) => {
         const used = cardUsed(card.id);
+        const isFocusCard = !used && expectedCardId === card.id;
         const el = document.createElement("div");
-        el.className = `card${used ? " used" : ""}${selectedCardId === card.id ? " selected" : ""}`;
+        el.className = `card${used ? " used" : ""}${selectedCardId === card.id ? " selected" : ""}${isFocusCard ? " is-focus-card" : ""}`;
         el.draggable = !used;
         el.dataset.cardId = card.id;
         el.textContent = card.label;
 
         el.addEventListener("click", () => {
           if (used) return;
+          registerInteraction();
           selectedCardId = card.id;
           renderCards();
           statusEl.textContent = `Ausgewählt: „${card.label}“. Jetzt ein Feld anklicken oder ziehen.`;
@@ -920,6 +1111,7 @@
         cardsEl.appendChild(el);
       });
       updateSlotHighlight();
+      updateFocusMode();
     }
 
     function updateSlotHighlight() {
@@ -954,6 +1146,31 @@
       if (type === "positive") feedbackEl.classList.add("is-positive");
       if (type === "negative") feedbackEl.classList.add("is-negative");
       feedbackEl.textContent = message;
+      pulseFeedback();
+    }
+
+    function getCurrentFocusKey() {
+      const nextKey = STEP_ORDER.find((key) => placed[key] !== SOLUTION[key]);
+      return nextKey || null;
+    }
+
+    function updateFocusMode() {
+      const focusKey = getCurrentFocusKey();
+      const isComplete = !focusKey;
+      boardEl.classList.toggle("focus-active", !isComplete);
+      flowSvgEl.classList.toggle("focus-active", !isComplete);
+
+      slots.forEach((slot) => {
+        slot.classList.toggle("is-focus-target", !isComplete && slot.dataset.key === focusKey);
+      });
+
+      connectors.forEach((connector) => {
+        const relatedKeys = (connector.dataset.activeFor || "").split(",").map((key) => key.trim());
+        connector.classList.toggle("is-focus-target", !isComplete && relatedKeys.includes(focusKey));
+      });
+
+      legends.forEach((legend) => legend.classList.remove("is-focus-target"));
+      infoButtons.forEach((button) => button.classList.remove("is-focus-target"));
     }
 
     function openInfoPopup(infoKey) {
@@ -980,9 +1197,28 @@
       const allCorrect = STEP_ORDER.every((key) => placed[key] === SOLUTION[key]);
       if (!allCorrect) return;
       didComplete = true;
-      finalStatsEl.innerHTML = `Richtige Entscheidungen: <strong>${rightDecisions}</strong><br>Falsche Entscheidungen: <strong>${wrongDecisions}</strong><br>Bewertung: <strong>${getRating()}</strong>`;
+      updateFinalStats();
+      finalStatsEl.innerHTML = `Bewertung: <strong>${getRating()}</strong> · Trefferquote: <strong>${Math.round((rightDecisions / Math.max(1, rightDecisions + wrongDecisions)) * 100)}%</strong>`;
       finalOverlayEl.classList.add("open");
       finalOverlayEl.setAttribute("aria-hidden", "false");
+    }
+
+    function updateFinalStats() {
+      const totalDecisions = rightDecisions + wrongDecisions;
+      const rightPercent = Math.round((rightDecisions / Math.max(1, totalDecisions)) * 100);
+      const wrongPercent = 100 - rightPercent;
+      const elapsed = Date.now() - gameStartTimestamp;
+
+      statRightEl.textContent = String(rightDecisions);
+      statWrongEl.textContent = String(wrongDecisions);
+      statClicksEl.textContent = String(totalClicks);
+      statTimeEl.textContent = formatDuration(elapsed);
+      barRightEl.style.setProperty("--value", `${rightPercent}%`);
+      barWrongEl.style.setProperty("--value", `${wrongPercent}%`);
+      barRightLabelEl.textContent = `${rightPercent}%`;
+      barWrongLabelEl.textContent = `${wrongPercent}%`;
+      pieStatsEl.style.setProperty("--good", `${rightPercent}%`);
+      pieStatsEl.dataset.label = `${rightPercent}%\nTrefferquote`;
     }
 
     function showAssistActions() {
@@ -1005,6 +1241,7 @@
       renderCards();
       updateProgress();
       updateConnectors();
+      updateFocusMode();
       statusEl.textContent = `„${removed.label}“ wurde entfernt.`;
       setFeedbackState(null, "Karte entfernt. Du kannst sie neu einsetzen.");
     }
@@ -1071,6 +1308,7 @@
       renderCards();
       updateProgress();
       updateConnectors();
+      updateFocusMode();
       showCompletionOverlay();
     }
 
@@ -1087,6 +1325,7 @@
       const solvedStepsInOrder = STEP_ORDER.findIndex((key) => placed[key] !== SOLUTION[key]);
       const currentStep = solvedStepsInOrder === -1 ? STEP_ORDER.length : solvedStepsInOrder + 1;
       stepIndicatorEl.textContent = `Schritt ${currentStep} von ${STEP_ORDER.length}`;
+      updateFocusMode();
       showCompletionOverlay();
     }
 
@@ -1121,6 +1360,7 @@
       updateProgress();
       renderCards();
       updateConnectors();
+      updateFocusMode();
     }
 
     function resetAll() {
@@ -1129,6 +1369,8 @@
       wrongAttempts = 0;
       rightDecisions = 0;
       wrongDecisions = 0;
+      totalClicks = 0;
+      gameStartTimestamp = Date.now();
       didComplete = false;
       deck = shuffle(CARD_ITEMS);
       slots.forEach((slot) => {
@@ -1143,6 +1385,7 @@
       renderCards();
       updateProgress();
       updateConnectors();
+      updateFocusMode();
     }
 
     function solveAll() {
@@ -1163,6 +1406,7 @@
       renderCards();
       updateProgress();
       updateConnectors();
+      updateFocusMode();
       showCompletionOverlay();
     }
 
@@ -1177,10 +1421,12 @@
       slot.addEventListener("drop", (event) => {
         event.preventDefault();
         slot.classList.remove("drag-over");
+        registerInteraction();
         moveCardToSlot(slot, event.dataTransfer.getData("text/plain"));
       });
 
       slot.addEventListener("click", () => {
+        registerInteraction();
         handleNodeClick(slot);
 
         if (selectedCardId) {
@@ -1196,14 +1442,16 @@
       });
     });
 
-    document.querySelectorAll(".info-btn").forEach((button) => {
+    infoButtons.forEach((button) => {
       button.addEventListener("click", () => {
+        registerInteraction();
         playClickSound();
         openInfoPopup(button.dataset.infoKey);
       });
     });
 
     document.getElementById("closeInfoBtn").addEventListener("click", () => {
+      registerInteraction();
       playClickSound();
       closeInfoPopup();
     });
@@ -1213,32 +1461,39 @@
     });
 
     document.getElementById("checkBtn").addEventListener("click", () => {
+      registerInteraction();
       playClickSound();
       checkAll();
     });
     document.getElementById("resetBtn").addEventListener("click", () => {
+      registerInteraction();
       playClickSound();
       resetAll();
     });
     document.getElementById("solveBtn").addEventListener("click", () => {
+      registerInteraction();
       playClickSound();
       solveAll();
     });
     document.getElementById("assistRestartBtn").addEventListener("click", () => {
+      registerInteraction();
       playClickSound();
       resetAll();
     });
     document.getElementById("assistContinueBtn").addEventListener("click", () => {
+      registerInteraction();
       playClickSound();
       solveAll();
       statusEl.textContent = "Du kannst den Ablauf jetzt korrekt nachvollziehen und neu starten.";
     });
     document.getElementById("finalRestartBtn").addEventListener("click", () => {
+      registerInteraction();
       playClickSound();
       resetAll();
     });
 
     soundToggleEl.addEventListener("click", () => {
+      registerInteraction();
       soundEnabled = !soundEnabled;
       soundToggleEl.textContent = soundEnabled ? "🔊 Ton an" : "🔇 Ton aus";
       soundToggleEl.setAttribute("aria-pressed", String(soundEnabled));
@@ -1250,6 +1505,7 @@
     renderCards();
     updateProgress();
     updateConnectors();
+    updateFocusMode();
   </script>
 </body>
 </html>
