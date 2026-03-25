@@ -163,6 +163,22 @@
       border-color: #f0d28c;
     }
 
+    #solveBtn:disabled {
+      background: linear-gradient(140deg, #f2f2f2, #e3e7eb);
+      color: #7f8c97;
+      border-color: #c9d2da;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+      filter: none;
+      opacity: 0.95;
+    }
+
+    #solveBtn:disabled:hover {
+      transform: none;
+      filter: none;
+    }
+
     #soundToggle {
       background: linear-gradient(140deg, #e8fff5, #d7f8ea);
       color: #1d6a4c;
@@ -211,6 +227,13 @@
       font-weight: 600;
       color: #284e70;
       min-height: 22px;
+    }
+
+    .solve-hint {
+      margin-top: 8px;
+      font-size: 0.86rem;
+      color: #6a7f93;
+      min-height: 20px;
     }
 
     .feedback {
@@ -749,10 +772,11 @@
         <div class="controls">
           <button id="checkBtn">Prüfen</button>
           <button id="resetBtn">Neu starten</button>
-          <button id="solveBtn">Lösung anzeigen</button>
+          <button id="solveBtn" title="Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.">Lösung anzeigen</button>
           <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
           <span id="progress" class="progress">0 / 16 richtig</span>
         </div>
+        <div id="solveHint" class="solve-hint" role="status" aria-live="polite">Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.</div>
         <div class="step-indicator" id="stepIndicator">Schritt 1 von 16</div>
         <div class="progress-track" aria-hidden="true">
           <div id="progressFill" class="progress-fill"></div>
@@ -927,6 +951,8 @@
     const progressEl = document.getElementById("progress");
     const progressFillEl = document.getElementById("progressFill");
     const stepIndicatorEl = document.getElementById("stepIndicator");
+    const solveBtnEl = document.getElementById("solveBtn");
+    const solveHintEl = document.getElementById("solveHint");
     const soundToggleEl = document.getElementById("soundToggle");
     const assistActionsEl = document.getElementById("assistActions");
     const infoPopupEl = document.getElementById("infoPopup");
@@ -1002,6 +1028,8 @@
       streik: "Das ist wichtig, weil ein Streik das letzte und legitime Mittel ist, um bei festgefahrenen Verhandlungen Druck aufzubauen und auf Augenhöhe weiterzuverhandeln.",
       "ergebnis-erzielt": "Das ist wichtig, weil ein Tarifergebnis konkrete Verbesserungen bei Entgelt, Arbeitszeit oder anderen Arbeitsbedingungen festschreiben kann."
     };
+
+    const SOLVE_LOCK_HINT = "Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.";
 
     function playTone({ frequency = 440, duration = 0.08, type = "sine", volume = 0.04 }) {
       if (!soundEnabled) return;
@@ -1333,7 +1361,21 @@
       const currentStep = solvedStepsInOrder === -1 ? STEP_ORDER.length : solvedStepsInOrder + 1;
       stepIndicatorEl.textContent = `Schritt ${currentStep} von ${STEP_ORDER.length}`;
       updateFocusMode();
+      updateSolveButtonState();
       showCompletionOverlay();
+    }
+
+    function allSlotsFilled() {
+      return slots.every((slot) => Boolean(placed[slot.dataset.key]));
+    }
+
+    function updateSolveButtonState() {
+      const isComplete = allSlotsFilled();
+      solveBtnEl.disabled = !isComplete;
+      solveBtnEl.setAttribute("aria-disabled", String(!isComplete));
+      solveBtnEl.title = isComplete ? "Lösung anzeigen" : SOLVE_LOCK_HINT;
+      solveHintEl.hidden = isComplete;
+      if (!isComplete) solveHintEl.textContent = SOLVE_LOCK_HINT;
     }
 
     function checkAll() {
@@ -1393,9 +1435,11 @@
       updateProgress();
       updateConnectors();
       updateFocusMode();
+      updateSolveButtonState();
     }
 
     function solveAll() {
+      if (!allSlotsFilled()) return;
       placed = {};
       slots.forEach((slot) => {
         const key = slot.dataset.key;
@@ -1414,6 +1458,7 @@
       updateProgress();
       updateConnectors();
       updateFocusMode();
+      updateSolveButtonState();
       showCompletionOverlay();
     }
 
@@ -1478,6 +1523,7 @@
       resetAll();
     });
     document.getElementById("solveBtn").addEventListener("click", () => {
+      if (solveBtnEl.disabled) return;
       registerInteraction();
       playClickSound();
       solveAll();
@@ -1513,6 +1559,7 @@
     updateProgress();
     updateConnectors();
     updateFocusMode();
+    updateSolveButtonState();
   </script>
 </body>
 </html>
