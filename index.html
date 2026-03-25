@@ -15,7 +15,8 @@
       --panel-border: #d5e8eb;
       --text: #173049;
       --muted: #55728f;
-      --line: #8ea7c4;
+      --line: #88a6c2;
+      --line-soft: #c8d9e8;
       --line-active: #4d9cff;
       --line-correct: #2eb67d;
       --accent: #2f81ff;
@@ -207,22 +208,23 @@
       inset: 0;
       pointer-events: none;
       z-index: 1;
-      filter: drop-shadow(0 2px 3px rgba(85, 128, 160, 0.2));
+      filter: drop-shadow(0 2px 4px rgba(72, 111, 140, 0.18));
     }
 
     .flow .connector {
       stroke: var(--line);
-      stroke-width: 4.2;
+      stroke-width: 3.8;
       stroke-linecap: round;
       stroke-linejoin: round;
       fill: none;
       marker-end: url(#arrow);
-      transition: stroke .22s ease, opacity .22s ease;
-      opacity: 0.7;
+      transition: stroke .22s ease, opacity .22s ease, stroke-width .22s ease;
+      opacity: 0.92;
     }
 
     .flow .connector.active {
       stroke: var(--line-active);
+      stroke-width: 4.4;
       opacity: 1;
       stroke-dasharray: 8 8;
       animation: flowPulse .95s linear infinite;
@@ -230,6 +232,7 @@
 
     .flow .connector.correct {
       stroke: var(--line-correct);
+      stroke-width: 4.2;
       opacity: 1;
       stroke-dasharray: none;
       animation: none;
@@ -271,14 +274,39 @@
       font-size: 0.95rem;
       font-weight: 700;
       cursor: pointer;
-      transition: transform .16s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+      transition: transform .18s ease, box-shadow .24s ease, border-color .2s ease, background .2s ease;
       line-height: 1.35;
+      transform-origin: center;
+      outline: none;
     }
 
-    .slot:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(29, 76, 112, 0.2);
-      border-color: #86adca;
+    .slot:hover,
+    .slot:focus-visible {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 14px 28px rgba(32, 80, 116, 0.24);
+      border-color: #7ea8c7;
+      background: linear-gradient(165deg, #ffffff, #edf7ff);
+    }
+
+
+    .slot.is-clickable::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: inherit;
+      border: 1px solid rgba(47, 129, 255, 0);
+      transition: border-color .2s ease;
+      pointer-events: none;
+    }
+
+    .slot.is-clickable:hover::after,
+    .slot.is-clickable:focus-visible::after {
+      border-color: rgba(47, 129, 255, 0.25);
+    }
+
+    .slot.is-decision {
+      border-style: solid;
+      border-color: #88b0cc;
     }
 
     .slot.empty::before {
@@ -415,8 +443,8 @@
       <div class="board">
         <svg class="flow" viewBox="0 0 1240 1220" aria-hidden="true">
           <defs>
-            <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L0,8 L11,4 z" fill="#7b9cbd"></path>
+            <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+              <path d="M1,1 L11,5 L1,9 Q3,5 1,1 z" fill="#7b9cbd"></path>
             </marker>
           </defs>
 
@@ -452,25 +480,25 @@
 
         <div class="legend" style="left:520px;top:675px;">Verzweigung ab 2. Verhandlungsrunde</div>
         <div class="legend" style="left:891px;top:400px;">Nebenpfad</div>
-        <div class="slot empty" data-key="s1"></div>
-        <div class="slot empty" data-key="s2"></div>
-        <div class="slot empty" data-key="s3"></div>
-        <div class="slot empty" data-key="s4"></div>
-        <div class="slot empty" data-key="s5"></div>
-        <div class="slot empty" data-key="s6"></div>
-        <div class="slot empty" data-key="s7"></div>
-        <div class="slot empty" data-key="s8"></div>
+        <button type="button" class="slot empty is-clickable" data-key="s1" data-node-type="start" aria-label="Schritt 1"></button>
+        <button type="button" class="slot empty is-clickable" data-key="s2" data-node-type="process" aria-label="Schritt s2"></button>
+        <button type="button" class="slot empty is-clickable is-decision" data-key="s3" data-node-type="decision" aria-label="Schritt s3"></button>
+        <button type="button" class="slot empty is-clickable" data-key="s4" data-node-type="process" aria-label="Schritt s4"></button>
+        <button type="button" class="slot empty is-clickable" data-key="s5" data-node-type="action" aria-label="Schritt s5"></button>
+        <button type="button" class="slot empty is-clickable" data-key="s6" data-node-type="action" aria-label="Schritt s6"></button>
+        <button type="button" class="slot empty is-clickable" data-key="s7" data-node-type="process" aria-label="Schritt s7"></button>
+        <button type="button" class="slot empty is-clickable is-decision" data-key="s8" data-node-type="decision" aria-label="Schritt s8"></button>
 
-        <div class="slot empty" data-key="s9"></div>
-        <div class="slot empty" data-key="s10"></div>
-        <div class="slot empty" data-key="s11"></div>
+        <button type="button" class="slot empty is-clickable" data-key="s9" data-node-type="outcome" aria-label="Schritt s9"></button>
+        <button type="button" class="slot empty is-clickable" data-key="s10" data-node-type="action" aria-label="Schritt s10"></button>
+        <button type="button" class="slot empty is-clickable" data-key="s11" data-node-type="outcome" aria-label="Schritt s11"></button>
 
-        <div class="slot empty" data-key="s12"></div>
-        <div class="slot empty" data-key="s13"></div>
-        <div class="slot empty" data-key="s14"></div>
-        <div class="slot empty" data-key="s15"></div>
+        <button type="button" class="slot empty is-clickable" data-key="s12" data-node-type="action" aria-label="Schritt s12"></button>
+        <button type="button" class="slot empty is-clickable" data-key="s13" data-node-type="process" aria-label="Schritt s13"></button>
+        <button type="button" class="slot empty is-clickable" data-key="s14" data-node-type="outcome" aria-label="Schritt s14"></button>
+        <button type="button" class="slot empty is-clickable" data-key="s15" data-node-type="restart" aria-label="Schritt s15"></button>
 
-        <div class="slot empty" data-key="side1"></div>
+        <button type="button" class="slot empty is-clickable" data-key="side1" data-node-type="side-action" aria-label="Schritt side1"></button>
       </div>
     </section>
 
@@ -530,6 +558,32 @@
 
     let selectedCardId = null;
     let placed = {}; // slotKey -> cardId
+
+    const GAME_MAP = {
+      nodes: slots.map((slot) => ({
+        key: slot.dataset.key,
+        type: slot.dataset.nodeType || "process"
+      })),
+      edges: connectors.map((connector) => ({
+        from: null,
+        to: (connector.dataset.activeFor || "")
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean)
+      })),
+      // Platzhalter für spätere Lernspiel-Logik: richtige/falsche Entscheidungen je Knoten.
+      branches: {}
+    };
+
+    window.flowGameMap = GAME_MAP;
+
+    function handleNodeClick(slot) {
+      const nodeType = slot.dataset.nodeType || "process";
+      const nodeLabel = slot.textContent?.trim() || `Schritt ${slot.dataset.key}`;
+      const typeLabel = nodeType === "decision" ? "Entscheidung" : "Station";
+
+      statusEl.textContent = `Gewählt: ${typeLabel} „${nodeLabel}“ (${slot.dataset.key}).`;
+    }
 
     function shuffle(list) {
       const copy = [...list];
@@ -756,6 +810,8 @@
       });
 
       slot.addEventListener("click", () => {
+        handleNodeClick(slot);
+
         if (selectedCardId) {
           moveCardToSlot(slot, selectedCardId);
           return;
