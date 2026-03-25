@@ -163,6 +163,13 @@
       border-color: #f0d28c;
     }
 
+    #soundToggle {
+      background: linear-gradient(140deg, #e8fff5, #d7f8ea);
+      color: #1d6a4c;
+      border-color: #aadfc6;
+      min-width: 138px;
+    }
+
     .progress {
       margin-left: auto;
       border: 1px solid #cde0ef;
@@ -424,6 +431,89 @@
     /* Nebenpfad von Streik */
     .slot[data-key="side1"] { left: 880px; top: 430px; width: 240px; }
 
+    .info-btn {
+      position: absolute;
+      z-index: 5;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid #9bc5de;
+      background: linear-gradient(160deg, #ffffff, #e8f5ff);
+      color: #2f6a95;
+      font-size: 0.9rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      left: var(--x);
+      top: var(--y);
+      padding: 0;
+    }
+
+    .info-popup,
+    .final-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(16, 38, 56, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 40;
+      padding: 16px;
+    }
+
+    .info-popup.open,
+    .final-overlay.open {
+      display: flex;
+    }
+
+    .info-card,
+    .final-card {
+      width: min(560px, 100%);
+      background: #fff;
+      border: 1px solid #c9dfed;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 20px 36px rgba(23, 58, 84, 0.25);
+    }
+
+    .info-card h3,
+    .final-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.08rem;
+    }
+
+    .info-card p,
+    .final-card p {
+      margin: 0;
+      line-height: 1.48;
+      color: #2c4f6e;
+    }
+
+    .popup-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .assist-actions {
+      margin-top: 10px;
+      display: none;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .assist-actions.open {
+      display: flex;
+    }
+
+    .assist-actions button {
+      box-shadow: none;
+      padding: 8px 12px;
+      font-size: 0.88rem;
+    }
+
     .cards {
       margin-top: 12px;
       display: grid;
@@ -511,6 +601,7 @@
           <button id="checkBtn">Prüfen</button>
           <button id="resetBtn">Neu starten</button>
           <button id="solveBtn">Lösung anzeigen</button>
+          <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
           <span id="progress" class="progress">0 / 16 richtig</span>
         </div>
         <div class="step-indicator" id="stepIndicator">Schritt 1 von 16</div>
@@ -519,6 +610,10 @@
         </div>
         <div id="status" class="status">Wähle eine Karte aus und setze sie in ein Feld.</div>
         <div id="feedback" class="feedback">Feedback erscheint hier nach dem Einsetzen oder Prüfen.</div>
+        <div id="assistActions" class="assist-actions" aria-live="polite">
+          <button id="assistRestartBtn" type="button">Neu starten</button>
+          <button id="assistContinueBtn" type="button">Lösung anzeigen & weitermachen</button>
+        </div>
       </div>
     </section>
 
@@ -582,6 +677,11 @@
         <button type="button" class="slot empty is-clickable" data-key="s15" data-node-type="restart" aria-label="Schritt s15"></button>
 
         <button type="button" class="slot empty is-clickable" data-key="side1" data-node-type="side-action" aria-label="Schritt side1"></button>
+
+        <button type="button" class="info-btn" style="--x: 738px; --y: 120px;" data-info-key="tarifverhandlungen" aria-label="Warum ist das wichtig? Tarifverhandlungen">i</button>
+        <button type="button" class="info-btn" style="--x: 738px; --y: 660px;" data-info-key="ergebnis-erzielt" aria-label="Warum ist das wichtig? Ergebnis erzielt">i</button>
+        <button type="button" class="info-btn" style="--x: 738px; --y: 360px;" data-info-key="streik" aria-label="Warum ist das wichtig? Warnstreik oder Streik">i</button>
+        <button type="button" class="info-btn" style="--x: 900px; --y: 980px;" data-info-key="kein-ergebnis" aria-label="Warum ist das wichtig? Kein Ergebnis erzielt">i</button>
       </div>
     </section>
 
@@ -596,6 +696,26 @@
     <p>Konzept und Umsetzung durch Mohamed Hachelaf</p>
     <p>Erstellt im Auftrag von Christine Schmück</p>
   </footer>
+
+  <div id="infoPopup" class="info-popup" aria-hidden="true">
+    <div class="info-card">
+      <h3 id="infoTitle">Warum ist das wichtig?</h3>
+      <p id="infoText"></p>
+      <div class="popup-actions">
+        <button id="closeInfoBtn" type="button">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="finalOverlay" class="final-overlay" aria-hidden="true">
+    <div class="final-card">
+      <h3>Spiel erfolgreich abgeschlossen</h3>
+      <p id="finalStats">Du hast das Spiel abgeschlossen.</p>
+      <div class="popup-actions">
+        <button id="finalRestartBtn" type="button">Neu starten</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     // Alle Karten für die aktuell sichtbaren Felder im Diagramm
@@ -645,10 +765,22 @@
     const progressEl = document.getElementById("progress");
     const progressFillEl = document.getElementById("progressFill");
     const stepIndicatorEl = document.getElementById("stepIndicator");
+    const soundToggleEl = document.getElementById("soundToggle");
+    const assistActionsEl = document.getElementById("assistActions");
+    const infoPopupEl = document.getElementById("infoPopup");
+    const infoTextEl = document.getElementById("infoText");
+    const finalOverlayEl = document.getElementById("finalOverlay");
+    const finalStatsEl = document.getElementById("finalStats");
     const connectors = [...document.querySelectorAll(".connector")];
 
     let selectedCardId = null;
     let placed = {}; // slotKey -> cardId
+    let wrongAttempts = 0;
+    let rightDecisions = 0;
+    let wrongDecisions = 0;
+    let didComplete = false;
+    const MAX_WRONG_ATTEMPTS = 3;
+    let soundEnabled = true;
     const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15", "side1"];
     const EXPLANATIONS = {
       s1: "Mit der Kündigung des Tarifvertrags startet die neue Tarifrunde.",
@@ -686,6 +818,44 @@
     };
 
     window.flowGameMap = GAME_MAP;
+
+    const WHY_IMPORTANT_TEXT = {
+      tarifverhandlungen: "Tarifverhandlungen sind wichtig, weil damit bessere Löhne und Arbeitsbedingungen erreicht werden können als nur durch die gesetzlichen Mindeststandards.",
+      "kein-ergebnis": "Das ist wichtig, weil ohne Einigung der Konflikt offen bleibt und weitere Schritte nötig werden, damit die Forderungen der Beschäftigten nicht einfach ins Leere laufen.",
+      streik: "Das ist wichtig, weil ein Streik das letzte und legitime Mittel ist, um bei festgefahrenen Verhandlungen Druck aufzubauen und auf Augenhöhe weiterzuverhandeln.",
+      "ergebnis-erzielt": "Das ist wichtig, weil ein Tarifergebnis konkrete Verbesserungen bei Entgelt, Arbeitszeit oder anderen Arbeitsbedingungen festschreiben kann."
+    };
+
+    function playTone({ frequency = 440, duration = 0.08, type = "sine", volume = 0.04 }) {
+      if (!soundEnabled) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const context = playTone.context || new AudioCtx();
+      playTone.context = context;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = type;
+      oscillator.frequency.value = frequency;
+      gain.gain.value = volume;
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + duration);
+      oscillator.stop(context.currentTime + duration);
+    }
+
+    function playClickSound() {
+      playTone({ frequency: 520, duration: 0.05, type: "triangle", volume: 0.03 });
+    }
+
+    function playCorrectSound() {
+      playTone({ frequency: 680, duration: 0.08, type: "triangle", volume: 0.045 });
+      setTimeout(() => playTone({ frequency: 860, duration: 0.09, type: "triangle", volume: 0.04 }), 60);
+    }
+
+    function playWrongSound() {
+      playTone({ frequency: 260, duration: 0.12, type: "sawtooth", volume: 0.035 });
+    }
 
     function handleNodeClick(slot) {
       const nodeType = slot.dataset.nodeType || "process";
@@ -786,10 +956,48 @@
       feedbackEl.textContent = message;
     }
 
+    function openInfoPopup(infoKey) {
+      const text = WHY_IMPORTANT_TEXT[infoKey];
+      if (!text) return;
+      infoTextEl.textContent = text;
+      infoPopupEl.classList.add("open");
+      infoPopupEl.setAttribute("aria-hidden", "false");
+    }
+
+    function closeInfoPopup() {
+      infoPopupEl.classList.remove("open");
+      infoPopupEl.setAttribute("aria-hidden", "true");
+    }
+
+    function getRating() {
+      if (wrongDecisions <= 2) return "Sehr gut";
+      if (wrongDecisions <= 5) return "Gut";
+      return "Nochmal versuchen";
+    }
+
+    function showCompletionOverlay() {
+      if (didComplete) return;
+      const allCorrect = STEP_ORDER.every((key) => placed[key] === SOLUTION[key]);
+      if (!allCorrect) return;
+      didComplete = true;
+      finalStatsEl.innerHTML = `Richtige Entscheidungen: <strong>${rightDecisions}</strong><br>Falsche Entscheidungen: <strong>${wrongDecisions}</strong><br>Bewertung: <strong>${getRating()}</strong>`;
+      finalOverlayEl.classList.add("open");
+      finalOverlayEl.setAttribute("aria-hidden", "false");
+    }
+
+    function showAssistActions() {
+      assistActionsEl.classList.add("open");
+    }
+
+    function hideAssistActions() {
+      assistActionsEl.classList.remove("open");
+    }
+
     function removeFromSlot(slot) {
       const key = slot.dataset.key;
       if (!placed[key]) return;
       const removed = getCardById(placed[key]);
+      playClickSound();
       delete placed[key];
       slot.classList.remove("correct", "wrong");
       setSlotText(slot);
@@ -806,6 +1014,7 @@
       const key = slot.dataset.key;
       const card = getCardById(cardId);
       if (!card) return;
+      playClickSound();
 
       // Karte ggf. aus altem Slot holen
       const oldKey = Object.keys(placed).find((slotKey) => placed[slotKey] === cardId);
@@ -828,19 +1037,41 @@
 
       if (SOLUTION[key] === card.id) {
         slot.classList.add("correct");
+        rightDecisions += 1;
+        playCorrectSound();
         setFeedbackState("positive", `✅ Richtig: „${card.label}“. ${EXPLANATIONS[key]}`);
       } else {
         slot.classList.add("wrong");
+        wrongDecisions += 1;
+        wrongAttempts += 1;
+        playWrongSound();
         const expectedCard = getCardById(SOLUTION[key]);
         const correctSlot = Object.keys(SOLUTION).find((slotKey) => SOLUTION[slotKey] === card.id);
         const hint = correctSlot ? `Diese Karte gehört eher zu Schritt „${correctSlot}“.` : "Prüfe Reihenfolge oder Zweig.";
-        setFeedbackState("negative", `❌ Nicht korrekt: Hier passt „${expectedCard.label}“. ${hint}`);
+        if (wrongAttempts >= MAX_WRONG_ATTEMPTS) {
+          setFeedbackState("negative", `❌ Fehlversuch-Limit erreicht (${MAX_WRONG_ATTEMPTS}). Richtige Lösung hier: „${expectedCard.label}“.`);
+          const expectedOldKey = Object.keys(placed).find((slotKey) => placed[slotKey] === expectedCard.id && slotKey !== key);
+          if (expectedOldKey) {
+            const expectedOldSlot = slots.find((element) => element.dataset.key === expectedOldKey);
+            delete placed[expectedOldKey];
+            expectedOldSlot.classList.remove("correct", "wrong");
+            setSlotText(expectedOldSlot);
+          }
+          placed[key] = expectedCard.id;
+          setSlotText(slot, expectedCard.label);
+          slot.classList.remove("wrong");
+          slot.classList.add("correct");
+          showAssistActions();
+        } else {
+          setFeedbackState("negative", `❌ Nicht korrekt (${wrongAttempts}/${MAX_WRONG_ATTEMPTS} Fehlversuche): Hier passt „${expectedCard.label}“. ${hint}`);
+        }
       }
 
       selectedCardId = null;
       renderCards();
       updateProgress();
       updateConnectors();
+      showCompletionOverlay();
     }
 
     function updateProgress() {
@@ -856,6 +1087,7 @@
       const solvedStepsInOrder = STEP_ORDER.findIndex((key) => placed[key] !== SOLUTION[key]);
       const currentStep = solvedStepsInOrder === -1 ? STEP_ORDER.length : solvedStepsInOrder + 1;
       stepIndicatorEl.textContent = `Schritt ${currentStep} von ${STEP_ORDER.length}`;
+      showCompletionOverlay();
     }
 
     function checkAll() {
@@ -894,6 +1126,10 @@
     function resetAll() {
       placed = {};
       selectedCardId = null;
+      wrongAttempts = 0;
+      rightDecisions = 0;
+      wrongDecisions = 0;
+      didComplete = false;
       deck = shuffle(CARD_ITEMS);
       slots.forEach((slot) => {
         slot.classList.remove("correct", "wrong", "drag-over");
@@ -901,6 +1137,9 @@
       });
       statusEl.textContent = "Zurückgesetzt. Alle Karten wurden neu gemischt.";
       setFeedbackState(null, "Starte neu und ordne die Begriffe im Diagramm.");
+      hideAssistActions();
+      finalOverlayEl.classList.remove("open");
+      finalOverlayEl.setAttribute("aria-hidden", "true");
       renderCards();
       updateProgress();
       updateConnectors();
@@ -917,11 +1156,14 @@
         slot.classList.add("correct");
       });
       selectedCardId = null;
+      didComplete = false;
       statusEl.textContent = "Lösung wird angezeigt.";
       setFeedbackState("positive", "Alle Felder wurden korrekt ausgefüllt.");
+      hideAssistActions();
       renderCards();
       updateProgress();
       updateConnectors();
+      showCompletionOverlay();
     }
 
     slots.forEach((slot) => {
@@ -949,13 +1191,59 @@
           removeFromSlot(slot);
           return;
         }
+        playClickSound();
         statusEl.textContent = "Bitte zuerst eine Karte auswählen.";
       });
     });
 
-    document.getElementById("checkBtn").addEventListener("click", checkAll);
-    document.getElementById("resetBtn").addEventListener("click", resetAll);
-    document.getElementById("solveBtn").addEventListener("click", solveAll);
+    document.querySelectorAll(".info-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        playClickSound();
+        openInfoPopup(button.dataset.infoKey);
+      });
+    });
+
+    document.getElementById("closeInfoBtn").addEventListener("click", () => {
+      playClickSound();
+      closeInfoPopup();
+    });
+
+    infoPopupEl.addEventListener("click", (event) => {
+      if (event.target === infoPopupEl) closeInfoPopup();
+    });
+
+    document.getElementById("checkBtn").addEventListener("click", () => {
+      playClickSound();
+      checkAll();
+    });
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      playClickSound();
+      resetAll();
+    });
+    document.getElementById("solveBtn").addEventListener("click", () => {
+      playClickSound();
+      solveAll();
+    });
+    document.getElementById("assistRestartBtn").addEventListener("click", () => {
+      playClickSound();
+      resetAll();
+    });
+    document.getElementById("assistContinueBtn").addEventListener("click", () => {
+      playClickSound();
+      solveAll();
+      statusEl.textContent = "Du kannst den Ablauf jetzt korrekt nachvollziehen und neu starten.";
+    });
+    document.getElementById("finalRestartBtn").addEventListener("click", () => {
+      playClickSound();
+      resetAll();
+    });
+
+    soundToggleEl.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      soundToggleEl.textContent = soundEnabled ? "🔊 Ton an" : "🔇 Ton aus";
+      soundToggleEl.setAttribute("aria-pressed", String(soundEnabled));
+      if (soundEnabled) playClickSound();
+    });
 
     // Initialzustand
     slots.forEach((slot) => setSlotText(slot));
