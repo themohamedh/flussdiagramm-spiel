@@ -8,24 +8,25 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
     :root {
-      --bg-soft-1: #ecfbfb;
-      --bg-soft-2: #eff6ff;
-      --bg-soft-3: #f4fdfa;
-      --panel: rgba(255, 255, 255, 0.84);
-      --panel-border: #d5e8eb;
-      --text: #173049;
-      --muted: #55728f;
-      --line: #88a6c2;
-      --line-soft: #c8d9e8;
-      --line-active: #4d9cff;
-      --line-correct: #2eb67d;
-      --accent: #2f81ff;
-      --accent-soft: #e8f2ff;
-      --ok: #2a9b6d;
-      --ok-bg: #e8faf2;
-      --bad: #d45757;
-      --bad-bg: #fff1f1;
-      --slot: #9ab8ca;
+      --bg-soft-1: #f4f8fc;
+      --bg-soft-2: #eef4ff;
+      --bg-soft-3: #f6f8fc;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-border: #cfdceb;
+      --text: #1e293b;
+      --muted: #4b5f79;
+      --line: #7f9ebf;
+      --line-soft: #c9d8eb;
+      --line-active: #1e3a8a;
+      --line-correct: #16a34a;
+      --accent: #1e3a8a;
+      --accent-soft: #e9efff;
+      --accent-warm: #f59e0b;
+      --ok: #16a34a;
+      --ok-bg: #ecfdf3;
+      --bad: #dc2626;
+      --bad-bg: #fef2f2;
+      --slot: #8da7c4;
       --shadow-panel: 0 18px 38px rgba(53, 91, 120, 0.13);
       --shadow-card: 0 8px 20px rgba(20, 60, 90, 0.12);
       --radius-lg: 20px;
@@ -39,10 +40,7 @@
       margin: 0;
       font-family: "Inter", "Segoe UI", Arial, sans-serif;
       color: var(--text);
-      background-image: url("./C9BD4168-EDB7-44C9-8257-97976AA34FB8.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
+      background-color: var(--bg-soft-1);
       min-height: 100vh;
       position: relative;
       isolation: isolate;
@@ -54,9 +52,9 @@
       inset: 0;
       z-index: -1;
       background:
-        radial-gradient(circle at 15% 20%, rgba(137, 238, 224, 0.22), transparent 48%),
-        radial-gradient(circle at 80% 18%, rgba(160, 202, 255, 0.2), transparent 44%),
-        rgba(250, 253, 255, 0.68);
+        radial-gradient(circle at 15% 20%, rgba(30, 58, 138, 0.08), transparent 48%),
+        radial-gradient(circle at 80% 18%, rgba(245, 158, 11, 0.09), transparent 44%),
+        linear-gradient(180deg, #f7fbff 0%, #f4f8fc 100%);
       pointer-events: none;
     }
 
@@ -82,6 +80,17 @@
       padding: clamp(14px, 2.1vw, 22px);
     }
 
+    .hero-panel {
+      background: linear-gradient(128deg, #1e3a8a, #234aa6 58%, #325cc0);
+      border-color: rgba(255, 255, 255, 0.28);
+      color: #fff;
+      box-shadow: 0 16px 34px rgba(30, 58, 138, 0.3);
+    }
+
+    .hero-panel .subtitle {
+      color: rgba(255, 255, 255, 0.88);
+    }
+
     h1 {
       margin: 0 0 8px;
       font-size: clamp(1.25rem, 2.7vw, 1.9rem);
@@ -92,6 +101,7 @@
       margin: 0;
       font-size: clamp(1rem, 1.6vw, 1.18rem);
       letter-spacing: -0.01em;
+      color: var(--accent);
     }
 
     .subtitle {
@@ -111,7 +121,7 @@
       border: 1px dashed #b9d5e4;
       border-radius: var(--radius-md);
       padding: 14px;
-      background: linear-gradient(160deg, #f8fdff, #f1fbff);
+      background: linear-gradient(160deg, #ffffff, #f4f8ff);
       display: grid;
       gap: 10px;
       align-content: start;
@@ -159,8 +169,8 @@
     }
 
     .mode-option.active {
-      border-color: #5f9ee4;
-      box-shadow: 0 0 0 3px rgba(47, 129, 255, 0.18), 0 8px 16px rgba(53, 93, 130, 0.14);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.18), 0 8px 16px rgba(53, 93, 130, 0.14);
       transform: translateY(-1px);
     }
 
@@ -184,7 +194,7 @@
     button:active { transform: translateY(0); }
 
     #checkBtn {
-      background: linear-gradient(140deg, #3d93ff, #2b79eb);
+      background: linear-gradient(140deg, #2144a3, #1e3a8a);
       color: #fff;
     }
 
@@ -195,9 +205,9 @@
     }
 
     #solveBtn {
-      background: linear-gradient(140deg, #fff4cc, #ffe59f);
-      color: #6e5612;
-      border-color: #f0d28c;
+      background: linear-gradient(140deg, #ffd784, #f59e0b);
+      color: #5f4206;
+      border-color: #d88b09;
     }
 
     #solveBtn:disabled {
@@ -225,12 +235,12 @@
 
     .progress {
       margin-left: auto;
-      border: 1px solid #cde0ef;
-      background: linear-gradient(130deg, #f1f8ff, #eaf4ff);
+      border: 1px solid #b8cbeb;
+      background: linear-gradient(130deg, #e8f0ff, #dde8ff);
       border-radius: 999px;
       padding: 8px 14px;
-      font-weight: 700;
-      color: #215277;
+      font-weight: 800;
+      color: #1e3a8a;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
     }
 
@@ -248,14 +258,14 @@
       width: 0;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(120deg, #46bc86, #2d9e71);
+      background: linear-gradient(120deg, #22c55e, #16a34a);
       transition: width .35s ease;
     }
 
     .step-indicator {
-      color: #2f6085;
-      font-weight: 700;
-      font-size: 0.92rem;
+      color: #1e3a8a;
+      font-weight: 800;
+      font-size: 0.95rem;
       margin-bottom: 6px;
     }
 
@@ -275,12 +285,12 @@
 
     .feedback {
       margin-top: 10px;
-      border-left: 4px solid #99bdda;
-      background: linear-gradient(160deg, #f5fbff, #edf7ff);
+      border-left: 4px solid #7c96c9;
+      background: linear-gradient(160deg, #f4f8ff, #ebf2ff);
       border-radius: 10px;
       padding: 11px 13px;
       min-height: 52px;
-      color: #2d4f70;
+      color: #1f3e66;
       line-height: 1.45;
       transition: background .25s ease, border-color .25s ease, transform .2s ease;
       transform-origin: top;
@@ -298,12 +308,12 @@
 
     .feedback.is-positive {
       border-left-color: var(--ok);
-      background: linear-gradient(160deg, #f1fff8, #e8faf2);
+      background: linear-gradient(160deg, #f2fdf5, #e9faef);
     }
 
     .feedback.is-negative {
       border-left-color: var(--bad);
-      background: linear-gradient(160deg, #fff7f7, #fff1f1);
+      background: linear-gradient(160deg, #fff6f6, #fef0f0);
     }
 
     .board-wrap { overflow: auto; }
@@ -315,7 +325,7 @@
       margin: 0 auto;
       border: 1px solid #d5e8ef;
       border-radius: 18px;
-      background: linear-gradient(165deg, #fbffff 0%, #f4fbff 65%, #f2fbf8 100%);
+      background: linear-gradient(165deg, #fefefe 0%, #f4f8ff 65%, #f0f6ff 100%);
       transition: filter .32s ease, transform .32s ease;
     }
 
@@ -401,8 +411,8 @@
       position: absolute;
       z-index: 3;
       border: 1px solid #c8e0eb;
-      background: rgba(241, 250, 255, 0.95);
-      color: #2f5e83;
+      background: rgba(235, 243, 255, 0.96);
+      color: #1e3a8a;
       border-radius: 999px;
       padding: 4px 10px;
       font-size: 0.78rem;
@@ -418,7 +428,7 @@
       min-height: 64px;
       border: 2px dashed var(--slot);
       border-radius: var(--radius-sm);
-      background: linear-gradient(165deg, #ffffff, #f3fbff);
+      background: linear-gradient(165deg, #ffffff, #f4f7fe);
       box-shadow: var(--shadow-card);
       padding: 11px 12px;
       display: flex;
@@ -464,18 +474,18 @@
     }
 
     .slot.group-negotiation {
-      background: linear-gradient(165deg, #ffffff, #e8f3ff);
+      background: linear-gradient(165deg, #ffffff, #eaf0ff);
       border-color: #90b7dc;
     }
 
     .slot.group-action {
-      background: linear-gradient(165deg, #ffffff, #e9f8f2);
-      border-color: #8fbfa9;
+      background: linear-gradient(165deg, #ffffff, #edf9f3);
+      border-color: #8ebda6;
     }
 
     .slot.group-result {
-      background: linear-gradient(165deg, #ffffff, #f5f0ff);
-      border-color: #b7a4d7;
+      background: linear-gradient(165deg, #ffffff, #fff7eb);
+      border-color: #e2bb76;
     }
 
     .slot.empty::before {
@@ -649,9 +659,9 @@
       border: 1px solid #c8ddee;
       border-radius: 13px;
       padding: 12px;
-      background: linear-gradient(168deg, #ffffff, #eef7ff);
+      background: linear-gradient(168deg, #ffffff, #f0f5ff);
       font-weight: 700;
-      color: #214d72;
+      color: #1f3f6e;
       text-align: center;
       user-select: none;
       cursor: grab;
@@ -667,14 +677,14 @@
 
     .card:hover {
       transform: translateY(-2px);
-      border-color: #8bb6e8;
+      border-color: #7f9fd6;
       box-shadow: 0 12px 22px rgba(60, 95, 126, 0.2);
     }
 
     .card.selected {
       border-color: var(--accent);
-      background: linear-gradient(165deg, #f3f9ff, #eaf3ff);
-      box-shadow: 0 0 0 4px rgba(47, 129, 255, 0.22), 0 12px 22px rgba(42, 91, 137, 0.23);
+      background: linear-gradient(165deg, #f2f6ff, #e7efff);
+      box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.22), 0 12px 22px rgba(42, 91, 137, 0.23);
     }
 
     .card.used { opacity: 0.45; cursor: not-allowed; filter: grayscale(.75); text-decoration: line-through; }
@@ -817,7 +827,7 @@
 </head>
 <body>
   <main class="app">
-    <section class="panel">
+    <section class="panel hero-panel">
       <h1>Flussdiagramm-Spiel: Tarifrunde und Streik</h1>
       <p class="subtitle">Ordne alle Begriffskarten den passenden Feldern im Diagramm zu. Du kannst ziehen oder Karte + Feld anklicken.</p>
     </section>
