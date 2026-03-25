@@ -127,6 +127,43 @@
       margin-bottom: 10px;
     }
 
+    .mode-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .mode-option {
+      border: 1px solid #bfd5e8;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: linear-gradient(160deg, #f7fbff, #edf5ff);
+      color: #284f72;
+      min-width: 220px;
+      cursor: pointer;
+      transition: border-color .2s ease, box-shadow .2s ease, transform .18s ease;
+    }
+
+    .mode-option strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 0.94rem;
+    }
+
+    .mode-option span {
+      font-size: 0.8rem;
+      color: #55728f;
+      line-height: 1.35;
+      display: block;
+    }
+
+    .mode-option.active {
+      border-color: #5f9ee4;
+      box-shadow: 0 0 0 3px rgba(47, 129, 255, 0.18), 0 8px 16px rgba(53, 93, 130, 0.14);
+      transform: translateY(-1px);
+    }
+
     button {
       border: 1px solid transparent;
       border-radius: 12px;
@@ -426,6 +463,21 @@
       border-color: #88b0cc;
     }
 
+    .slot.group-negotiation {
+      background: linear-gradient(165deg, #ffffff, #e8f3ff);
+      border-color: #90b7dc;
+    }
+
+    .slot.group-action {
+      background: linear-gradient(165deg, #ffffff, #e9f8f2);
+      border-color: #8fbfa9;
+    }
+
+    .slot.group-result {
+      background: linear-gradient(165deg, #ffffff, #f5f0ff);
+      border-color: #b7a4d7;
+    }
+
     .slot.empty::before {
       content: "Begriff einsetzen";
       font-size: 0.86rem;
@@ -654,6 +706,17 @@
       margin-top: 4px;
     }
 
+    .learning-summary {
+      margin-top: 12px;
+      border: 1px solid #d0e2f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: linear-gradient(160deg, #f7fcff, #edf5ff);
+      color: #2d4f70;
+      line-height: 1.45;
+      font-size: 0.9rem;
+    }
+
     .stats-visual {
       margin-top: 12px;
       display: grid;
@@ -769,6 +832,16 @@
       </div>
 
       <div>
+        <div class="mode-selector" role="group" aria-label="Spielmodus auswählen">
+          <button type="button" class="mode-option active" data-mode="learn" id="modeLearnBtn">
+            <strong>Lernmodus</strong>
+            <span>Direktes Feedback mit kurzer Begründung bei Fehlern.</span>
+          </button>
+          <button type="button" class="mode-option" data-mode="exam" id="modeExamBtn">
+            <strong>Prüfungsmodus</strong>
+            <span>Während des Spiels ohne Hilfetexte, Auswertung erst am Ende.</span>
+          </button>
+        </div>
         <div class="controls">
           <button id="checkBtn">Prüfen</button>
           <button id="resetBtn">Neu starten</button>
@@ -831,25 +904,25 @@
 
         <div class="legend" style="left:520px;top:675px;">Verzweigung ab 2. Verhandlungsrunde</div>
         <div class="legend" style="left:891px;top:400px;">Nebenpfad</div>
-        <button type="button" class="slot empty is-clickable" data-key="s1" data-node-type="start" aria-label="Schritt 1"></button>
-        <button type="button" class="slot empty is-clickable" data-key="s2" data-node-type="process" aria-label="Schritt s2"></button>
-        <button type="button" class="slot empty is-clickable is-decision" data-key="s3" data-node-type="decision" aria-label="Schritt s3"></button>
-        <button type="button" class="slot empty is-clickable" data-key="s4" data-node-type="process" aria-label="Schritt s4"></button>
-        <button type="button" class="slot empty is-clickable" data-key="s5" data-node-type="action" aria-label="Schritt s5"></button>
-        <button type="button" class="slot empty is-clickable" data-key="s6" data-node-type="action" aria-label="Schritt s6"></button>
-        <button type="button" class="slot empty is-clickable" data-key="s7" data-node-type="process" aria-label="Schritt s7"></button>
-        <button type="button" class="slot empty is-clickable is-decision" data-key="s8" data-node-type="decision" aria-label="Schritt s8"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s1" data-node-type="start" aria-label="Schritt 1"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s2" data-node-type="process" aria-label="Schritt s2"></button>
+        <button type="button" class="slot empty is-clickable is-decision group-negotiation" data-key="s3" data-node-type="decision" aria-label="Schritt s3"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s4" data-node-type="process" aria-label="Schritt s4"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s5" data-node-type="action" aria-label="Schritt s5"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s6" data-node-type="action" aria-label="Schritt s6"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s7" data-node-type="process" aria-label="Schritt s7"></button>
+        <button type="button" class="slot empty is-clickable is-decision group-negotiation" data-key="s8" data-node-type="decision" aria-label="Schritt s8"></button>
 
-        <button type="button" class="slot empty is-clickable" data-key="s9" data-node-type="outcome" aria-label="Schritt s9"></button>
-        <button type="button" class="slot empty is-clickable" data-key="s10" data-node-type="action" aria-label="Schritt s10"></button>
-        <button type="button" class="slot empty is-clickable" data-key="s11" data-node-type="outcome" aria-label="Schritt s11"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s9" data-node-type="outcome" aria-label="Schritt s9"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s10" data-node-type="action" aria-label="Schritt s10"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s11" data-node-type="outcome" aria-label="Schritt s11"></button>
 
-        <button type="button" class="slot empty is-clickable" data-key="s12" data-node-type="action" aria-label="Schritt s12"></button>
-        <button type="button" class="slot empty is-clickable" data-key="s13" data-node-type="process" aria-label="Schritt s13"></button>
-        <button type="button" class="slot empty is-clickable" data-key="s14" data-node-type="outcome" aria-label="Schritt s14"></button>
-        <button type="button" class="slot empty is-clickable" data-key="s15" data-node-type="restart" aria-label="Schritt s15"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s12" data-node-type="action" aria-label="Schritt s12"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s13" data-node-type="process" aria-label="Schritt s13"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s14" data-node-type="outcome" aria-label="Schritt s14"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s15" data-node-type="restart" aria-label="Schritt s15"></button>
 
-        <button type="button" class="slot empty is-clickable" data-key="side1" data-node-type="side-action" aria-label="Schritt side1"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="side1" data-node-type="side-action" aria-label="Schritt side1"></button>
 
         <button type="button" class="info-btn" style="--x: 738px; --y: 120px;" data-info-key="tarifverhandlungen" aria-label="Warum ist das wichtig? Tarifverhandlungen">i</button>
         <button type="button" class="info-btn" style="--x: 738px; --y: 660px;" data-info-key="ergebnis-erzielt" aria-label="Warum ist das wichtig? Ergebnis erzielt">i</button>
@@ -884,6 +957,7 @@
     <div class="final-card">
       <h3>Spiel erfolgreich abgeschlossen</h3>
       <p id="finalStats">Du hast das Spiel abgeschlossen.</p>
+      <div id="learningSummary" class="learning-summary"></div>
       <div class="final-stats">
         <div class="stat-chip"><div class="value" id="statRight">0</div><div class="label">Richtige Entscheidungen</div></div>
         <div class="stat-chip"><div class="value" id="statWrong">0</div><div class="label">Falsche Entscheidungen</div></div>
@@ -948,6 +1022,7 @@
     const cardsEl = document.getElementById("cards");
     const statusEl = document.getElementById("status");
     const feedbackEl = document.getElementById("feedback");
+    const learningSummaryEl = document.getElementById("learningSummary");
     const progressEl = document.getElementById("progress");
     const progressFillEl = document.getElementById("progressFill");
     const stepIndicatorEl = document.getElementById("stepIndicator");
@@ -970,6 +1045,7 @@
     const barRightLabelEl = document.getElementById("barRightLabel");
     const barWrongLabelEl = document.getElementById("barWrongLabel");
     const pieStatsEl = document.getElementById("pieStats");
+    const modeButtons = [...document.querySelectorAll(".mode-option")];
     const connectors = [...document.querySelectorAll(".connector")];
     const infoButtons = [...document.querySelectorAll(".info-btn")];
     const legends = [...document.querySelectorAll(".legend")];
@@ -979,29 +1055,79 @@
     let wrongAttempts = 0;
     let rightDecisions = 0;
     let wrongDecisions = 0;
+    let mistakeSlots = new Set();
     let totalClicks = 0;
     let gameStartTimestamp = Date.now();
     let didComplete = false;
     const MAX_WRONG_ATTEMPTS = 3;
     let soundEnabled = true;
+    let currentMode = "learn";
     const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15", "side1"];
-    const EXPLANATIONS = {
-      s1: "Mit der Kündigung des Tarifvertrags startet die neue Tarifrunde.",
-      s2: "In der ersten Verhandlungsrunde werden die Forderungen vorgestellt.",
-      s3: "Bleibt eine Einigung aus, geht der Prozess in die nächste Eskalationsstufe.",
-      s4: "Nach Ende der Friedenspflicht sind Arbeitskampfmaßnahmen erlaubt.",
-      s5: "Der Streik ist ein zentrales Druckmittel der Beschäftigten.",
-      s6: "Aktionen begleiten und verstärken die Mobilisierung im Konflikt.",
-      s7: "Die Tarifrunde läuft mit weiteren Aktivitäten weiter.",
-      s8: "In der zweiten Runde entscheidet sich, ob ein Ergebnis möglich ist.",
-      s9: "Ein Ergebnis beendet den Konfliktpfad auf dem linken Ast.",
-      s10: "Die Urabstimmung legitimiert weitere Arbeitskampfmaßnahmen.",
-      s11: "Mit dem Abschluss ist der Tarifkonflikt beendet.",
-      s12: "Schlichtung ist ein strukturierter Versuch zur Einigung.",
-      s13: "Eine neue Verhandlungsrunde führt zurück in den Prozess.",
-      s14: "Ohne Ergebnis ist ein weiterer Anlauf notwendig.",
-      s15: "Der Neustart führt in den Zyklus zurück.",
-      side1: "Als Reaktion auf Streik kann der Arbeitgeber aussperren."
+    const SLOT_HINTS = {
+      s1: {
+        right: "Mit der Kündigung des Tarifvertrags startet die neue Tarifrunde.",
+        wrong: "Dieser Schritt steht am Anfang, weil zuerst der alte Tarifvertrag gekündigt wird."
+      },
+      s2: {
+        right: "In der ersten Verhandlungsrunde werden die Forderungen vorgestellt.",
+        wrong: "Die erste Verhandlungsrunde folgt direkt nach der Kündigung des Tarifvertrags."
+      },
+      s3: {
+        right: "Bleibt eine Einigung aus, geht der Prozess in die nächste Eskalationsstufe.",
+        wrong: "Diese Karte passt hier nur, wenn in der ersten Runde noch keine Einigung erreicht wurde."
+      },
+      s4: {
+        right: "Nach Ende der Friedenspflicht sind Arbeitskampfmaßnahmen erlaubt.",
+        wrong: "Erst wenn die Friedenspflicht endet, sind Warnstreik oder Streik rechtlich möglich."
+      },
+      s5: {
+        right: "Der Streik ist ein zentrales Druckmittel der Beschäftigten.",
+        wrong: "Ein Streik kommt erst nach gescheiterten Verhandlungen und dem Ende der Friedenspflicht."
+      },
+      s6: {
+        right: "Aktionen begleiten und verstärken die Mobilisierung im Konflikt.",
+        wrong: "Begleitende Aktionen kommen nach dem Streikbeginn, nicht davor."
+      },
+      s7: {
+        right: "Die Tarifrunde läuft mit weiteren Aktivitäten weiter.",
+        wrong: "Diese Station beschreibt den laufenden Verlauf der Tarifrunde nach den Aktionen."
+      },
+      s8: {
+        right: "In der zweiten Runde entscheidet sich, ob ein Ergebnis möglich ist.",
+        wrong: "Diese Karte gehört später, weil zunächst erneut verhandelt werden muss."
+      },
+      s9: {
+        right: "Ein Ergebnis beendet den Konfliktpfad auf dem linken Ast.",
+        wrong: "Hier steht das positive Ergebnis der Verhandlungen auf dem linken Ast."
+      },
+      s10: {
+        right: "Die Urabstimmung legitimiert weitere Arbeitskampfmaßnahmen.",
+        wrong: "Die Urabstimmung beginnt erst, wenn ein Abschluss noch nicht erreicht ist."
+      },
+      s11: {
+        right: "Mit dem Abschluss ist der Tarifkonflikt beendet.",
+        wrong: "Der Tarifvertrag steht am Ende dieses Zweigs, weil er den Konflikt abschließt."
+      },
+      s12: {
+        right: "Schlichtung ist ein strukturierter Versuch zur Einigung.",
+        wrong: "Schlichtung gehört in den rechten Zweig, wenn noch keine Einigung erzielt wurde."
+      },
+      s13: {
+        right: "Eine neue Verhandlungsrunde führt zurück in den Prozess.",
+        wrong: "Die neue Verhandlungsrunde kommt nach der Schlichtung."
+      },
+      s14: {
+        right: "Ohne Ergebnis ist ein weiterer Anlauf notwendig.",
+        wrong: "„Kein Ergebnis“ ist eine Folge nach der erneuten Verhandlung im rechten Zweig."
+      },
+      s15: {
+        right: "Der Neustart führt in den Zyklus zurück.",
+        wrong: "Der Neustart ist ein spätes Folgeschritt und führt zurück zur Verhandlungsrunde."
+      },
+      side1: {
+        right: "Als Reaktion auf Streik kann der Arbeitgeber aussperren.",
+        wrong: "Die Aussperrung ist ein Nebenpfad als Reaktion auf Streik."
+      }
     };
 
     const GAME_MAP = {
@@ -1227,13 +1353,26 @@
       return "Nochmal versuchen";
     }
 
+    function buildLearningSummary() {
+      const wrongPlacedSlots = [...mistakeSlots];
+      if (wrongDecisions === 0) {
+        return "Stark! Du hast alle Zuordnungen korrekt gelöst. Der Ablauf der Tarifrunde sitzt sicher.";
+      }
+      const focusText = wrongPlacedSlots.length
+        ? `Übe besonders diese Schritte erneut: ${wrongPlacedSlots.join(", ")}.`
+        : "Wiederhole vor allem die Reihenfolge zwischen Verhandlung, Arbeitskampf und Ergebnis.";
+      return `Du hattest ${wrongDecisions} fehlerhafte Zuordnungen bei ${rightDecisions} richtigen Zuordnungen. ${focusText} Beim nächsten Durchgang klappt es noch sicherer.`;
+    }
+
     function showCompletionOverlay() {
       if (didComplete) return;
       const allCorrect = STEP_ORDER.every((key) => placed[key] === SOLUTION[key]);
       if (!allCorrect) return;
       didComplete = true;
       updateFinalStats();
-      finalStatsEl.innerHTML = `Bewertung: <strong>${getRating()}</strong> · Trefferquote: <strong>${Math.round((rightDecisions / Math.max(1, rightDecisions + wrongDecisions)) * 100)}%</strong>`;
+      const ratingText = currentMode === "learn" ? getRating() : "Prüfungsmodus abgeschlossen";
+      finalStatsEl.innerHTML = `Bewertung: <strong>${ratingText}</strong> · Trefferquote: <strong>${Math.round((rightDecisions / Math.max(1, rightDecisions + wrongDecisions)) * 100)}%</strong>`;
+      learningSummaryEl.textContent = buildLearningSummary();
       finalOverlayEl.classList.add("open");
       finalOverlayEl.setAttribute("aria-hidden", "false");
     }
@@ -1262,6 +1401,21 @@
 
     function hideAssistActions() {
       assistActionsEl.classList.remove("open");
+    }
+
+    function setGameMode(mode) {
+      currentMode = mode === "exam" ? "exam" : "learn";
+      modeButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.mode === currentMode);
+      });
+      hideAssistActions();
+      if (currentMode === "learn") {
+        statusEl.textContent = "Lernmodus aktiv: Du erhältst direktes Feedback mit kurzer Erklärung.";
+        setFeedbackState(null, "Ordne die Karten zu. Bei Fehlern erhältst du eine kurze Begründung.");
+      } else {
+        statusEl.textContent = "Prüfungsmodus aktiv: Arbeite möglichst selbstständig ohne Hilfetexte.";
+        setFeedbackState(null, "Zuordnungen werden gesammelt. Die komplette Auswertung erscheint am Ende.");
+      }
     }
 
     function removeFromSlot(slot) {
@@ -1311,16 +1465,20 @@
         slot.classList.add("correct");
         rightDecisions += 1;
         playCorrectSound();
-        setFeedbackState("positive", `✅ Richtig: „${card.label}“. ${EXPLANATIONS[key]}`);
+        if (currentMode === "learn") {
+          setFeedbackState("positive", `✅ Richtig: „${card.label}“. ${SLOT_HINTS[key].right}`);
+        } else {
+          setFeedbackState(null, "Zuordnung gespeichert.");
+        }
       } else {
         slot.classList.add("wrong");
         wrongDecisions += 1;
         wrongAttempts += 1;
+        mistakeSlots.add(key);
         playWrongSound();
         const expectedCard = getCardById(SOLUTION[key]);
-        const correctSlot = Object.keys(SOLUTION).find((slotKey) => SOLUTION[slotKey] === card.id);
-        const hint = correctSlot ? `Diese Karte gehört eher zu Schritt „${correctSlot}“.` : "Prüfe Reihenfolge oder Zweig.";
-        if (wrongAttempts >= MAX_WRONG_ATTEMPTS) {
+        const shouldAutoAssist = currentMode === "learn" && wrongAttempts >= MAX_WRONG_ATTEMPTS;
+        if (shouldAutoAssist) {
           setFeedbackState("negative", `❌ Fehlversuch-Limit erreicht (${MAX_WRONG_ATTEMPTS}). Richtige Lösung hier: „${expectedCard.label}“.`);
           const expectedOldKey = Object.keys(placed).find((slotKey) => placed[slotKey] === expectedCard.id && slotKey !== key);
           if (expectedOldKey) {
@@ -1335,7 +1493,11 @@
           slot.classList.add("correct");
           showAssistActions();
         } else {
-          setFeedbackState("negative", `❌ Nicht korrekt (${wrongAttempts}/${MAX_WRONG_ATTEMPTS} Fehlversuche): Hier passt „${expectedCard.label}“. ${hint}`);
+          if (currentMode === "learn") {
+            setFeedbackState("negative", `❌ Nicht korrekt (${wrongAttempts}/${MAX_WRONG_ATTEMPTS} Fehlversuche): ${SLOT_HINTS[key].wrong}`);
+          } else {
+            setFeedbackState(null, "Zuordnung gespeichert.");
+          }
         }
       }
 
@@ -1404,8 +1566,12 @@
       });
 
       statusEl.textContent = `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`;
-      feedbackEl.classList.remove("is-positive", "is-negative");
-      feedbackEl.innerHTML = lines.join("<br>");
+      if (currentMode === "learn") {
+        feedbackEl.classList.remove("is-positive", "is-negative");
+        feedbackEl.innerHTML = lines.join("<br>");
+      } else {
+        setFeedbackState(null, "Prüfung gespeichert. Die vollständige Auswertung erscheint nach Abschluss.");
+      }
       updateProgress();
       renderCards();
       updateConnectors();
@@ -1418,6 +1584,7 @@
       wrongAttempts = 0;
       rightDecisions = 0;
       wrongDecisions = 0;
+      mistakeSlots = new Set();
       totalClicks = 0;
       gameStartTimestamp = Date.now();
       didComplete = false;
@@ -1427,7 +1594,11 @@
         setSlotText(slot);
       });
       statusEl.textContent = "Zurückgesetzt. Alle Karten wurden neu gemischt.";
-      setFeedbackState(null, "Starte neu und ordne die Begriffe im Diagramm.");
+      if (currentMode === "learn") {
+        setFeedbackState(null, "Starte neu und ordne die Begriffe im Diagramm.");
+      } else {
+        setFeedbackState(null, "Neues Spiel gestartet. Arbeite ohne Hilfetexte bis zur Endauswertung.");
+      }
       hideAssistActions();
       finalOverlayEl.classList.remove("open");
       finalOverlayEl.setAttribute("aria-hidden", "true");
@@ -1553,6 +1724,14 @@
       if (soundEnabled) playClickSound();
     });
 
+    modeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        registerInteraction();
+        playClickSound();
+        setGameMode(button.dataset.mode);
+      });
+    });
+
     // Initialzustand
     slots.forEach((slot) => setSlotText(slot));
     renderCards();
@@ -1560,6 +1739,7 @@
     updateConnectors();
     updateFocusMode();
     updateSolveButtonState();
+    setGameMode("learn");
   </script>
 </body>
 </html>
