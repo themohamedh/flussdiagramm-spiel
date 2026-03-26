@@ -144,26 +144,48 @@
     .reference-box p { margin: 0; color: #4d6b87; line-height: 1.45; }
 
     .controls {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .control-groups {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
       gap: 10px;
-      margin-bottom: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .action-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .meta-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .mode-selector {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     .mode-option {
-      border-radius: 18px;
-      padding: 13px 15px;
+      border-radius: 20px;
+      padding: 14px 16px;
       color: #2a4f75;
       min-width: 220px;
       text-align: left;
+      border: 1px solid #b8cee6;
+      background: linear-gradient(165deg, rgba(255,255,255,0.9), rgba(239,246,255,0.78));
+      box-shadow: 0 10px 18px rgba(35, 74, 110, 0.1);
     }
 
     .mode-option strong {
@@ -182,6 +204,7 @@
     .mode-option.active {
       border-color: rgba(68, 112, 181, 0.7);
       box-shadow: 0 0 0 3px rgba(79, 128, 204, 0.2), 0 13px 26px rgba(43, 90, 137, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+      background: linear-gradient(162deg, rgba(236,245,255,0.98), rgba(224,239,255,0.92));
     }
 
     button {
@@ -267,18 +290,18 @@
     }
 
     .progress {
-      margin-left: auto;
       border: 1px solid #b8cbeb;
-      background: linear-gradient(130deg, #e8f0ff, #dbe9ff);
+      background: linear-gradient(130deg, #edf4ff, #dceaff);
       border-radius: 999px;
-      padding: 8px 14px;
+      padding: 8px 14px 8px 13px;
       font-weight: 800;
       color: #1e3a8a;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 4px 10px rgba(30, 58, 138, 0.12);
+      letter-spacing: 0.01em;
     }
 
     .progress-track {
-      height: 10px;
+      height: 12px;
       border-radius: 999px;
       overflow: hidden;
       border: 1px solid #cfe3f2;
@@ -291,8 +314,9 @@
       width: 0;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(120deg, #22c55e, #16a34a);
-      transition: width .35s ease;
+      background: linear-gradient(100deg, #3bd67b, #1eb85f 55%, #15944a);
+      box-shadow: 0 0 18px rgba(40, 196, 101, 0.45);
+      transition: width .45s cubic-bezier(.2,.7,.2,1);
     }
 
     .step-indicator {
@@ -309,8 +333,9 @@
       min-height: 22px;
       background: var(--hint-bg);
       border: 1px solid #cde0ff;
-      border-radius: 10px;
-      padding: 8px 10px;
+      border-radius: 14px;
+      padding: 11px 12px;
+      transition: all .28s ease;
     }
 
     .solve-hint {
@@ -324,13 +349,14 @@
       margin-top: 10px;
       border-left: 4px solid var(--hint);
       background: linear-gradient(160deg, #f5f9ff, #ebf2ff);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 11px 13px;
       min-height: 52px;
       color: #184179;
       line-height: 1.45;
-      transition: background .25s ease, border-color .25s ease, transform .2s ease;
+      transition: background .25s ease, border-color .25s ease, transform .2s ease, opacity .24s ease;
       transform-origin: top;
+      animation: fadeLift .3s ease;
     }
 
     .feedback.flash {
@@ -341,6 +367,11 @@
       from { transform: scale(0.995); }
       50% { transform: scale(1.01); }
       to { transform: scale(1); }
+    }
+
+    @keyframes fadeLift {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .feedback.is-positive {
@@ -363,9 +394,15 @@
       height: 1220px;
       margin: 0 auto;
       border: 1px solid #d2e5f2;
-      border-radius: 18px;
+      border-radius: 28px;
       background: linear-gradient(165deg, #fafdff 0%, #eff6ff 64%, #e9f2ff 100%);
       transition: filter .32s ease, transform .32s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 22px 36px rgba(33,77,114,.12);
+    }
+
+    .board.is-dragging .slot:not(.is-valid-target):not(.drag-over) {
+      opacity: 0.45;
+      filter: grayscale(0.15);
     }
 
     .board.focus-active .slot,
@@ -533,12 +570,17 @@
       color: #7d95ad;
     }
 
+    .slot.is-valid-target {
+      border-color: #7ea8d2;
+      box-shadow: 0 0 0 3px rgba(75, 142, 219, 0.15), 0 12px 24px rgba(56, 97, 136, 0.15);
+    }
+
     .slot.drag-over,
     .slot.is-active {
       border-color: var(--accent);
       background: linear-gradient(170deg, rgba(238, 246, 255, 0.97), rgba(228, 242, 255, 0.9));
       box-shadow: 0 0 0 4px rgba(47, 129, 255, 0.18), 0 14px 28px rgba(56, 97, 136, 0.2);
-      transform: translateY(-1px);
+      transform: translateY(-2px) scale(1.01);
     }
 
     .slot.correct {
@@ -570,6 +612,24 @@
       50% { transform: translateX(2px); }
       75% { transform: translateX(-1px); }
       100% { transform: translateX(0); }
+    }
+
+    .slot.drop-ok {
+      animation: dropOk .35s ease;
+    }
+
+    .slot.drop-bad {
+      animation: dropBad .35s ease;
+    }
+
+    @keyframes dropOk {
+      0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(42, 155, 109, 0.45); }
+      100% { transform: scale(1); box-shadow: 0 0 0 10px rgba(42, 155, 109, 0); }
+    }
+
+    @keyframes dropBad {
+      0% { box-shadow: 0 0 0 0 rgba(212, 87, 87, 0.4); }
+      100% { box-shadow: 0 0 0 10px rgba(212, 87, 87, 0); }
     }
 
     /* Hauptpfad */
@@ -695,16 +755,16 @@
 
     .card {
       border: 1px solid #c8ddee;
-      border-radius: 14px;
-      padding: 13px;
-      background: linear-gradient(168deg, #ffffff, #f1f6ff);
+      border-radius: 18px;
+      padding: 14px 13px;
+      background: linear-gradient(168deg, rgba(255,255,255,0.95), rgba(241,246,255,0.9));
       font-weight: 700;
       color: #1f3f6e;
       text-align: center;
       user-select: none;
       cursor: grab;
-      transition: transform .16s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, opacity .2s ease;
-      box-shadow: 0 8px 18px rgba(30, 58, 138, 0.14);
+      transition: transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .24s cubic-bezier(.2,.7,.2,1), border-color .2s ease, background .2s ease, opacity .2s ease, filter .2s ease;
+      box-shadow: 0 10px 22px rgba(30, 58, 138, 0.14), inset 0 1px 0 rgba(255,255,255,0.8);
     }
 
     .card.is-focus-card {
@@ -714,9 +774,23 @@
     }
 
     .card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-3px);
       border-color: #6f95d5;
-      box-shadow: 0 12px 24px rgba(30, 58, 138, 0.2);
+      box-shadow: 0 16px 30px rgba(30, 58, 138, 0.22);
+    }
+
+    .card:focus-visible {
+      outline: none;
+      border-color: #4f8ed8;
+      box-shadow: 0 0 0 3px rgba(79, 142, 216, 0.25), 0 14px 28px rgba(30, 58, 138, 0.2);
+    }
+
+    .card.dragging {
+      transform: translateY(-6px) scale(1.04);
+      opacity: 0.74;
+      filter: saturate(1.08);
+      box-shadow: 0 24px 40px rgba(30, 58, 138, 0.28), 0 0 0 4px rgba(77, 135, 212, 0.2);
+      cursor: grabbing;
     }
 
     .card.selected {
@@ -829,7 +903,10 @@
 
     @media (max-width: 960px) {
       .top-grid { grid-template-columns: 1fr; }
-      .progress { margin-left: 0; width: 100%; text-align: center; }
+      .control-groups { flex-direction: column; align-items: stretch; }
+      .action-group button,
+      .meta-group button,
+      .meta-group .progress { width: 100%; text-align: center; }
     }
 
     @media (max-width: 640px) {
@@ -891,11 +968,17 @@
           </button>
         </div>
         <div class="controls">
-          <button id="checkBtn">Prüfen</button>
-          <button id="resetBtn">Neu starten</button>
-          <button id="solveBtn" title="Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.">Lösung anzeigen</button>
-          <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
-          <span id="progress" class="progress">0 / 16 richtig</span>
+          <div class="control-groups">
+            <div class="action-group">
+              <button id="checkBtn">Prüfen</button>
+              <button id="resetBtn">Neu starten</button>
+              <button id="solveBtn" title="Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.">Lösung anzeigen</button>
+            </div>
+            <div class="meta-group">
+              <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
+              <span id="progress" class="progress">0 / 16 richtig</span>
+            </div>
+          </div>
         </div>
         <div id="solveHint" class="solve-hint" role="status" aria-live="polite">Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.</div>
         <div class="step-indicator" id="stepIndicator">Schritt 1 von 16</div>
@@ -980,7 +1063,7 @@
     </section>
 
     <section class="panel">
-      <h2 style="margin:0;font-size:1.1rem;">Wortkarten</h2>
+      <h2>Wortkarten</h2>
       <div id="cards" class="cards" aria-live="polite"></div>
     </section>
   </main>
@@ -1302,6 +1385,9 @@
         el.draggable = !used;
         el.dataset.cardId = card.id;
         el.textContent = card.label;
+        el.tabIndex = used ? -1 : 0;
+        el.setAttribute("role", "button");
+        el.setAttribute("aria-pressed", String(selectedCardId === card.id));
 
         el.addEventListener("click", () => {
           if (used) return;
@@ -1311,10 +1397,32 @@
           statusEl.textContent = `Ausgewählt: „${card.label}“. Jetzt ein Feld anklicken oder ziehen.`;
         });
 
+        el.addEventListener("keydown", (event) => {
+          if (used) return;
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            el.click();
+          }
+        });
+
         el.addEventListener("dragstart", (event) => {
           if (used) return event.preventDefault();
           selectedCardId = card.id;
           event.dataTransfer.setData("text/plain", card.id);
+          event.dataTransfer.effectAllowed = "move";
+          el.classList.add("dragging");
+          boardEl.classList.add("is-dragging");
+          slots.forEach((slot) => {
+            if (!placed[slot.dataset.key]) slot.classList.add("is-valid-target");
+          });
+        });
+
+        el.addEventListener("dragend", () => {
+          el.classList.remove("dragging");
+          boardEl.classList.remove("is-dragging");
+          slots.forEach((slot) => {
+            slot.classList.remove("is-valid-target", "drag-over");
+          });
         });
 
         cardsEl.appendChild(el);
@@ -1684,6 +1792,7 @@
     slots.forEach((slot) => {
       slot.addEventListener("dragover", (event) => {
         event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
         slot.classList.add("drag-over");
       });
 
@@ -1693,7 +1802,16 @@
         event.preventDefault();
         slot.classList.remove("drag-over");
         registerInteraction();
-        moveCardToSlot(slot, event.dataTransfer.getData("text/plain"));
+        const droppedCardId = event.dataTransfer.getData("text/plain");
+        const key = slot.dataset.key;
+        moveCardToSlot(slot, droppedCardId);
+        const isCorrectDrop = droppedCardId && SOLUTION[key] === droppedCardId;
+        slot.classList.remove("drop-ok", "drop-bad");
+        void slot.offsetWidth;
+        slot.classList.add(isCorrectDrop ? "drop-ok" : "drop-bad");
+        setTimeout(() => slot.classList.remove("drop-ok", "drop-bad"), 380);
+        boardEl.classList.remove("is-dragging");
+        slots.forEach((target) => target.classList.remove("is-valid-target"));
       });
 
       slot.addEventListener("click", () => {
