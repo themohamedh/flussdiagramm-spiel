@@ -917,6 +917,7 @@
       .stats-visual { grid-template-columns: 1fr; }
       .bar-row { grid-template-columns: 1fr; gap: 4px; }
       .pie-chart { width: 118px; height: 118px; }
+      .footer-github-link { margin-top: 10px; }
     }
 
     .page-footer {
@@ -936,6 +937,24 @@
 
     .page-footer p {
       margin: 2px 0;
+    }
+
+    .footer-github-link {
+      display: inline-block;
+      margin-top: 8px;
+      color: #2a4f75;
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: color .2s ease, border-color .2s ease;
+      word-break: break-word;
+    }
+
+    .footer-github-link:hover,
+    .footer-github-link:focus-visible {
+      color: #1e3a8a;
+      border-bottom-color: rgba(30, 58, 138, 0.45);
+      outline: none;
     }
 
   </style>
@@ -1072,6 +1091,7 @@
     <p>© 2026 Mohamed Hachelaf</p>
     <p>Konzept und Umsetzung durch Mohamed Hachelaf</p>
     <p>Erstellt im Auftrag von Christine Schmück</p>
+    <a class="footer-github-link" href="https://github.com/themohamedh" target="_blank" rel="noopener noreferrer">GitHub-Profil: themohamedh</a>
   </footer>
 
   <div id="infoPopup" class="info-popup" aria-hidden="true">
