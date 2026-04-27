@@ -143,6 +143,36 @@
 
     .reference-box p { margin: 0; color: #4d6b87; line-height: 1.45; }
 
+    .quick-guide {
+      margin: 2px 0 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+      color: #355877;
+    }
+
+    .quick-guide li {
+      line-height: 1.4;
+    }
+
+    .more-info {
+      margin-top: 8px;
+      border: 1px dashed #b9cfe4;
+      border-radius: 12px;
+      background: #f7fbff;
+      padding: 10px 12px;
+    }
+
+    .more-info summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #1f4f78;
+    }
+
+    .more-info p {
+      margin-top: 8px;
+    }
+
     .controls {
       display: grid;
       gap: 12px;
@@ -724,23 +754,6 @@
       flex-wrap: wrap;
     }
 
-    .assist-actions {
-      margin-top: 10px;
-      display: none;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .assist-actions.open {
-      display: flex;
-    }
-
-    .assist-actions button {
-      box-shadow: 0 7px 14px rgba(34, 74, 111, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.84);
-      padding: 8px 12px;
-      font-size: 0.88rem;
-    }
-
     .cards {
       margin-top: 12px;
       display: grid;
@@ -800,6 +813,13 @@
     }
 
     .card.used { opacity: 0.45; cursor: not-allowed; filter: grayscale(.75); text-decoration: line-through; }
+
+    .section-note {
+      margin-top: 8px;
+      margin-bottom: 2px;
+      color: #55708d;
+      font-size: 0.9rem;
+    }
 
     .final-stats {
       margin-top: 12px;
@@ -968,16 +988,21 @@
   <main class="app">
     <section class="panel hero-panel">
       <h1>Flussdiagramm-Spiel: Tarifrunde und Streik</h1>
-      <p class="subtitle">Ordne alle Begriffskarten den passenden Feldern im Diagramm zu. Du kannst ziehen oder Karte + Feld anklicken.</p>
+      <p class="subtitle">Setze die Wortkarten in der richtigen Reihenfolge in das Flussdiagramm. Erst prüfen, dann bei Bedarf mit „Lösung anzeigen“ vergleichen.</p>
     </section>
 
     <section class="panel top-grid">
       <div class="reference-box">
-        <h2>Information zum Lernspiel</h2>
-        <p>Dieses Spiel wurde zur Unterstützung des Unterrichts erstellt und soll dabei helfen, die Struktur und den Ablauf einer Tarifrunde sowie eines möglichen Streiks anschaulich nachzuvollziehen.</p>
-        <p>Die Aufgabe besteht darin, die vorgegebenen Begriffskarten den richtigen Positionen im Flussdiagramm zuzuordnen. Über die Schaltfläche „Prüfen“ kann die Zuordnung anschließend kontrolliert werden.</p>
-        <p>Das Lernspiel soll dazu beitragen, die fachlichen Inhalte zu wiederholen, Zusammenhänge besser zu erkennen und die richtige Reihenfolge der einzelnen Schritte zu festigen.</p>
-        <p>Bei Fragen zum Inhalt oder zur Anwendung des Spiels wende dich bitte an Frau Schmück.</p>
+        <h2>Spielziel auf einen Blick</h2>
+        <ul class="quick-guide">
+          <li>Wortkarte auswählen und in eine Station im Flussdiagramm setzen.</li>
+          <li>Mit „Prüfen“ werden nur Fehler markiert.</li>
+          <li>Die vollständige Lösung kommt erst über „Lösung anzeigen“.</li>
+        </ul>
+        <details class="more-info">
+          <summary>Mehr erfahren</summary>
+          <p>Das Spiel hilft dir, den Ablauf einer Tarifrunde mit möglichen Streikschritten als Prozess zu verstehen. Zusatzinfos bekommst du über die kleinen Info-Buttons im Diagramm. Bei Fragen zum Inhalt oder zur Anwendung wende dich bitte an Frau Schmück.</p>
+        </details>
       </div>
 
       <div>
@@ -1004,6 +1029,7 @@
             </div>
           </div>
         </div>
+        <p class="section-note">Hinweis: „Prüfen“ markiert nur fehlerhafte Zuordnungen.</p>
         <div id="solveHint" class="solve-hint" role="status" aria-live="polite">Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.</div>
         <div class="step-indicator" id="stepIndicator">Schritt 1 von 16</div>
         <div class="progress-track" aria-hidden="true">
@@ -1011,10 +1037,6 @@
         </div>
         <div id="status" class="status">Wähle eine Karte aus und setze sie in ein Feld.</div>
         <div id="feedback" class="feedback">Feedback erscheint hier nach dem Einsetzen oder Prüfen.</div>
-        <div id="assistActions" class="assist-actions" aria-live="polite">
-          <button id="assistRestartBtn" type="button">Neu starten</button>
-          <button id="assistContinueBtn" type="button">Lösung anzeigen & weitermachen</button>
-        </div>
       </div>
     </section>
 
@@ -1088,6 +1110,7 @@
 
     <section class="panel">
       <h2>Wortkarten</h2>
+      <p class="section-note">Kartenpool für die Stationen im Flussdiagramm (ziehen oder klicken).</p>
       <div id="cards" class="cards" aria-live="polite"></div>
     </section>
   </main>
@@ -1185,7 +1208,6 @@
     const solveBtnEl = document.getElementById("solveBtn");
     const solveHintEl = document.getElementById("solveHint");
     const soundToggleEl = document.getElementById("soundToggle");
-    const assistActionsEl = document.getElementById("assistActions");
     const infoPopupEl = document.getElementById("infoPopup");
     const infoTextEl = document.getElementById("infoText");
     const finalOverlayEl = document.getElementById("finalOverlay");
@@ -1208,14 +1230,12 @@
 
     let selectedCardId = null;
     let placed = {}; // slotKey -> cardId
-    let wrongAttempts = 0;
     let rightDecisions = 0;
     let wrongDecisions = 0;
     let mistakeSlots = new Set();
     let totalClicks = 0;
     let gameStartTimestamp = Date.now();
     let didComplete = false;
-    const MAX_WRONG_ATTEMPTS = 3;
     let soundEnabled = true;
     let currentMode = "learn";
     const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15", "side1"];
@@ -1576,20 +1596,11 @@
       pieStatsEl.dataset.label = `${rightPercent}%\nTrefferquote`;
     }
 
-    function showAssistActions() {
-      assistActionsEl.classList.add("open");
-    }
-
-    function hideAssistActions() {
-      assistActionsEl.classList.remove("open");
-    }
-
     function setGameMode(mode) {
       currentMode = mode === "exam" ? "exam" : "learn";
       modeButtons.forEach((button) => {
         button.classList.toggle("active", button.dataset.mode === currentMode);
       });
-      hideAssistActions();
       if (currentMode === "learn") {
         statusEl.textContent = "Lernmodus aktiv: Du erhältst direktes Feedback mit kurzer Erklärung.";
         setFeedbackState(null, "Ordne die Karten zu. Bei Fehlern erhältst du eine kurze Begründung.");
@@ -1654,31 +1665,12 @@
       } else {
         slot.classList.add("wrong");
         wrongDecisions += 1;
-        wrongAttempts += 1;
         mistakeSlots.add(key);
         playWrongSound();
-        const expectedCard = getCardById(SOLUTION[key]);
-        const shouldAutoAssist = currentMode === "learn" && wrongAttempts >= MAX_WRONG_ATTEMPTS;
-        if (shouldAutoAssist) {
-          setFeedbackState("negative", `❌ Fehlversuch-Limit erreicht (${MAX_WRONG_ATTEMPTS}). Richtige Lösung hier: „${expectedCard.label}“.`);
-          const expectedOldKey = Object.keys(placed).find((slotKey) => placed[slotKey] === expectedCard.id && slotKey !== key);
-          if (expectedOldKey) {
-            const expectedOldSlot = slots.find((element) => element.dataset.key === expectedOldKey);
-            delete placed[expectedOldKey];
-            expectedOldSlot.classList.remove("correct", "wrong");
-            setSlotText(expectedOldSlot);
-          }
-          placed[key] = expectedCard.id;
-          setSlotText(slot, expectedCard.label);
-          slot.classList.remove("wrong");
-          slot.classList.add("correct");
-          showAssistActions();
+        if (currentMode === "learn") {
+          setFeedbackState("negative", `❌ Nicht korrekt: ${SLOT_HINTS[key].wrong}`);
         } else {
-          if (currentMode === "learn") {
-            setFeedbackState("negative", `❌ Nicht korrekt (${wrongAttempts}/${MAX_WRONG_ATTEMPTS} Fehlversuche): ${SLOT_HINTS[key].wrong}`);
-          } else {
-            setFeedbackState(null, "Zuordnung gespeichert.");
-          }
+          setFeedbackState(null, "Zuordnung gespeichert.");
         }
       }
 
@@ -1723,7 +1715,8 @@
 
     function checkAll() {
       let correct = 0;
-      const lines = [];
+      let wrong = 0;
+      let empty = 0;
 
       slots.forEach((slot) => {
         const key = slot.dataset.key;
@@ -1731,25 +1724,26 @@
         slot.classList.remove("correct", "wrong");
 
         if (!cardId) {
-          lines.push(`• Feld ${key}: leer`);
+          empty += 1;
           setSlotText(slot);
           return;
         }
 
         if (cardId === SOLUTION[key]) {
-          slot.classList.add("correct");
           correct += 1;
-          lines.push(`• ✅ ${getCardById(cardId).label} korrekt`);
         } else {
           slot.classList.add("wrong");
-          lines.push(`• ❌ ${getCardById(cardId).label} falsch zugeordnet`);
+          wrong += 1;
         }
       });
 
       statusEl.textContent = `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`;
       if (currentMode === "learn") {
-        feedbackEl.classList.remove("is-positive", "is-negative");
-        feedbackEl.innerHTML = lines.join("<br>");
+        if (wrong > 0 || empty > 0) {
+          setFeedbackState("negative", `Es wurden ${wrong} Fehler markiert${empty ? ` und ${empty} leere Felder gefunden` : ""}. Korrigiere nur die markierten Stationen.`);
+        } else {
+          setFeedbackState("positive", "Sehr gut! Keine Fehler markiert. Wenn du vergleichen willst, nutze „Lösung anzeigen“.");
+        }
       } else {
         setFeedbackState(null, "Prüfung gespeichert. Die vollständige Auswertung erscheint nach Abschluss.");
       }
@@ -1762,7 +1756,6 @@
     function resetAll() {
       placed = {};
       selectedCardId = null;
-      wrongAttempts = 0;
       rightDecisions = 0;
       wrongDecisions = 0;
       mistakeSlots = new Set();
@@ -1780,7 +1773,6 @@
       } else {
         setFeedbackState(null, "Neues Spiel gestartet. Arbeite ohne Hilfetexte bis zur Endauswertung.");
       }
-      hideAssistActions();
       finalOverlayEl.classList.remove("open");
       finalOverlayEl.setAttribute("aria-hidden", "true");
       renderCards();
@@ -1805,7 +1797,6 @@
       didComplete = false;
       statusEl.textContent = "Lösung wird angezeigt.";
       setFeedbackState("positive", "Alle Felder wurden korrekt ausgefüllt.");
-      hideAssistActions();
       renderCards();
       updateProgress();
       updateConnectors();
@@ -1889,17 +1880,6 @@
       registerInteraction();
       playClickSound();
       solveAll();
-    });
-    document.getElementById("assistRestartBtn").addEventListener("click", () => {
-      registerInteraction();
-      playClickSound();
-      resetAll();
-    });
-    document.getElementById("assistContinueBtn").addEventListener("click", () => {
-      registerInteraction();
-      playClickSound();
-      solveAll();
-      statusEl.textContent = "Du kannst den Ablauf jetzt korrekt nachvollziehen und neu starten.";
     });
     document.getElementById("finalRestartBtn").addEventListener("click", () => {
       registerInteraction();
