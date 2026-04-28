@@ -55,6 +55,7 @@
       min-height: 100vh;
       position: relative;
       isolation: isolate;
+      overflow-x: hidden;
     }
 
     body::before {
@@ -71,6 +72,7 @@
 
     .app {
       max-width: 1400px;
+      width: min(1400px, calc(100% - 24px));
       margin: clamp(14px, 3vh, 30px) auto;
       padding: clamp(16px, 2vw, 26px);
       display: grid;
@@ -416,7 +418,12 @@
       color: #9b1c1c;
     }
 
-    .board-wrap { overflow: auto; }
+    .board-wrap {
+      overflow: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-gutter: stable both-edges;
+    }
 
     .board {
       position: relative;
@@ -727,6 +734,8 @@
     .info-card,
     .final-card {
       width: min(560px, 100%);
+      max-height: min(86vh, 720px);
+      overflow: auto;
       background: #fff;
       border: 1px solid #c9dfed;
       border-radius: 16px;
@@ -924,15 +933,39 @@
     @media (max-width: 960px) {
       .top-grid { grid-template-columns: 1fr; }
       .control-groups { flex-direction: column; align-items: stretch; }
+      .mode-option {
+        min-width: 0;
+        flex: 1 1 260px;
+      }
       .action-group button,
       .meta-group button,
       .meta-group .progress { width: 100%; text-align: center; }
     }
 
     @media (max-width: 640px) {
+      .app {
+        width: calc(100% - 14px);
+        margin: 8px auto;
+        padding: 10px;
+        border-radius: 18px;
+      }
       .panel { border-radius: 16px; }
+      .control-groups,
+      .action-group,
+      .meta-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
       .controls button { flex: 1 1 100%; }
       .cards { grid-template-columns: 1fr; }
+      .board-wrap { padding: 10px; }
+      .board {
+        border-radius: 20px;
+      }
+      .status,
+      .feedback {
+        font-size: 0.92rem;
+      }
       .page-footer { font-size: 0.78rem; }
       .stats-visual { grid-template-columns: 1fr; }
       .bar-row { grid-template-columns: 1fr; gap: 4px; }
@@ -941,6 +974,22 @@
         margin-top: 10px;
         font-size: 0.92rem;
         line-height: 1.35;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .mode-option {
+        padding: 12px 13px;
+      }
+
+      button {
+        padding: 11px 13px;
+        font-size: 0.9rem;
+      }
+
+      .section-note,
+      .solve-hint {
+        font-size: 0.84rem;
       }
     }
 
