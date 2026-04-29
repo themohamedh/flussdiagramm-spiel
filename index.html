@@ -364,6 +364,8 @@
       width: 0;
       height: 100%;
       border-radius: inherit;
+      position: relative;
+      overflow: hidden;
       background: linear-gradient(100deg, #3bd67b, #1eb85f 55%, #15944a);
       box-shadow: 0 0 18px rgba(40, 196, 101, 0.45);
       transition: width .45s cubic-bezier(.2,.7,.2,1);
@@ -1499,8 +1501,7 @@
       const nodeLabel = slot.textContent?.trim() || `Schritt ${slot.dataset.key}`;
       const typeLabel = nodeType === "decision" ? "Entscheidung" : "Station";
 
-      statusEl.classList.remove("is-positive", "is-negative");
-      statusEl.textContent = `Gewählt: ${typeLabel} „${nodeLabel}“ (${slot.dataset.key}).`;
+      setStatusState(null, `Gewählt: ${typeLabel} „${nodeLabel}“ (${slot.dataset.key}).`);
     }
 
     function shuffle(list) {
@@ -1553,7 +1554,7 @@
           registerInteraction();
           selectedCardId = card.id;
           renderCards();
-          statusEl.textContent = `Ausgewählt: „${card.label}“. Jetzt ein Feld anklicken oder ziehen.`;
+          setStatusState(null, `Ausgewählt: „${card.label}“. Jetzt ein Feld anklicken oder ziehen.`);
         });
 
         el.addEventListener("keydown", (event) => {
@@ -1723,10 +1724,10 @@
         button.classList.toggle("active", button.dataset.mode === currentMode);
       });
       if (currentMode === "learn") {
-        statusEl.textContent = "Lernmodus aktiv: Du erhältst direktes Feedback mit kurzer Erklärung.";
+        setStatusState(null, "Lernmodus aktiv: Du erhältst direktes Feedback mit kurzer Erklärung.");
         setFeedbackState(null, "Ordne die Karten zu. Bei Fehlern erhältst du eine kurze Begründung.");
       } else {
-        statusEl.textContent = "Prüfungsmodus aktiv: Arbeite möglichst selbstständig ohne Hilfetexte.";
+        setStatusState(null, "Prüfungsmodus aktiv: Arbeite möglichst selbstständig ohne Hilfetexte.");
         setFeedbackState(null, "Zuordnungen werden gesammelt. Die komplette Auswertung erscheint am Ende.");
       }
     }
@@ -1744,7 +1745,7 @@
       updateProgress();
       updateConnectors();
       updateFocusMode();
-      statusEl.textContent = `„${removed.label}“ wurde entfernt.`;
+      setStatusState(null, `„${removed.label}“ wurde entfernt.`);
       setFeedbackState(null, "Karte entfernt. Du kannst sie neu einsetzen.");
     }
 
@@ -1767,7 +1768,7 @@
       // Zielslot überschreiben
       if (placed[key]) {
         const replaced = getCardById(placed[key]);
-        statusEl.textContent = `„${replaced.label}“ wurde im Feld ersetzt.`;
+        setStatusState(null, `„${replaced.label}“ wurde im Feld ersetzt.`);
       }
 
       placed[key] = cardId;
@@ -1971,7 +1972,7 @@
           return;
         }
         playClickSound();
-        statusEl.textContent = "Bitte zuerst eine Karte auswählen.";
+        setStatusState(null, "Bitte zuerst eine Karte auswählen.");
       });
     });
 
