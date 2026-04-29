@@ -195,6 +195,7 @@
       display: grid;
       gap: 12px;
       margin-bottom: 8px;
+      position: relative;
     }
 
     .control-groups {
@@ -356,6 +357,7 @@
       background: linear-gradient(170deg, #edf6ff, #e4f0ff);
       box-shadow: inset 0 1px 3px rgba(33, 77, 114, 0.08);
       margin-bottom: 8px;
+      position: relative;
     }
 
     .progress-fill {
@@ -365,6 +367,19 @@
       background: linear-gradient(100deg, #3bd67b, #1eb85f 55%, #15944a);
       box-shadow: 0 0 18px rgba(40, 196, 101, 0.45);
       transition: width .45s cubic-bezier(.2,.7,.2,1);
+    }
+
+    .progress-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transform: translateX(-100%);
+      animation: progressShine 1.8s ease-in-out infinite;
+    }
+
+    @keyframes progressShine {
+      to { transform: translateX(120%); }
     }
 
     .step-indicator {
@@ -384,6 +399,18 @@
       border-radius: 14px;
       padding: 11px 12px;
       transition: all .28s ease;
+    }
+
+    .status.is-positive {
+      color: #0d6b3d;
+      border-color: #b9ebce;
+      background: #eefcf4;
+    }
+
+    .status.is-negative {
+      color: #8a1f1f;
+      border-color: #f2c6c6;
+      background: #fff4f4;
     }
 
     .solve-hint {
@@ -762,6 +789,7 @@
       padding: 18px;
       box-shadow: 0 24px 42px rgba(23, 58, 84, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.88);
       backdrop-filter: blur(18px);
+      animation: fadeLift .28s ease;
     }
 
     .info-card h3,
@@ -1221,8 +1249,8 @@
       <div id="learningSummary" class="learning-summary"></div>
       <div class="final-stats">
         <div class="stat-chip"><div class="value" id="statRight">0</div><div class="label">Richtige Entscheidungen</div></div>
-        <div class="stat-chip"><div class="value" id="statWrong">0</div><div class="label">Falsche Entscheidungen</div></div>
-        <div class="stat-chip"><div class="value" id="statClicks">0</div><div class="label">Klicks gesamt</div></div>
+        <div class="stat-chip"><div class="value" id="statWrong">0</div><div class="label">Fehlversuche</div></div>
+        <div class="stat-chip"><div class="value" id="statClicks">0</div><div class="label">Versuche gesamt</div></div>
         <div class="stat-chip"><div class="value" id="statTime">0:00</div><div class="label">Benötigte Zeit</div></div>
       </div>
       <div class="stats-visual">
@@ -1314,9 +1342,11 @@
     let placed = {}; // slotKey -> cardId
     let rightDecisions = 0;
     let wrongDecisions = 0;
+    let attempts = 0;
+    let wrongAttempts = 0;
     let mistakeSlots = new Set();
     let totalClicks = 0;
-    let gameStartTimestamp = Date.now();
+    let gameStartTimestamp = null;
     let didComplete = false;
     let soundEnabled = true;
     let currentMode = "learn";
@@ -1454,6 +1484,7 @@
     }
 
     function registerInteraction() {
+      if (!gameStartTimestamp) gameStartTimestamp = Date.now();
       totalClicks += 1;
     }
 
@@ -1468,6 +1499,7 @@
       const nodeLabel = slot.textContent?.trim() || `Schritt ${slot.dataset.key}`;
       const typeLabel = nodeType === "decision" ? "Entscheidung" : "Station";
 
+      statusEl.classList.remove("is-positive", "is-negative");
       statusEl.textContent = `Gewählt: ${typeLabel} „${nodeLabel}“ (${slot.dataset.key}).`;
     }
 
@@ -1593,6 +1625,13 @@
       pulseFeedback();
     }
 
+    function setStatusState(type, message) {
+      statusEl.classList.remove("is-positive", "is-negative");
+      if (type === "positive") statusEl.classList.add("is-positive");
+      if (type === "negative") statusEl.classList.add("is-negative");
+      statusEl.textContent = message;
+    }
+
     function getCurrentFocusKey() {
       const nextKey = STEP_ORDER.find((key) => placed[key] !== SOLUTION[key]);
       return nextKey || null;
@@ -1654,7 +1693,7 @@
       didComplete = true;
       updateFinalStats();
       const ratingText = currentMode === "learn" ? getRating() : "Prüfungsmodus abgeschlossen";
-      finalStatsEl.innerHTML = `Bewertung: <strong>${ratingText}</strong> · Trefferquote: <strong>${Math.round((rightDecisions / Math.max(1, rightDecisions + wrongDecisions)) * 100)}%</strong>`;
+      finalStatsEl.innerHTML = `Bewertung: <strong>${ratingText}</strong> · Trefferquote: <strong>${Math.round((rightDecisions / Math.max(1, rightDecisions + wrongDecisions)) * 100)}%</strong> · Versuche: <strong>${attempts}</strong>`;
       learningSummaryEl.textContent = buildLearningSummary();
       finalOverlayEl.classList.add("open");
       finalOverlayEl.setAttribute("aria-hidden", "false");
@@ -1664,11 +1703,11 @@
       const totalDecisions = rightDecisions + wrongDecisions;
       const rightPercent = Math.round((rightDecisions / Math.max(1, totalDecisions)) * 100);
       const wrongPercent = 100 - rightPercent;
-      const elapsed = Date.now() - gameStartTimestamp;
+      const elapsed = gameStartTimestamp ? (Date.now() - gameStartTimestamp) : 0;
 
       statRightEl.textContent = String(rightDecisions);
-      statWrongEl.textContent = String(wrongDecisions);
-      statClicksEl.textContent = String(totalClicks);
+      statWrongEl.textContent = String(wrongAttempts);
+      statClicksEl.textContent = String(attempts);
       statTimeEl.textContent = formatDuration(elapsed);
       barRightEl.style.setProperty("--value", `${rightPercent}%`);
       barWrongEl.style.setProperty("--value", `${wrongPercent}%`);
@@ -1738,7 +1777,9 @@
       if (SOLUTION[key] === card.id) {
         slot.classList.add("correct");
         rightDecisions += 1;
+        attempts += 1;
         playCorrectSound();
+        setStatusState("positive", "Richtige Zuordnung gesetzt.");
         if (currentMode === "learn") {
           setFeedbackState("positive", `✅ Richtig: „${card.label}“. ${SLOT_HINTS[key].right}`);
         } else {
@@ -1747,8 +1788,11 @@
       } else {
         slot.classList.add("wrong");
         wrongDecisions += 1;
+        attempts += 1;
+        wrongAttempts += 1;
         mistakeSlots.add(key);
         playWrongSound();
+        setStatusState("negative", "Diese Zuordnung ist noch nicht korrekt.");
         if (currentMode === "learn") {
           setFeedbackState("negative", `❌ Nicht korrekt: ${SLOT_HINTS[key].wrong}`);
         } else {
@@ -1819,7 +1863,7 @@
         }
       });
 
-      statusEl.textContent = `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`;
+      setStatusState(wrong > 0 ? "negative" : "positive", `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`);
       if (currentMode === "learn") {
         if (wrong > 0 || empty > 0) {
           setFeedbackState("negative", `Es wurden ${wrong} Fehler markiert${empty ? ` und ${empty} leere Felder gefunden` : ""}. Korrigiere nur die markierten Stationen.`);
@@ -1840,16 +1884,18 @@
       selectedCardId = null;
       rightDecisions = 0;
       wrongDecisions = 0;
+      attempts = 0;
+      wrongAttempts = 0;
       mistakeSlots = new Set();
       totalClicks = 0;
-      gameStartTimestamp = Date.now();
+      gameStartTimestamp = null;
       didComplete = false;
       deck = shuffle(CARD_ITEMS);
       slots.forEach((slot) => {
         slot.classList.remove("correct", "wrong", "drag-over");
         setSlotText(slot);
       });
-      statusEl.textContent = "Zurückgesetzt. Alle Karten wurden neu gemischt.";
+      setStatusState(null, "Zurückgesetzt. Alle Karten wurden neu gemischt.");
       if (currentMode === "learn") {
         setFeedbackState(null, "Starte neu und ordne die Begriffe im Diagramm.");
       } else {
@@ -1877,7 +1923,7 @@
       });
       selectedCardId = null;
       didComplete = false;
-      statusEl.textContent = "Lösung wird angezeigt.";
+      setStatusState("positive", "Lösung wird angezeigt.");
       setFeedbackState("positive", "Alle Felder wurden korrekt ausgefüllt.");
       renderCards();
       updateProgress();
