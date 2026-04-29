@@ -1864,7 +1864,13 @@
         }
       });
 
-      setStatusState(wrong > 0 ? "negative" : "positive", `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`);
+      if (wrong > 0) {
+        setStatusState("negative", `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`);
+      } else if (empty > 0) {
+        setStatusState(null, "Zwischenstand: noch Felder offen");
+      } else {
+        setStatusState("positive", `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`);
+      }
       if (currentMode === "learn") {
         if (wrong > 0 || empty > 0) {
           setFeedbackState("negative", `Es wurden ${wrong} Fehler markiert${empty ? ` und ${empty} leere Felder gefunden` : ""}. Korrigiere nur die markierten Stationen.`);
