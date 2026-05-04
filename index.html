@@ -473,7 +473,7 @@
     .board {
       position: relative;
       width: 1240px;
-      height: 1220px;
+      height: 1320px;
       margin: 0 auto;
       border: 1px solid rgba(190, 216, 236, 0.88);
       border-radius: 34px;
@@ -718,31 +718,21 @@
       100% { box-shadow: 0 0 0 10px rgba(212, 87, 87, 0); }
     }
 
-    /* Hauptpfad */
-    .slot[data-key="s1"] { left: 490px; top: 30px; }
-    .slot[data-key="s2"] { left: 490px; top: 110px; }
-    .slot[data-key="s3"] { left: 490px; top: 190px; }
-    .slot[data-key="s4"] { left: 490px; top: 270px; }
-    .slot[data-key="s5"] { left: 490px; top: 350px; }
-    .slot[data-key="s6"] { left: 490px; top: 430px; }
-    .slot[data-key="s7"] { left: 490px; top: 510px; }
-    .slot[data-key="s8"] { left: 490px; top: 590px; }
-
-    /* Linker Ast */
-    .slot[data-key="s9"] { left: 150px; top: 730px; }
-    .slot[data-key="s10"] { left: 150px; top: 820px; }
-    .slot[data-key="s11"] { left: 150px; top: 910px; }
-
-    /* Rechter Ast */
-    .slot[data-key="s12"] { left: 830px; top: 730px; }
-    .slot[data-key="s13"] { left: 830px; top: 820px; }
-
-    /* Rechter Unterast links (kein Ergebnis) */
-    .slot[data-key="s14"] { left: 670px; top: 950px; width: 220px; }
-    .slot[data-key="s15"] { left: 520px; top: 1040px; width: 220px; }
-
-    /* Nebenpfad von Streik */
-    .slot[data-key="side1"] { left: 880px; top: 430px; width: 240px; }
+    .slot[data-key="s1"] { left: 500px; top: 20px; }
+    .slot[data-key="s2"] { left: 880px; top: 20px; }
+    .slot[data-key="s3"] { left: 490px; top: 130px; }
+    .slot[data-key="s4"] { left: 120px; top: 270px; height: 150px; }
+    .slot[data-key="s5"] { left: 900px; top: 270px; }
+    .slot[data-key="s6"] { left: 140px; top: 470px; width: 180px; }
+    .slot[data-key="s7"] { left: 500px; top: 470px; width: 220px; }
+    .slot[data-key="s8"] { left: 130px; top: 640px; width: 300px; }
+    .slot[data-key="s9"] { left: 130px; top: 840px; width: 180px; }
+    .slot[data-key="s10"] { left: 130px; top: 1020px; width: 180px; }
+    .slot[data-key="s11"] { left: 600px; top: 640px; width: 210px; }
+    .slot[data-key="s12"] { left: 620px; top: 820px; width: 260px; }
+    .slot[data-key="s13"] { left: 960px; top: 840px; width: 220px; }
+    .slot[data-key="s14"] { left: 950px; top: 1020px; width: 230px; height: 120px; }
+    .slot[data-key="s15"] { left: 540px; top: 1190px; width: 260px; }
 
     .info-btn {
       position: absolute;
@@ -1137,13 +1127,13 @@
             </div>
             <div class="meta-group">
               <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
-              <span id="progress" class="progress">0 / 16 richtig</span>
+              <span id="progress" class="progress">0 / 15 richtig</span>
             </div>
           </div>
         </div>
         <p class="section-note">Hinweis: „Prüfen“ markiert nur fehlerhafte Zuordnungen.</p>
         <div id="solveHint" class="solve-hint" role="status" aria-live="polite">Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.</div>
-        <div class="step-indicator" id="stepIndicator">Schritt 1 von 16</div>
+        <div class="step-indicator" id="stepIndicator">Schritt 1 von 15</div>
         <div class="progress-track" aria-hidden="true">
           <div id="progressFill" class="progress-fill"></div>
         </div>
@@ -1154,64 +1144,46 @@
 
     <section class="panel board-wrap">
       <div class="board" id="board">
-        <svg class="flow" id="flowSvg" viewBox="0 0 1240 1220" aria-hidden="true">
+        <svg class="flow" id="flowSvg" viewBox="0 0 1240 1320" aria-hidden="true">
           <defs>
             <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
               <path d="M1,1 L11,5 L1,9 Q3,5 1,1 z" fill="#7b9cbd"></path>
             </marker>
           </defs>
 
-          <!-- Hauptablauf -->
-          <line class="connector" data-active-for="s2" x1="620" y1="94" x2="620" y2="110"></line>
-          <line class="connector" data-active-for="s3" x1="620" y1="174" x2="620" y2="190"></line>
-          <line class="connector" data-active-for="s4" x1="620" y1="254" x2="620" y2="270"></line>
-          <line class="connector" data-active-for="s5" x1="620" y1="334" x2="620" y2="350"></line>
-          <line class="connector" data-active-for="s6" x1="620" y1="414" x2="620" y2="430"></line>
-          <line class="connector" data-active-for="s7" x1="620" y1="494" x2="620" y2="510"></line>
-          <line class="connector" data-active-for="s8" x1="620" y1="574" x2="620" y2="590"></line>
-
-          <!-- Nebenpfad Streik -> AG kann aussperren -->
-          <path class="connector" data-active-for="side1" d="M750,462 L880,462"></path>
-
-          <!-- Ast von 2. Verhandlungsrunde -->
-          <path class="connector" data-active-for="s9" d="M620,654 L280,654 L280,730"></path>
-          <path class="connector" data-active-for="s12" d="M620,654 L960,654 L960,730"></path>
-
-          <!-- Linker Ast nach unten -->
-          <line class="connector" data-active-for="s10" x1="280" y1="794" x2="280" y2="820"></line>
-          <line class="connector" data-active-for="s11" x1="280" y1="884" x2="280" y2="910"></line>
-
-          <!-- Rechter Ast nach unten -->
-          <line class="connector" data-active-for="s13" x1="960" y1="794" x2="960" y2="820"></line>
-          <path class="connector" data-active-for="s13" d="M830,852 L520,852 L520,762 L410,762"></path>
-          <path class="connector" data-active-for="s14" d="M960,884 L780,884 L780,950"></path>
-
-          <!-- Kein Ergebnis -> Neustart -> zurück zu 2. Verhandlungsrunde -->
-          <path class="connector" data-active-for="s15" d="M780,1014 L630,1014 L630,1040"></path>
-          <path class="connector" data-active-for="s15" d="M630,1104 L460,1104 L460,622 L490,622"></path>
+          <line class="connector" data-active-for="s3" x1="620" y1="94" x2="620" y2="130"></line>
+          <path class="connector" data-active-for="s3" d="M930,94 L820,200"></path>
+          <path class="connector" data-active-for="s4,s5" d="M620,194 L620,250 L210,250 L210,270"></path>
+          <path class="connector" data-active-for="s4,s5" d="M620,194 L620,250 L990,250 L990,270"></path>
+          <line class="connector" data-active-for="s15" x1="1010" y1="334" x2="670" y2="1190"></line>
+          <line class="connector" data-active-for="s6" x1="210" y1="420" x2="210" y2="470"></line>
+          <line class="connector" data-active-for="s7" x1="320" y1="530" x2="500" y2="530"></line>
+          <line class="connector" data-active-for="s6" x1="500" y1="530" x2="320" y2="530"></line>
+          <line class="connector" data-active-for="s8" x1="210" y1="570" x2="210" y2="640"></line>
+          <line class="connector" data-active-for="s9,s11" x1="430" y1="700" x2="600" y2="700"></line>
+          <line class="connector" data-active-for="s9" x1="210" y1="740" x2="210" y2="840"></line>
+          <line class="connector" data-active-for="s10" x1="210" y1="900" x2="210" y2="1020"></line>
+          <path class="connector" data-active-for="s15" d="M210,1110 L210,1240 L540,1240"></path>
+          <line class="connector" data-active-for="s12" x1="705" y1="730" x2="705" y2="820"></line>
+          <line class="connector" data-active-for="s13" x1="880" y1="910" x2="960" y2="910"></line>
+          <line class="connector" data-active-for="s14" x1="1065" y1="930" x2="1065" y2="1020"></line>
+          <path class="connector" data-active-for="s15" d="M1065,1140 L1065,1240 L800,1240"></path>
         </svg>
-
-        <div class="legend" style="left:520px;top:675px;">Verzweigung ab 2. Verhandlungsrunde</div>
-        <div class="legend" style="left:891px;top:400px;">Nebenpfad</div>
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s1" data-node-type="start" aria-label="Schritt 1"></button>
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s2" data-node-type="process" aria-label="Schritt s2"></button>
-        <button type="button" class="slot empty is-clickable is-decision group-negotiation" data-key="s3" data-node-type="decision" aria-label="Schritt s3"></button>
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s4" data-node-type="process" aria-label="Schritt s4"></button>
-        <button type="button" class="slot empty is-clickable group-action" data-key="s5" data-node-type="action" aria-label="Schritt s5"></button>
-        <button type="button" class="slot empty is-clickable group-action" data-key="s6" data-node-type="action" aria-label="Schritt s6"></button>
-        <button type="button" class="slot empty is-clickable group-action" data-key="s7" data-node-type="process" aria-label="Schritt s7"></button>
-        <button type="button" class="slot empty is-clickable is-decision group-negotiation" data-key="s8" data-node-type="decision" aria-label="Schritt s8"></button>
-
-        <button type="button" class="slot empty is-clickable group-result" data-key="s9" data-node-type="outcome" aria-label="Schritt s9"></button>
-        <button type="button" class="slot empty is-clickable group-action" data-key="s10" data-node-type="action" aria-label="Schritt s10"></button>
-        <button type="button" class="slot empty is-clickable group-result" data-key="s11" data-node-type="outcome" aria-label="Schritt s11"></button>
-
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s12" data-node-type="action" aria-label="Schritt s12"></button>
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s13" data-node-type="process" aria-label="Schritt s13"></button>
-        <button type="button" class="slot empty is-clickable group-result" data-key="s14" data-node-type="outcome" aria-label="Schritt s14"></button>
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s15" data-node-type="restart" aria-label="Schritt s15"></button>
-
-        <button type="button" class="slot empty is-clickable group-action" data-key="side1" data-node-type="side-action" aria-label="Schritt side1"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s1" data-node-type="start"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s2" data-node-type="action"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s3" data-node-type="process"></button>
+        <button type="button" class="slot empty is-clickable is-decision group-negotiation" data-key="s4" data-node-type="decision"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s5" data-node-type="outcome"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s6" data-node-type="action"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s7" data-node-type="action"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s8" data-node-type="process"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s9" data-node-type="outcome"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s10" data-node-type="outcome"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s11" data-node-type="action"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s12" data-node-type="process"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s13" data-node-type="outcome"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s14" data-node-type="outcome"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s15" data-node-type="outcome"></button>
 
         <button type="button" class="info-btn" style="--x: 738px; --y: 120px;" data-info-key="tarifverhandlungen" aria-label="Warum ist das wichtig? Tarifverhandlungen">i</button>
         <button type="button" class="info-btn" style="--x: 738px; --y: 660px;" data-info-key="ergebnis-erzielt" aria-label="Warum ist das wichtig? Ergebnis erzielt">i</button>
@@ -1272,42 +1244,19 @@
   <script>
     // Alle Karten für die aktuell sichtbaren Felder im Diagramm
     const CARD_ITEMS = [
-      { id: "c1", label: "Kündigung TV ✂️" },
-      { id: "c2", label: "1. Verhandlungsrunde 1️⃣" },
-      { id: "c3", label: "keine Einigung ❌" },
-      { id: "c4", label: "Friedenspflicht endet ⏳" },
-      { id: "c5", label: "Streik ✊" },
-      { id: "c6", label: "Aktionen ⚙️" },
-      { id: "c7", label: "Aktivitäten in der Tarifrunde 📣" },
-      { id: "c8", label: "2. Verhandlungsrunde 2️⃣" },
-      { id: "c9", label: "Ergebnis erzielt ✅" },
-      { id: "c10", label: "Urabstimmung beginnt 🗳️", variant: "A" },
-      { id: "c11", label: "Tarifvertrag abgeschlossen 📄" },
-      { id: "c12", label: "Schlichtung 🤝" },
-      { id: "c13", label: "neue Verhandlungsrunde 🔄" },
-      { id: "c14", label: "Kein Ergebnis 🚫" },
-      { id: "c15", label: "Neustart 🔁" },
-      { id: "c18", label: "AG kann aussperren 🔒" }
+      { id: "c1", label: "Kündigung TV" }, { id: "c2", label: "Warnstreiks" }, { id: "c3", label: "1. Verhandlungsrunde" },
+      { id: "c4", label: "keine Einigung / Ende der Friedenspflicht / Urabstimmung über Streik" }, { id: "c5", label: "Einigung (1)" },
+      { id: "c6", label: "Streik" }, { id: "c7", label: "evtl. Aussperrung" }, { id: "c8", label: "2. Verhandlungsrunde" },
+      { id: "c9", label: "Ergebnis" }, { id: "c10", label: "Urabstimmung" }, { id: "c11", label: "Schlichtung" },
+      { id: "c12", label: "3. Verhandlungsrunde" }, { id: "c13", label: "Einigung (2)" }, { id: "c14", label: "Urabstimmung Ergebnis" },
+      { id: "c15", label: "neuer TV" }
     ];
 
     // Zielbelegung pro Slot
     const SOLUTION = {
-      s1: "c1",
-      s2: "c2",
-      s3: "c3",
-      s4: "c4",
-      s5: "c5",
-      s6: "c6",
-      s7: "c7",
-      s8: "c8",
-      s9: "c9",
-      s10: "c10",
-      s11: "c11",
-      s12: "c12",
-      s13: "c13",
-      s14: "c14",
-      s15: "c15",
-      side1: "c18"
+      s1: "c1", s2: "c2", s3: "c3", s4: "c4", s5: "c5",
+      s6: "c6", s7: "c7", s8: "c8", s9: "c9", s10: "c10",
+      s11: "c11", s12: "c12", s13: "c13", s14: "c14", s15: "c15"
     };
 
     const slots = [...document.querySelectorAll(".slot")];
@@ -1354,7 +1303,7 @@
     let didComplete = false;
     let soundEnabled = true;
     let currentMode = "learn";
-    const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15", "side1"];
+    const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15"];
     const SLOT_HINTS = {
       s1: {
         right: "Mit der Kündigung des Tarifvertrags startet die neue Tarifrunde.",
@@ -1415,10 +1364,6 @@
       s15: {
         right: "Der Neustart führt in den Zyklus zurück.",
         wrong: "Der Neustart ist ein spätes Folgeschritt und führt zurück zur Verhandlungsrunde."
-      },
-      side1: {
-        right: "Als Reaktion auf Streik kann der Arbeitgeber aussperren.",
-        wrong: "Die Aussperrung ist ein Nebenpfad als Reaktion auf Streik."
       }
     };
 
