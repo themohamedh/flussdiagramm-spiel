@@ -1249,6 +1249,7 @@
       <h3>Spiel erfolgreich abgeschlossen</h3>
       <p id="finalStats">Du hast das Spiel abgeschlossen.</p>
       <div id="learningSummary" class="learning-summary"></div>
+      <div id="mistakeAnalysis" class="learning-summary"></div>
       <div class="final-stats">
         <div class="stat-chip"><div class="value" id="statRight">0</div><div class="label">Richtige Entscheidungen</div></div>
         <div class="stat-chip"><div class="value" id="statWrong">0</div><div class="label">Fehlversuche</div></div>
@@ -1314,6 +1315,7 @@
     const statusEl = document.getElementById("status");
     const feedbackEl = document.getElementById("feedback");
     const learningSummaryEl = document.getElementById("learningSummary");
+    const mistakeAnalysisEl = document.getElementById("mistakeAnalysis");
     const progressEl = document.getElementById("progress");
     const progressFillEl = document.getElementById("progressFill");
     const stepIndicatorEl = document.getElementById("stepIndicator");
@@ -1676,8 +1678,33 @@
       return "Nochmal versuchen";
     }
 
+    function rememberMistakeForKey(key) {
+      if (!STEP_ORDER.includes(key)) return;
+      mistakeSlots.add(key);
+    }
+
+    function getMistakeSlotsInStepOrder() {
+      return STEP_ORDER.filter((key) => mistakeSlots.has(key));
+    }
+
+    function renderMistakeAnalysis() {
+      const orderedMistakes = getMistakeSlotsInStepOrder();
+      if (!orderedMistakes.length) {
+        mistakeAnalysisEl.textContent = "Fehleranalyse: Keine fehlerhaften Stationen gespeichert.";
+        return;
+      }
+
+      const labels = orderedMistakes.map((key) => {
+        const cardId = SOLUTION[key];
+        const card = getCardById(cardId);
+        return card ? card.label : key;
+      });
+
+      mistakeAnalysisEl.textContent = `Fehleranalyse (${orderedMistakes.length}): ${labels.join(" → ")}`;
+    }
+
     function buildLearningSummary() {
-      const wrongPlacedSlots = [...mistakeSlots];
+      const wrongPlacedSlots = getMistakeSlotsInStepOrder();
       if (wrongDecisions === 0) {
         return "Stark! Du hast alle Zuordnungen korrekt gelöst. Der Ablauf der Tarifrunde sitzt sicher.";
       }
@@ -1696,6 +1723,7 @@
       const ratingText = currentMode === "learn" ? getRating() : "Prüfungsmodus abgeschlossen";
       finalStatsEl.innerHTML = `Bewertung: <strong>${ratingText}</strong> · Trefferquote: <strong>${Math.round((rightDecisions / Math.max(1, rightDecisions + wrongDecisions)) * 100)}%</strong> · Versuche: <strong>${attempts}</strong>`;
       learningSummaryEl.textContent = buildLearningSummary();
+      renderMistakeAnalysis();
       finalOverlayEl.classList.add("open");
       finalOverlayEl.setAttribute("aria-hidden", "false");
     }
@@ -1791,7 +1819,7 @@
         wrongDecisions += 1;
         attempts += 1;
         wrongAttempts += 1;
-        mistakeSlots.add(key);
+        rememberMistakeForKey(key);
         playWrongSound();
         setStatusState("negative", "Diese Zuordnung ist noch nicht korrekt.");
         if (currentMode === "learn") {
@@ -1861,6 +1889,7 @@
         } else {
           slot.classList.add("wrong");
           wrong += 1;
+          rememberMistakeForKey(key);
         }
       });
 
@@ -1908,6 +1937,7 @@
       } else {
         setFeedbackState(null, "Neues Spiel gestartet. Arbeite ohne Hilfetexte bis zur Endauswertung.");
       }
+      mistakeAnalysisEl.textContent = "";
       finalOverlayEl.classList.remove("open");
       finalOverlayEl.setAttribute("aria-hidden", "true");
       renderCards();
