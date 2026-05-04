@@ -920,6 +920,41 @@
       font-size: 0.9rem;
     }
 
+    .error-analysis {
+      margin-top: 12px;
+      border: 1px solid #d9e7f5;
+      border-radius: 14px;
+      padding: 12px;
+      background: linear-gradient(160deg, #f9fcff, #eef5ff);
+      color: #274b6d;
+    }
+
+    .error-analysis h4 {
+      margin: 0 0 8px;
+      font-size: 0.96rem;
+      color: #1f4468;
+    }
+
+    .error-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .error-list li {
+      line-height: 1.4;
+    }
+
+    .error-tip {
+      margin-top: 10px;
+      border-left: 4px solid #6aa2db;
+      padding: 8px 10px;
+      background: #f2f8ff;
+      border-radius: 10px;
+      font-size: 0.88rem;
+    }
+
     .stats-visual {
       margin-top: 12px;
       display: grid;
@@ -1249,6 +1284,7 @@
       <h3>Spiel erfolgreich abgeschlossen</h3>
       <p id="finalStats">Du hast das Spiel abgeschlossen.</p>
       <div id="learningSummary" class="learning-summary"></div>
+      <div id="errorAnalysis" class="error-analysis" hidden></div>
       <div class="final-stats">
         <div class="stat-chip"><div class="value" id="statRight">0</div><div class="label">Richtige Entscheidungen</div></div>
         <div class="stat-chip"><div class="value" id="statWrong">0</div><div class="label">Fehlversuche</div></div>
@@ -1314,6 +1350,7 @@
     const statusEl = document.getElementById("status");
     const feedbackEl = document.getElementById("feedback");
     const learningSummaryEl = document.getElementById("learningSummary");
+    const errorAnalysisEl = document.getElementById("errorAnalysis");
     const progressEl = document.getElementById("progress");
     const progressFillEl = document.getElementById("progressFill");
     const stepIndicatorEl = document.getElementById("stepIndicator");
@@ -1347,6 +1384,7 @@
     let attempts = 0;
     let wrongAttempts = 0;
     let mistakeSlots = new Set();
+    let mistakeDetails = new Map();
     let totalClicks = 0;
     let gameStartTimestamp = null;
     let didComplete = false;
@@ -1676,6 +1714,45 @@
       return "Nochmal versuchen";
     }
 
+    function cleanCardLabel(label = "") {
+      return label.replace(/[^\p{L}\p{N}\s.-]/gu, "").trim();
+    }
+
+    function getSlotTitle(slotKey) {
+      const solutionCard = getCardById(SOLUTION[slotKey]);
+      return cleanCardLabel(solutionCard?.label || `Schritt ${slotKey}`);
+    }
+
+    function getMistakeExplanation(slotKey, wrongCardId) {
+      const slotTitle = getSlotTitle(slotKey);
+      const wrongCardTitle = cleanCardLabel(getCardById(wrongCardId)?.label || "diese Karte");
+      if (slotKey === "s10" || slotKey === "s5" || slotKey === "s8") {
+        return `Die Karte „${wrongCardTitle}“ wurde zeitlich unpassend eingeordnet. Prüfe die Reihenfolge rund um „${slotTitle}“ erneut.`;
+      }
+      return `Du hast hier „${wrongCardTitle}“ eingesetzt. Diese Station gehört an eine andere Stelle im Ablauf.`;
+    }
+
+    function buildErrorAnalysisHtml() {
+      if (!mistakeDetails.size) {
+        return `<h4>Fehleranalyse</h4><p>Sehr gut, du hast den Ablauf fehlerfrei verstanden.</p>`;
+      }
+
+      const items = [...mistakeDetails.entries()]
+        .map(([slotKey, detail]) => {
+          const title = getSlotTitle(slotKey);
+          const explanation = getMistakeExplanation(slotKey, detail.lastWrongCardId);
+          return `<li><strong>${title}</strong><br>${explanation}</li>`;
+        })
+        .join("");
+
+      const sortedSlots = [...mistakeDetails.keys()].map((slotKey) => getSlotTitle(slotKey));
+      const tip = sortedSlots.length > 1
+        ? `Schau dir besonders den Bereich von „${sortedSlots[0]}“ bis „${sortedSlots[sortedSlots.length - 1]}“ noch einmal an.`
+        : `Wiederhole besonders den Schritt „${sortedSlots[0]}“ und vergleiche ihn mit den Nachbarschritten.`;
+
+      return `<h4>Deine Fehler lagen bei:</h4><ol class="error-list">${items}</ol><div class="error-tip"><strong>Lerntipp:</strong> ${tip}</div>`;
+    }
+
     function buildLearningSummary() {
       const wrongPlacedSlots = [...mistakeSlots];
       if (wrongDecisions === 0) {
@@ -1696,6 +1773,8 @@
       const ratingText = currentMode === "learn" ? getRating() : "Prüfungsmodus abgeschlossen";
       finalStatsEl.innerHTML = `Bewertung: <strong>${ratingText}</strong> · Trefferquote: <strong>${Math.round((rightDecisions / Math.max(1, rightDecisions + wrongDecisions)) * 100)}%</strong> · Versuche: <strong>${attempts}</strong>`;
       learningSummaryEl.textContent = buildLearningSummary();
+      errorAnalysisEl.hidden = false;
+      errorAnalysisEl.innerHTML = buildErrorAnalysisHtml();
       finalOverlayEl.classList.add("open");
       finalOverlayEl.setAttribute("aria-hidden", "false");
     }
@@ -1792,6 +1871,10 @@
         attempts += 1;
         wrongAttempts += 1;
         mistakeSlots.add(key);
+        const detail = mistakeDetails.get(key) || { count: 0, lastWrongCardId: card.id };
+        detail.count += 1;
+        detail.lastWrongCardId = card.id;
+        mistakeDetails.set(key, detail);
         playWrongSound();
         setStatusState("negative", "Diese Zuordnung ist noch nicht korrekt.");
         if (currentMode === "learn") {
@@ -1894,6 +1977,7 @@
       attempts = 0;
       wrongAttempts = 0;
       mistakeSlots = new Set();
+      mistakeDetails = new Map();
       totalClicks = 0;
       gameStartTimestamp = null;
       didComplete = false;
@@ -1910,6 +1994,8 @@
       }
       finalOverlayEl.classList.remove("open");
       finalOverlayEl.setAttribute("aria-hidden", "true");
+      errorAnalysisEl.hidden = true;
+      errorAnalysisEl.innerHTML = "";
       renderCards();
       updateProgress();
       updateConnectors();
