@@ -1169,21 +1169,21 @@
           <line class="connector" data-active-for="s14" x1="1065" y1="930" x2="1065" y2="1020"></line>
           <path class="connector" data-active-for="s15" d="M1065,1140 L1065,1240 L800,1240"></path>
         </svg>
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s1" data-node-type="start"></button>
-        <button type="button" class="slot empty is-clickable group-action" data-key="s2" data-node-type="action"></button>
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s3" data-node-type="process"></button>
-        <button type="button" class="slot empty is-clickable is-decision group-negotiation" data-key="s4" data-node-type="decision"></button>
-        <button type="button" class="slot empty is-clickable group-result" data-key="s5" data-node-type="outcome"></button>
-        <button type="button" class="slot empty is-clickable group-action" data-key="s6" data-node-type="action"></button>
-        <button type="button" class="slot empty is-clickable group-action" data-key="s7" data-node-type="action"></button>
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s8" data-node-type="process"></button>
-        <button type="button" class="slot empty is-clickable group-result" data-key="s9" data-node-type="outcome"></button>
-        <button type="button" class="slot empty is-clickable group-result" data-key="s10" data-node-type="outcome"></button>
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s11" data-node-type="action"></button>
-        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s12" data-node-type="process"></button>
-        <button type="button" class="slot empty is-clickable group-result" data-key="s13" data-node-type="outcome"></button>
-        <button type="button" class="slot empty is-clickable group-result" data-key="s14" data-node-type="outcome"></button>
-        <button type="button" class="slot empty is-clickable group-result" data-key="s15" data-node-type="outcome"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s1" data-node-type="start" aria-label="Leeres Feld Schritt 1"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s2" data-node-type="action" aria-label="Leeres Feld Schritt 2"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s3" data-node-type="process" aria-label="Leeres Feld Schritt 3"></button>
+        <button type="button" class="slot empty is-clickable is-decision group-negotiation" data-key="s4" data-node-type="decision" aria-label="Leeres Entscheidungsfeld Schritt 4"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s5" data-node-type="outcome" aria-label="Leeres Feld Schritt 5"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s6" data-node-type="action" aria-label="Leeres Feld Schritt 6"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s7" data-node-type="action" aria-label="Leeres Feld Schritt 7"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s8" data-node-type="process" aria-label="Leeres Feld Schritt 8"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s9" data-node-type="outcome" aria-label="Leeres Feld Schritt 9"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s10" data-node-type="outcome" aria-label="Leeres Feld Schritt 10"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s11" data-node-type="action" aria-label="Leeres Feld Schritt 11"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s12" data-node-type="process" aria-label="Leeres Feld Schritt 12"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s13" data-node-type="outcome" aria-label="Leeres Feld Schritt 13"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s14" data-node-type="outcome" aria-label="Leeres Feld Schritt 14"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s15" data-node-type="outcome" aria-label="Leeres Feld Schritt 15"></button>
 
         <button type="button" class="info-btn" style="--x: 738px; --y: 120px;" data-info-key="tarifverhandlungen" aria-label="Warum ist das wichtig? Tarifverhandlungen">i</button>
         <button type="button" class="info-btn" style="--x: 738px; --y: 660px;" data-info-key="ergebnis-erzielt" aria-label="Warum ist das wichtig? Ergebnis erzielt">i</button>
@@ -1306,64 +1306,64 @@
     const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15"];
     const SLOT_HINTS = {
       s1: {
-        right: "Mit der Kündigung des Tarifvertrags startet die neue Tarifrunde.",
-        wrong: "Dieser Schritt steht am Anfang, weil zuerst der alte Tarifvertrag gekündigt wird."
+        right: "Richtig: Die Tarifrunde beginnt mit der Kündigung des bisherigen Tarifvertrags.",
+        wrong: "Hier gehört der Startpunkt „Kündigung TV“ hin."
       },
       s2: {
-        right: "In der ersten Verhandlungsrunde werden die Forderungen vorgestellt.",
-        wrong: "Die erste Verhandlungsrunde folgt direkt nach der Kündigung des Tarifvertrags."
+        right: "Richtig: Warnstreiks bauen nach dem Auftakt zusätzlichen Druck auf.",
+        wrong: "An dieser Position wird „Warnstreiks“ erwartet."
       },
       s3: {
-        right: "Bleibt eine Einigung aus, geht der Prozess in die nächste Eskalationsstufe.",
-        wrong: "Diese Karte passt hier nur, wenn in der ersten Runde noch keine Einigung erreicht wurde."
+        right: "Richtig: Danach folgt die erste Verhandlungsrunde.",
+        wrong: "Hier passt „1. Verhandlungsrunde“ in den Ablauf."
       },
       s4: {
-        right: "Nach Ende der Friedenspflicht sind Arbeitskampfmaßnahmen erlaubt.",
-        wrong: "Erst wenn die Friedenspflicht endet, sind Warnstreik oder Streik rechtlich möglich."
+        right: "Richtig: Ohne Einigung endet die Friedenspflicht; Urabstimmung über Streik wird vorbereitet.",
+        wrong: "Dieses Entscheidungsfeld erwartet „keine Einigung / Ende der Friedenspflicht / Urabstimmung über Streik“."
       },
       s5: {
-        right: "Der Streik ist ein zentrales Druckmittel der Beschäftigten.",
-        wrong: "Ein Streik kommt erst nach gescheiterten Verhandlungen und dem Ende der Friedenspflicht."
+        right: "Richtig: „Einigung (1)“ ist der direkte positive Ausgang nach der ersten Konfliktphase.",
+        wrong: "Auf dem oberen Ergebnisfeld gehört „Einigung (1)“."
       },
       s6: {
-        right: "Aktionen begleiten und verstärken die Mobilisierung im Konflikt.",
-        wrong: "Begleitende Aktionen kommen nach dem Streikbeginn, nicht davor."
+        right: "Richtig: Auf dem linken Ast folgt als Eskalation der Streik.",
+        wrong: "Hier wird „Streik“ erwartet."
       },
       s7: {
-        right: "Die Tarifrunde läuft mit weiteren Aktivitäten weiter.",
-        wrong: "Diese Station beschreibt den laufenden Verlauf der Tarifrunde nach den Aktionen."
+        right: "Richtig: Parallel kann es zur Aussperrung kommen.",
+        wrong: "Dieses Feld ist für „evtl. Aussperrung“ vorgesehen."
       },
       s8: {
-        right: "In der zweiten Runde entscheidet sich, ob ein Ergebnis möglich ist.",
-        wrong: "Diese Karte gehört später, weil zunächst erneut verhandelt werden muss."
+        right: "Richtig: Im weiteren Verlauf kommt die zweite Verhandlungsrunde.",
+        wrong: "An dieser Stelle gehört „2. Verhandlungsrunde“ hin."
       },
       s9: {
-        right: "Ein Ergebnis beendet den Konfliktpfad auf dem linken Ast.",
-        wrong: "Hier steht das positive Ergebnis der Verhandlungen auf dem linken Ast."
+        right: "Richtig: „Ergebnis“ markiert den erfolgreichen Ausgang des linken Pfads.",
+        wrong: "Hier wird die Karte „Ergebnis“ benötigt."
       },
       s10: {
-        right: "Die Urabstimmung legitimiert weitere Arbeitskampfmaßnahmen.",
-        wrong: "Die Urabstimmung beginnt erst, wenn ein Abschluss noch nicht erreicht ist."
+        right: "Richtig: Die Urabstimmung ist ein eigener Schritt vor dem Abschluss.",
+        wrong: "Dieses Feld erwartet „Urabstimmung“."
       },
       s11: {
-        right: "Mit dem Abschluss ist der Tarifkonflikt beendet.",
-        wrong: "Der Tarifvertrag steht am Ende dieses Zweigs, weil er den Konflikt abschließt."
+        right: "Richtig: Schlichtung ist der strukturierte Vermittlungsschritt im mittleren Pfad.",
+        wrong: "Hier gehört „Schlichtung“ hin."
       },
       s12: {
-        right: "Schlichtung ist ein strukturierter Versuch zur Einigung.",
-        wrong: "Schlichtung gehört in den rechten Zweig, wenn noch keine Einigung erzielt wurde."
+        right: "Richtig: Danach folgt die dritte Verhandlungsrunde.",
+        wrong: "An dieser Position wird „3. Verhandlungsrunde“ erwartet."
       },
       s13: {
-        right: "Eine neue Verhandlungsrunde führt zurück in den Prozess.",
-        wrong: "Die neue Verhandlungsrunde kommt nach der Schlichtung."
+        right: "Richtig: „Einigung (2)“ ist ein möglicher Abschluss nach der dritten Runde.",
+        wrong: "Hier passt die Karte „Einigung (2)“."
       },
       s14: {
-        right: "Ohne Ergebnis ist ein weiterer Anlauf notwendig.",
-        wrong: "„Kein Ergebnis“ ist eine Folge nach der erneuten Verhandlung im rechten Zweig."
+        right: "Richtig: Das Urabstimmungsergebnis führt in den finalen Abschlusszweig.",
+        wrong: "Dieses Feld ist für „Urabstimmung Ergebnis“ reserviert."
       },
       s15: {
-        right: "Der Neustart führt in den Zyklus zurück.",
-        wrong: "Der Neustart ist ein spätes Folgeschritt und führt zurück zur Verhandlungsrunde."
+        right: "Richtig: Der neue Tarifvertrag ist das gemeinsame Ziel der Pfade.",
+        wrong: "Als Endfeld gehört hier „neuer TV“ hin."
       }
     };
 
