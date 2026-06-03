@@ -1,6 +1,9 @@
 name: Restore diagram scrollbar once
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -8,6 +11,7 @@ permissions:
 
 jobs:
   restore-scrollbar:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -63,6 +67,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm .github/workflows/restore-scrollbar-once.yml
+          git rm -f .github/trigger-scrollbar-restore.txt || true
           git add index.html
           git commit -m "Restore horizontal scrolling for flow diagram"
           git push
