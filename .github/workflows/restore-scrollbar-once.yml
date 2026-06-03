@@ -1,0 +1,71 @@
+name: Restore diagram scrollbar once
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  restore-scrollbar:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Restore full-size scrollable board
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'index.html';
+          let s = fs.readFileSync(path, 'utf8');
+
+          s = s.replace(`    .board-wrap {
+      overflow: visible;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .board-viewport {
+      position: relative;
+      width: 100%;
+      margin: 0 auto;
+      overflow: hidden;
+      border-radius: 34px;
+    }
+`, `    .board-wrap {
+      overflow: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-gutter: stable both-edges;
+    }
+
+    .board-viewport {
+      position: relative;
+      width: 1240px;
+      height: 1320px;
+      margin: 0 auto;
+      overflow: visible;
+      border-radius: 34px;
+    }
+`);
+
+          s = s.replace('    const boardViewportEl = document.getElementById("boardViewport");\n', '');
+          s = s.replace('    const BOARD_WIDTH = 1240;\n    const BOARD_HEIGHT = 1320;\n', '');
+          s = s.replace(/\n    function resizeBoardToViewport\(\) \{[\s\S]*?\n    \}\n\n    function playTone/, '\n    function playTone');
+          s = s.replace('    window.addEventListener("resize", resizeBoardToViewport);\n\n', '');
+          s = s.replace('    resizeBoardToViewport();\n', '');
+
+          fs.writeFileSync(path, s, 'utf8');
+          NODE
+      - name: Commit restored scrollbar and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/restore-scrollbar-once.yml
+          git add index.html
+          git commit -m "Restore horizontal scrolling for flow diagram"
+          git push
