@@ -1,0 +1,21 @@
+{
+  "name": "flussdiagramm-spiel-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Native iOS/iPadOS wrapper for the Flussdiagramm-Spiel",
+  "scripts": {
+    "build:app": "node scripts/build-app.mjs",
+    "ios:add": "npm run build:app && npx cap add ios",
+    "ios:sync": "npm run build:app && npx cap sync ios",
+    "ios:open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "latest",
+    "@capacitor/haptics": "latest",
+    "@capacitor/ios": "latest",
+    "@capacitor/share": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "latest"
+  }
+}
