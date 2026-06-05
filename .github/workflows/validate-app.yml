@@ -1,0 +1,26 @@
+name: Validate native app
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - run: npm run build:app
+      - name: Check generated app files
+        run: |
+          test -f dist/index.html
+          test -f dist/privacy.html
+          test -f dist/support.html
+          grep -q "scrollbar-gutter: stable both-edges" dist/index.html
+          ! grep -q "navigator.serviceWorker.register" dist/index.html
