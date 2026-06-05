@@ -1,0 +1,11 @@
+{
+  "appId": "de.themohamedh.flussdiagrammspiel",
+  "appName": "Flussdiagramm-Spiel",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "ios": {
+    "contentInset": "automatic",
+    "preferredContentMode": "mobile",
+    "scrollEnabled": true
+  }
+}
