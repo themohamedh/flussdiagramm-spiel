@@ -1,0 +1,1 @@
+Trigger the Liquid Glass stylesheet integration and validation.
