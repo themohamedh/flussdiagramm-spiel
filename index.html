@@ -465,18 +465,20 @@
     }
 
     .board-wrap {
-      overflow: visible;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-    }
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable both-edges;
+  }
 
-    .board-viewport {
-      position: relative;
-      width: 100%;
-      margin: 0 auto;
-      overflow: hidden;
-      border-radius: 34px;
-    }
+  .board-viewport {
+    position: relative;
+    width: 1240px;
+    height: 1320px;
+    margin: 0 auto;
+    overflow: visible;
+    border-radius: 34px;
+  }
 
     .board {
       position: relative;
@@ -1289,7 +1291,6 @@
     const finalOverlayEl = document.getElementById("finalOverlay");
     const finalStatsEl = document.getElementById("finalStats");
     const boardEl = document.getElementById("board");
-    const boardViewportEl = document.getElementById("boardViewport");
     const flowSvgEl = document.getElementById("flowSvg");
     const statRightEl = document.getElementById("statRight");
     const statWrongEl = document.getElementById("statWrong");
@@ -1318,8 +1319,6 @@
     let soundEnabled = true;
     let currentMode = "learn";
     const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15"];
-    const BOARD_WIDTH = 1240;
-    const BOARD_HEIGHT = 1320;
     const SLOT_HINTS = {
       s1: {
         right: "Richtig: Die Tarifrunde beginnt mit der Kündigung des bisherigen Tarifvertrags.",
@@ -1409,14 +1408,6 @@
     };
 
     const SOLVE_LOCK_HINT = "Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.";
-
-    function resizeBoardToViewport() {
-      if (!boardViewportEl || !boardEl) return;
-      const availableWidth = Math.max(320, boardViewportEl.clientWidth);
-      const scale = Math.min(1, availableWidth / BOARD_WIDTH);
-      boardEl.style.transform = `scale(${scale})`;
-      boardViewportEl.style.height = `${BOARD_HEIGHT * scale}px`;
-    }
 
     function playTone({ frequency = 440, duration = 0.08, type = "sine", volume = 0.04 }) {
       if (!soundEnabled) return;
@@ -2037,11 +2028,8 @@
       });
     });
 
-    window.addEventListener("resize", resizeBoardToViewport);
-
     // Initialzustand
     slots.forEach((slot) => setSlotText(slot));
-    resizeBoardToViewport();
     renderCards();
     updateProgress();
     updateConnectors();
