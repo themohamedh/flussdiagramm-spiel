@@ -1098,6 +1098,13 @@
     }
 
   </style>
+  <meta name="theme-color" content="#1e3a8a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Flussdiagramm" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./app-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./app-icon.svg" />
 </head>
 <body>
   <main class="app">
@@ -2036,6 +2043,12 @@
     updateFocusMode();
     updateSolveButtonState();
     setGameMode("learn");
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {}));
+    }
   </script>
 </body>
 </html>
