@@ -1,1 +1,1 @@
-Trigger one-time workflow to restore full-size horizontal scrolling for the flow diagram.
+Trigger the corrected one-time workflow to restore full-size horizontal scrolling for the flow diagram.
