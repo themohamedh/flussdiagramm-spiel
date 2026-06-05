@@ -2,50 +2,33 @@ name: Integrate PWA once
 
 "on":
   push:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  integrate:
-    if: github.actor != 'github-actions[bot]'
+  integrate-pwa:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Add PWA metadata and registration
-        shell: bash
+      - name: Add PWA links
         run: |
           python3 - <<'PY'
           from pathlib import Path
-
-          path = Path("index.html")
-          text = path.read_text(encoding="utf-8")
-          head = '''  <meta name="theme-color" content="#1e3a8a" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Flussdiagramm" />
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="icon" href="./app-icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="./app-icon.svg" />
-'''
-          registration = '''
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js").catch(() => {});
-      });
-    }
-  </script>
-'''
-          if 'rel="manifest"' not in text:
-              text = text.replace("  <title>Flussdiagramm-Spiel: Tarifrunde & Streik</title>\n", "  <title>Flussdiagramm-Spiel: Tarifrunde & Streik</title>\n" + head, 1)
-          if 'navigator.serviceWorker.register' not in text:
-              text = text.replace("</body>", registration + "</body>", 1)
-          path.write_text(text, encoding="utf-8")
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          links = '  <meta name="theme-color" content="#1e3a8a" />\n  <meta name="apple-mobile-web-app-capable" content="yes" />\n  <meta name="apple-mobile-web-app-status-bar-style" content="default" />\n  <meta name="apple-mobile-web-app-title" content="Flussdiagramm" />\n  <link rel="manifest" href="./manifest.webmanifest" />\n  <link rel="icon" href="./app-icon.svg" type="image/svg+xml" />\n  <link rel="apple-touch-icon" href="./app-icon.svg" />\n'
+          register = '\n  <script>\n    if ("serviceWorker" in navigator) {\n      window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {}));\n    }\n  </script>\n'
+          if 'rel="manifest"' not in s:
+              s = s.replace('</head>', links + '</head>', 1)
+          if 'navigator.serviceWorker.register' not in s:
+              s = s.replace('</body>', register + '</body>', 1)
+          p.write_text(s, encoding='utf-8')
           PY
-      - name: Commit PWA integration and remove workflow
-        shell: bash
+      - name: Commit integration
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
