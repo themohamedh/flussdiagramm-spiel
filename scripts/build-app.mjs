@@ -6,6 +6,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = resolve(root, "dist");
 const appFiles = [
   "index.html",
+  "liquid-glass.css",
   "app-icon.svg",
   "C9BD4168-EDB7-44C9-8257-97976AA34FB8.png",
   "privacy.html",
