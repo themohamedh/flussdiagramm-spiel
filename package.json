@@ -5,6 +5,7 @@
   "description": "Native iOS/iPadOS wrapper for the Flussdiagramm-Spiel",
   "scripts": {
     "build:app": "node scripts/build-app.mjs",
+    "test": "node scripts/validate-flow-game.mjs",
     "ios:add": "npm run build:app && npx cap add ios",
     "ios:sync": "npm run build:app && npx cap sync ios",
     "ios:open": "npx cap open ios"
