@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flussdiagramm-Spiel: Tarifrunde & Streik</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
     :root {
       --bg-soft-1: #eaf2fb;
       --bg-soft-2: #e2ebf8;
@@ -46,10 +44,11 @@
     }
 
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
 
     body {
       margin: 0;
-      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
       color: var(--text);
       background-color: var(--bg-soft-1);
       min-height: 100vh;
@@ -763,6 +762,84 @@
       padding: 0;
     }
 
+    .slot-learning-btn {
+      width: 34px;
+      height: 34px;
+      color: #0b4f85;
+      background: #eef8ff;
+      border: 2px solid #ffffff;
+      box-shadow: 0 6px 16px rgba(20, 74, 112, 0.24);
+    }
+
+    .slot-learning-btn::after {
+      content: "Lerninfo";
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 6px);
+      translate: -50% 4px;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      padding: 5px 8px;
+      border-radius: 8px;
+      color: #fff;
+      background: #173f62;
+      font-size: 0.7rem;
+      font-weight: 700;
+      transition: opacity .18s ease, translate .18s ease;
+    }
+
+    .slot-learning-btn:hover::after,
+    .slot-learning-btn:focus-visible::after {
+      opacity: 1;
+      translate: -50% 0;
+    }
+
+    .teaching-note {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid rgba(142, 176, 207, 0.45);
+      border-radius: 14px;
+      background: rgba(238, 247, 255, 0.76);
+      color: #294b69;
+      line-height: 1.5;
+    }
+
+    .teaching-note strong {
+      color: #173f62;
+    }
+
+    .learning-detail {
+      display: grid;
+      gap: 10px;
+    }
+
+    .learning-detail-section {
+      padding: 11px 12px;
+      border-radius: 14px;
+      background: rgba(245, 250, 255, 0.82);
+      border: 1px solid rgba(151, 185, 213, 0.38);
+    }
+
+    .learning-detail-section strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #153f63;
+    }
+
+    .learning-detail-section p {
+      margin: 0;
+    }
+
+    .source-links {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    .source-links li + li {
+      margin-top: 5px;
+    }
+
     .info-popup,
     .final-overlay {
       position: fixed;
@@ -823,7 +900,7 @@
 
     .card,
     .slot {
-      font-family: "Inter", "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Segoe UI", Arial, sans-serif;
+      font-family: system-ui, -apple-system, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Segoe UI", Arial, sans-serif;
     }
 
     .card {
@@ -1111,7 +1188,7 @@
   <main class="app">
     <section class="panel hero-panel">
       <h1>Flussdiagramm-Spiel: Tarifrunde und Streik</h1>
-      <p class="subtitle">Setze die Wortkarten in der richtigen Reihenfolge in das Flussdiagramm. Erst prüfen, dann bei Bedarf mit „Lösung anzeigen“ vergleichen.</p>
+      <p class="subtitle">Ordne die Schritte einer Tarifrunde zu und erkläre anschließend mit den Lerninfos, warum jeder Schritt für Beschäftigte und Arbeitgeber wichtig ist.</p>
     </section>
 
     <section class="panel top-grid">
@@ -1119,12 +1196,21 @@
         <h2>Spielziel auf einen Blick</h2>
         <ul class="quick-guide">
           <li>Wortkarte auswählen und in eine Station im Flussdiagramm setzen.</li>
-          <li>Mit „Prüfen“ werden nur Fehler markiert.</li>
-          <li>Die vollständige Lösung kommt erst über „Lösung anzeigen“.</li>
+          <li>Im Lernmodus öffnet das Fragezeichen an einem richtigen Kästchen ein Beispiel und eine Denkfrage.</li>
+          <li>Im Prüfungsmodus gibt es erst nach „Prüfen“ eine Auswertung.</li>
+          <li>„Lösung anzeigen“ dient zum Vergleichen und zählt nicht als selbstständig gelöst.</li>
         </ul>
         <details class="more-info">
-          <summary>Mehr erfahren</summary>
-          <p>Das Spiel hilft dir, den Ablauf einer Tarifrunde mit möglichen Streikschritten als Prozess zu verstehen. Zusatzinfos bekommst du über die kleinen Info-Buttons im Diagramm. Bei Fragen zum Inhalt oder zur Anwendung wende dich bitte an Frau Schmück.</p>
+          <summary>Unterrichtseinsatz und fachlicher Hinweis</summary>
+          <div class="teaching-note">
+            <strong>Vorschlag für den Unterricht:</strong> Erst allein oder zu zweit zuordnen, danach für drei ausgewählte Kästchen das Praxisbeispiel lesen und die Denkfrage besprechen. Zum Abschluss vergleichen Gruppen ihre Begründungen.
+          </div>
+          <p>Das Diagramm zeigt einen vereinfachten möglichen Ablauf. Reale Tarifrunden können anders verlaufen. Warnstreiks sind erst nach Ablauf der Friedenspflicht zulässig; ein längerer Streik setzt üblicherweise gescheiterte Verhandlungen und eine Urabstimmung nach den Regeln der Gewerkschaft voraus.</p>
+          <ul class="source-links">
+            <li><a href="https://www.bpb.de/kurz-knapp/hintergrund-aktuell/547428/faq-was-ist-ein-streik/" target="_blank" rel="noopener noreferrer">bpb: Was ist ein Streik?</a></li>
+            <li><a href="https://www.bpb.de/themen/arbeit/arbeitsmarktpolitik/316978/grundlagen-der-lohnpolitik/" target="_blank" rel="noopener noreferrer">bpb: Tarifverhandlungen und Arbeitskampf</a></li>
+            <li><a href="https://www.bpb.de/kurz-knapp/lexika/politiklexikon/296518/urabstimmung/" target="_blank" rel="noopener noreferrer">bpb: Urabstimmung</a></li>
+          </ul>
         </details>
       </div>
 
@@ -1158,12 +1244,13 @@
         <div class="progress-track" aria-hidden="true">
           <div id="progressFill" class="progress-fill"></div>
         </div>
-        <div id="status" class="status">Wähle eine Karte aus und setze sie in ein Feld.</div>
-        <div id="feedback" class="feedback">Feedback erscheint hier nach dem Einsetzen oder Prüfen.</div>
+        <div id="status" class="status" role="status" aria-live="polite">Wähle eine Karte aus und setze sie in ein Feld.</div>
+        <div id="feedback" class="feedback" role="status" aria-live="polite">Feedback erscheint hier nach dem Einsetzen oder Prüfen.</div>
       </div>
     </section>
 
     <section class="panel board-wrap">
+      <p class="section-note">Tipp für kleine Bildschirme: Das Diagramm lässt sich horizontal und vertikal verschieben. Fragezeichen an richtig gelösten Kästchen öffnen die Lerninfos.</p>
       <div class="board-viewport" id="boardViewport">
       <div class="board" id="board">
         <svg class="flow" id="flowSvg" viewBox="0 0 1240 1320" aria-hidden="true">
@@ -1229,19 +1316,19 @@
     <a class="footer-github-link" href="https://github.com/themohamedh" target="_blank" rel="noopener noreferrer">GitHub-Profil: themohamedh</a>
   </footer>
 
-  <div id="infoPopup" class="info-popup" aria-hidden="true">
-    <div class="info-card">
+  <div id="infoPopup" class="info-popup" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+    <div class="info-card" tabindex="-1">
       <h3 id="infoTitle">Warum ist das wichtig?</h3>
-      <p id="infoText"></p>
+      <div id="infoText" class="learning-detail"></div>
       <div class="popup-actions">
         <button id="closeInfoBtn" type="button">Schließen</button>
       </div>
     </div>
   </div>
 
-  <div id="finalOverlay" class="final-overlay" aria-hidden="true">
-    <div class="final-card">
-      <h3>Spiel erfolgreich abgeschlossen</h3>
+  <div id="finalOverlay" class="final-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="finalTitle">
+    <div class="final-card" tabindex="-1">
+      <h3 id="finalTitle">Spiel erfolgreich abgeschlossen</h3>
       <p id="finalStats">Du hast das Spiel abgeschlossen.</p>
       <div id="learningSummary" class="learning-summary"></div>
       <div id="mistakeAnalysis" class="learning-summary"></div>
@@ -1264,6 +1351,7 @@
     </div>
   </div>
 
+  <script src="./unterrichtsmaterial.js"></script>
   <script>
     // Alle Karten für die aktuell sichtbaren Felder im Diagramm
     const CARD_ITEMS = [
@@ -1295,8 +1383,12 @@
     const solveHintEl = document.getElementById("solveHint");
     const soundToggleEl = document.getElementById("soundToggle");
     const infoPopupEl = document.getElementById("infoPopup");
+    const infoTitleEl = document.getElementById("infoTitle");
     const infoTextEl = document.getElementById("infoText");
+    const closeInfoBtnEl = document.getElementById("closeInfoBtn");
     const finalOverlayEl = document.getElementById("finalOverlay");
+    const finalTitleEl = document.getElementById("finalTitle");
+    const finalRestartBtnEl = document.getElementById("finalRestartBtn");
     const finalStatsEl = document.getElementById("finalStats");
     const boardEl = document.getElementById("board");
     const flowSvgEl = document.getElementById("flowSvg");
@@ -1313,6 +1405,7 @@
     const connectors = [...document.querySelectorAll(".connector")];
     const infoButtons = [...document.querySelectorAll(".info-btn")];
     const legends = [...document.querySelectorAll(".legend")];
+    const LEARNING_MATERIAL = window.TARIFF_FLOW_LEARNING || {};
 
     let selectedCardId = null;
     let placed = {}; // slotKey -> cardId
@@ -1324,8 +1417,11 @@
     let totalClicks = 0;
     let gameStartTimestamp = null;
     let didComplete = false;
+    let solutionWasShown = false;
+    let examEvaluated = false;
     let soundEnabled = true;
     let currentMode = "learn";
+    let lastFocusedElement = null;
     const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15"];
     const SLOT_HINTS = {
       s1: {
@@ -1416,6 +1512,78 @@
     };
 
     const SOLVE_LOCK_HINT = "Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.";
+    const learningButtons = slots.map((slot) => {
+      const button = document.createElement("button");
+      const key = slot.dataset.key;
+      button.type = "button";
+      button.className = "info-btn slot-learning-btn";
+      button.dataset.slotKey = key;
+      button.textContent = "?";
+      button.hidden = true;
+      button.setAttribute("aria-label", `Lerninfo zu Schritt ${STEP_ORDER.indexOf(key) + 1} öffnen`);
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        registerInteraction();
+        playClickSound();
+        openLearningPopup(key);
+      });
+      boardEl.appendChild(button);
+      return button;
+    });
+
+    function positionLearningButtons() {
+      learningButtons.forEach((button) => {
+        const slot = slots.find((element) => element.dataset.key === button.dataset.slotKey);
+        if (!slot) return;
+        button.style.setProperty("--x", `${slot.offsetLeft + slot.offsetWidth - 17}px`);
+        button.style.setProperty("--y", `${slot.offsetTop - 17}px`);
+      });
+    }
+
+    function updateLearningButtons() {
+      positionLearningButtons();
+      infoButtons.forEach((button) => {
+        button.hidden = currentMode === "exam" && !didComplete && !solutionWasShown;
+      });
+      learningButtons.forEach((button) => {
+        const key = button.dataset.slotKey;
+        const canShow = Boolean(LEARNING_MATERIAL[key])
+          && placed[key] === SOLUTION[key]
+          && (currentMode === "learn" || didComplete || solutionWasShown);
+        button.hidden = !canShow;
+      });
+    }
+
+    function addLearningSection(label, text) {
+      if (!text) return;
+      const section = document.createElement("section");
+      section.className = "learning-detail-section";
+      const heading = document.createElement("strong");
+      const paragraph = document.createElement("p");
+      heading.textContent = label;
+      paragraph.textContent = text;
+      section.append(heading, paragraph);
+      infoTextEl.appendChild(section);
+    }
+
+    function showInfoDialog(title) {
+      lastFocusedElement = document.activeElement;
+      infoTitleEl.textContent = title;
+      infoPopupEl.classList.add("open");
+      infoPopupEl.setAttribute("aria-hidden", "false");
+      closeInfoBtnEl.focus();
+    }
+
+    function openLearningPopup(key) {
+      const entry = LEARNING_MATERIAL[key];
+      if (!entry) return;
+      infoTextEl.replaceChildren();
+      addLearningSection("Warum ist dieser Schritt wichtig?", entry.why);
+      addLearningSection("Beispiel aus der Praxis", entry.example);
+      addLearningSection("Denkfrage für die Klasse", entry.question);
+      addLearningSection("Wichtig zur Einordnung", entry.caveat);
+      showInfoDialog(entry.title || `Lerninfo zu Schritt ${STEP_ORDER.indexOf(key) + 1}`);
+    }
 
     function playTone({ frequency = 440, duration = 0.08, type = "sine", volume = 0.04 }) {
       if (!soundEnabled) return;
@@ -1505,7 +1673,7 @@
 
     function renderCards() {
       cardsEl.innerHTML = "";
-      const focusKey = getCurrentFocusKey();
+      const focusKey = currentMode === "learn" ? getCurrentFocusKey() : null;
       const expectedCardId = focusKey ? SOLUTION[focusKey] : null;
       deck.forEach((card) => {
         const used = cardUsed(card.id);
@@ -1559,6 +1727,7 @@
       });
       updateSlotHighlight();
       updateFocusMode();
+      updateLearningButtons();
     }
 
     function updateSlotHighlight() {
@@ -1580,11 +1749,12 @@
 
         const hasPlaced = relatedKeys.some((key) => placed[key]);
         const isCorrect = relatedKeys.some((key) => placed[key] && placed[key] === SOLUTION[key]);
-        const isRevealed = relatedKeys.some((key) => placed[key] && placed[key] === SOLUTION[key]);
+        const showCorrectness = currentMode === "learn" || didComplete || solutionWasShown;
+        const isRevealed = showCorrectness ? isCorrect : hasPlaced;
 
         connector.classList.toggle("revealed", isRevealed);
-        connector.classList.toggle("active", hasPlaced && !isCorrect);
-        connector.classList.toggle("correct", isCorrect);
+        connector.classList.toggle("active", hasPlaced && (!showCorrectness || !isCorrect));
+        connector.classList.toggle("correct", showCorrectness && isCorrect);
       });
     }
 
@@ -1604,13 +1774,14 @@
     }
 
     function getCurrentFocusKey() {
+      if (currentMode !== "learn") return null;
       const nextKey = STEP_ORDER.find((key) => placed[key] !== SOLUTION[key]);
       return nextKey || null;
     }
 
     function updateFocusMode() {
       const focusKey = getCurrentFocusKey();
-      const isComplete = !focusKey;
+      const isComplete = !focusKey || currentMode !== "learn";
       boardEl.classList.toggle("focus-active", !isComplete);
       flowSvgEl.classList.toggle("focus-active", !isComplete);
 
@@ -1630,14 +1801,16 @@
     function openInfoPopup(infoKey) {
       const text = WHY_IMPORTANT_TEXT[infoKey];
       if (!text) return;
-      infoTextEl.textContent = text;
-      infoPopupEl.classList.add("open");
-      infoPopupEl.setAttribute("aria-hidden", "false");
+      infoTextEl.replaceChildren();
+      addLearningSection("Warum ist das wichtig?", text);
+      showInfoDialog("Warum ist das wichtig?");
     }
 
     function closeInfoPopup() {
       infoPopupEl.classList.remove("open");
       infoPopupEl.setAttribute("aria-hidden", "true");
+      if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
+      lastFocusedElement = null;
     }
 
     function getRating() {
@@ -1683,10 +1856,11 @@
     }
 
     function showCompletionOverlay() {
-      if (didComplete) return;
+      if (didComplete || solutionWasShown) return;
       const allCorrect = STEP_ORDER.every((key) => placed[key] === SOLUTION[key]);
-      if (!allCorrect) return;
+      if (!allCorrect || (currentMode === "exam" && !examEvaluated)) return;
       didComplete = true;
+      finalTitleEl.textContent = "Spiel selbstständig abgeschlossen";
       updateFinalStats();
       const ratingText = currentMode === "learn" ? getRating() : "Prüfungsmodus abgeschlossen";
       finalStatsEl.innerHTML = `Bewertung: <strong>${ratingText}</strong> · Trefferquote: <strong>${Math.round((rightDecisions / Math.max(1, rightDecisions + wrongDecisions)) * 100)}%</strong> · Versuche: <strong>${attempts}</strong>`;
@@ -1694,6 +1868,9 @@
       renderMistakeAnalysis();
       finalOverlayEl.classList.add("open");
       finalOverlayEl.setAttribute("aria-hidden", "false");
+      updateLearningButtons();
+      lastFocusedElement = document.activeElement;
+      finalRestartBtnEl.focus();
     }
 
     function updateFinalStats() {
@@ -1714,6 +1891,20 @@
       pieStatsEl.dataset.label = `${rightPercent}%\nTrefferquote`;
     }
 
+    function applyModePresentation() {
+      slots.forEach((slot) => {
+        const key = slot.dataset.key;
+        slot.classList.remove("correct", "wrong");
+        if (currentMode === "learn" && placed[key]) {
+          slot.classList.add(placed[key] === SOLUTION[key] ? "correct" : "wrong");
+        }
+      });
+      renderCards();
+      updateProgress();
+      updateConnectors();
+      updateLearningButtons();
+    }
+
     function setGameMode(mode) {
       currentMode = mode === "exam" ? "exam" : "learn";
       modeButtons.forEach((button) => {
@@ -1726,6 +1917,7 @@
         setStatusState(null, "Prüfungsmodus aktiv: Arbeite möglichst selbstständig ohne Hilfetexte.");
         setFeedbackState(null, "Zuordnungen werden gesammelt. Die komplette Auswertung erscheint am Ende.");
       }
+      applyModePresentation();
     }
 
     function removeFromSlot(slot) {
@@ -1743,6 +1935,7 @@
       updateFocusMode();
       setStatusState(null, `„${removed.label}“ wurde entfernt.`);
       setFeedbackState(null, "Karte entfernt. Du kannst sie neu einsetzen.");
+      updateLearningButtons();
     }
 
     function moveCardToSlot(slot, cardId) {
@@ -1750,6 +1943,7 @@
       const key = slot.dataset.key;
       const card = getCardById(cardId);
       if (!card) return;
+      if (currentMode === "exam") examEvaluated = false;
       playClickSound();
 
       // Karte ggf. aus altem Slot holen
@@ -1772,27 +1966,29 @@
       slot.classList.remove("correct", "wrong");
 
       if (SOLUTION[key] === card.id) {
-        slot.classList.add("correct");
         rightDecisions += 1;
         attempts += 1;
-        playCorrectSound();
-        setStatusState("positive", "Richtige Zuordnung gesetzt.");
         if (currentMode === "learn") {
-          setFeedbackState("positive", `✅ Richtig: „${card.label}“. ${SLOT_HINTS[key].right}`);
+          slot.classList.add("correct");
+          playCorrectSound();
+          setStatusState("positive", "Richtige Zuordnung gesetzt.");
+          setFeedbackState("positive", `✅ Richtig: „${card.label}“. ${SLOT_HINTS[key].right} Öffne jetzt das Fragezeichen am Kästchen.`);
         } else {
+          setStatusState(null, "Zuordnung gespeichert.");
           setFeedbackState(null, "Zuordnung gespeichert.");
         }
       } else {
-        slot.classList.add("wrong");
         wrongDecisions += 1;
         attempts += 1;
         wrongAttempts += 1;
         rememberMistakeForKey(key);
-        playWrongSound();
-        setStatusState("negative", "Diese Zuordnung ist noch nicht korrekt.");
         if (currentMode === "learn") {
+          slot.classList.add("wrong");
+          playWrongSound();
+          setStatusState("negative", "Diese Zuordnung ist noch nicht korrekt.");
           setFeedbackState("negative", `❌ Nicht korrekt: ${SLOT_HINTS[key].wrong}`);
         } else {
+          setStatusState(null, "Zuordnung gespeichert.");
           setFeedbackState(null, "Zuordnung gespeichert.");
         }
       }
@@ -1802,24 +1998,35 @@
       updateProgress();
       updateConnectors();
       updateFocusMode();
+      updateLearningButtons();
       showCompletionOverlay();
     }
 
     function updateProgress() {
       let correct = 0;
+      let filled = 0;
       slots.forEach((slot) => {
         const key = slot.dataset.key;
+        if (placed[key]) filled += 1;
         if (placed[key] && placed[key] === SOLUTION[key]) correct += 1;
       });
-      const percent = Math.round((correct / slots.length) * 100);
-      progressEl.textContent = `${correct} / ${slots.length} richtig`;
+      const visibleProgress = currentMode === "learn" ? correct : filled;
+      const percent = Math.round((visibleProgress / slots.length) * 100);
+      progressEl.textContent = currentMode === "learn"
+        ? `${correct} / ${slots.length} richtig`
+        : `${filled} / ${slots.length} belegt`;
       progressFillEl.style.width = `${percent}%`;
 
-      const solvedStepsInOrder = STEP_ORDER.findIndex((key) => placed[key] !== SOLUTION[key]);
-      const currentStep = solvedStepsInOrder === -1 ? STEP_ORDER.length : solvedStepsInOrder + 1;
-      stepIndicatorEl.textContent = `Schritt ${currentStep} von ${STEP_ORDER.length}`;
+      if (currentMode === "learn") {
+        const solvedStepsInOrder = STEP_ORDER.findIndex((key) => placed[key] !== SOLUTION[key]);
+        const currentStep = solvedStepsInOrder === -1 ? STEP_ORDER.length : solvedStepsInOrder + 1;
+        stepIndicatorEl.textContent = `Schritt ${currentStep} von ${STEP_ORDER.length}`;
+      } else {
+        stepIndicatorEl.textContent = `${filled} von ${STEP_ORDER.length} Feldern belegt`;
+      }
       updateFocusMode();
       updateSolveButtonState();
+      updateLearningButtons();
       showCompletionOverlay();
     }
 
@@ -1860,8 +2067,11 @@
           rememberMistakeForKey(key);
         }
       });
+      if (currentMode === "exam") examEvaluated = empty === 0;
 
-      if (wrong > 0) {
+      if (empty > 0 && currentMode === "exam") {
+        setStatusState(null, `Prüfung noch nicht abgeschlossen: ${empty} Felder sind leer.`);
+      } else if (wrong > 0) {
         setStatusState("negative", `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`);
       } else if (empty > 0) {
         setStatusState(null, "Zwischenstand: noch Felder offen");
@@ -1875,12 +2085,19 @@
           setFeedbackState("positive", "Sehr gut! Keine Fehler markiert. Wenn du vergleichen willst, nutze „Lösung anzeigen“.");
         }
       } else {
-        setFeedbackState(null, "Prüfung gespeichert. Die vollständige Auswertung erscheint nach Abschluss.");
+        setFeedbackState(
+          wrong > 0 ? "negative" : "positive",
+          empty > 0
+            ? "Belege zuerst alle Felder, damit die Prüfungsleistung vollständig ausgewertet werden kann."
+            : `Endauswertung: ${correct} richtige und ${wrong} falsche Zuordnungen.`
+        );
       }
+      if (currentMode === "exam" && empty === 0 && wrong === 0) showCompletionOverlay();
       updateProgress();
       renderCards();
       updateConnectors();
       updateFocusMode();
+      updateLearningButtons();
     }
 
     function resetAll() {
@@ -1894,6 +2111,8 @@
       totalClicks = 0;
       gameStartTimestamp = null;
       didComplete = false;
+      solutionWasShown = false;
+      examEvaluated = false;
       deck = shuffle(CARD_ITEMS);
       slots.forEach((slot) => {
         slot.classList.remove("correct", "wrong", "drag-over");
@@ -1908,15 +2127,18 @@
       mistakeAnalysisEl.textContent = "";
       finalOverlayEl.classList.remove("open");
       finalOverlayEl.setAttribute("aria-hidden", "true");
+      finalTitleEl.textContent = "Spiel erfolgreich abgeschlossen";
       renderCards();
       updateProgress();
       updateConnectors();
       updateFocusMode();
       updateSolveButtonState();
+      updateLearningButtons();
     }
 
     function solveAll() {
       if (!allSlotsFilled()) return;
+      solutionWasShown = true;
       placed = {};
       slots.forEach((slot) => {
         const key = slot.dataset.key;
@@ -1928,14 +2150,15 @@
       });
       selectedCardId = null;
       didComplete = false;
+      finalTitleEl.textContent = "Lösung zum Vergleichen";
       setStatusState("positive", "Lösung wird angezeigt.");
-      setFeedbackState("positive", "Alle Felder wurden korrekt ausgefüllt.");
+      setFeedbackState(null, "Die Musterlösung ist eingeblendet. Nutze die Fragezeichen, um die Bedeutung der Schritte zu besprechen.");
       renderCards();
       updateProgress();
       updateConnectors();
       updateFocusMode();
       updateSolveButtonState();
-      showCompletionOverlay();
+      updateLearningButtons();
     }
 
     slots.forEach((slot) => {
@@ -1956,9 +2179,11 @@
         moveCardToSlot(slot, droppedCardId);
         const isCorrectDrop = droppedCardId && SOLUTION[key] === droppedCardId;
         slot.classList.remove("drop-ok", "drop-bad");
-        void slot.offsetWidth;
-        slot.classList.add(isCorrectDrop ? "drop-ok" : "drop-bad");
-        setTimeout(() => slot.classList.remove("drop-ok", "drop-bad"), 380);
+        if (currentMode === "learn") {
+          void slot.offsetWidth;
+          slot.classList.add(isCorrectDrop ? "drop-ok" : "drop-bad");
+          setTimeout(() => slot.classList.remove("drop-ok", "drop-bad"), 380);
+        }
         boardEl.classList.remove("is-dragging");
         slots.forEach((target) => target.classList.remove("is-valid-target"));
       });
@@ -1988,7 +2213,7 @@
       });
     });
 
-    document.getElementById("closeInfoBtn").addEventListener("click", () => {
+    closeInfoBtnEl.addEventListener("click", () => {
       registerInteraction();
       playClickSound();
       closeInfoPopup();
@@ -2014,7 +2239,7 @@
       playClickSound();
       solveAll();
     });
-    document.getElementById("finalRestartBtn").addEventListener("click", () => {
+    finalRestartBtnEl.addEventListener("click", () => {
       registerInteraction();
       playClickSound();
       resetAll();
@@ -2035,6 +2260,22 @@
         setGameMode(button.dataset.mode);
       });
     });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if (infoPopupEl.classList.contains("open")) {
+        closeInfoPopup();
+        return;
+      }
+      if (finalOverlayEl.classList.contains("open")) {
+        finalOverlayEl.classList.remove("open");
+        finalOverlayEl.setAttribute("aria-hidden", "true");
+        if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
+        lastFocusedElement = null;
+      }
+    });
+
+    window.addEventListener("resize", positionLearningButtons);
 
     // Initialzustand
     slots.forEach((slot) => setSlotText(slot));
