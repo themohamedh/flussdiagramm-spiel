@@ -1,7 +1,9 @@
-const CACHE_NAME = "flussdiagramm-spiel-v1";
+const CACHE_NAME = "flussdiagramm-spiel-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./liquid-glass.css",
+  "./unterrichtsmaterial.js",
   "./manifest.webmanifest",
   "./app-icon.svg",
   "./C9BD4168-EDB7-44C9-8257-97976AA34FB8.png"
