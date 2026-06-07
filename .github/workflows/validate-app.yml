@@ -15,11 +15,14 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      - run: npm test
       - run: npm run build:app
       - name: Check generated app files
         run: |
           test -f dist/index.html
           test -f dist/liquid-glass.css
+          test -f dist/unterrichtsmaterial.js
+          test -f dist/manifest.webmanifest
           test -f dist/privacy.html
           test -f dist/support.html
           grep -q "scrollbar-gutter: stable both-edges" dist/index.html
