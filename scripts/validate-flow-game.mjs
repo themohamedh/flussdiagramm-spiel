@@ -468,6 +468,48 @@ await checkGroup("Abschluss-Effekte und reduzierte Bewegung", (requireCondition)
   );
 });
 
+await checkGroup("Tarif Toni als optionaler Begleiter", (requireCondition) => {
+  const moveBody = extractFunctionBody(indexSource, "moveTarifToni");
+  const scheduleBody = extractFunctionBody(indexSource, "scheduleToniMovement");
+  const toggleBody = extractFunctionBody(indexSource, "setToniEnabled");
+  const placementBody = extractFunctionBody(indexSource, "moveCardToSlot");
+  const modeBody = extractFunctionBody(indexSource, "setGameMode");
+  const completionBody = extractFunctionBody(indexSource, "showCompletionOverlay");
+
+  requireCondition(
+    /id=["']tarifToni["']/.test(indexSource) && /id=["']toniToggle["']/.test(indexSource),
+    "Tarif Toni und sein Ein-/Aus-Schalter muessen vorhanden sein."
+  );
+  requireCondition(
+    /pointer-events:\s*none/.test(indexSource),
+    "Tarif Toni darf Touch-, Klick- und Drag-and-Drop-Eingaben nicht blockieren."
+  );
+  requireCondition(
+    /setInterval\s*\(\s*moveTarifToni\s*,\s*30000\s*\)/.test(scheduleBody),
+    "Tarif Toni soll seine Position etwa alle 30 Sekunden wechseln."
+  );
+  requireCondition(
+    /reducedMotion\.matches/.test(moveBody) && /reducedMotion\.matches/.test(scheduleBody),
+    "Automatische Toni-Bewegung muss bei reduzierter Bewegung deaktiviert sein."
+  );
+  requireCondition(
+    /tarifToniEl\.hidden\s*=\s*!enabled/.test(toggleBody) && /clearInterval\s*\(\s*toniMoveTimer\s*\)/.test(scheduleBody),
+    "Beim Ausschalten muss Toni verschwinden und seine Bewegung stoppen."
+  );
+  requireCondition(
+    /TONI_CORRECT/.test(placementBody) && /TONI_WRONG/.test(placementBody) && /TONI_EXAM/.test(placementBody),
+    "Toni braucht getrennte Reaktionen fuer richtig, falsch und Pruefungsmodus."
+  );
+  requireCondition(
+    /TONI_LEARN_HINTS/.test(modeBody) && /TONI_EXAM/.test(modeBody),
+    "Der Moduswechsel muss Lernhinweise und neutrale Pruefungsnachrichten trennen."
+  );
+  requireCondition(
+    /TONI_SUCCESS/.test(completionBody),
+    "Beim erfolgreichen Abschluss muss Toni eine Erfolgsnachricht anzeigen."
+  );
+});
+
 await checkGroup("Dialoge mit grundlegenden ARIA-Merkmalen", (requireCondition) => {
   for (const id of ["infoPopup", "finalOverlay"]) {
     const tag = getOpeningTagById(indexSource, id);

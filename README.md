@@ -16,6 +16,13 @@ Fachliche Quellen und Hinweise sind direkt im Spiel und in `unterrichtsmaterial.
 - Eine noch nicht vollständig richtige Prüfung markiert offene oder falsche Stationen mit einer sanften Animation und einem motivierenden Hinweis.
 - Die Effekte blockieren keine Eingaben, berücksichtigen `prefers-reduced-motion` und verwenden keine externen Bibliotheken.
 
+## Tarif Toni
+
+- Der optionale Bildschirm-Begleiter reagiert im Lernmodus auf richtige und falsche Zuordnungen, ohne Lösungen vorwegzunehmen.
+- Im Prüfungsmodus zeigt Toni ausschließlich neutrale Motivation.
+- Der Schalter „Tarif Toni an/aus“ blendet Figur, Nachrichten und automatische Bewegung vollständig ein oder aus.
+- Toni wechselt auf Desktop etwa alle 30 Sekunden zwischen freien Randpositionen. Auf Smartphones nutzt er nur die unteren Ecken; bei `prefers-reduced-motion` bleibt er statisch.
+
 ## Prüfung
 
 ```powershell
