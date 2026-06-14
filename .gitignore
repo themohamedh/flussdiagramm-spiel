@@ -4,3 +4,6 @@ ios/App/Pods/
 ios/App/App/public/
 ios/App/DerivedData/
 *.xcuserstate
+.env
+.env.*
+.vercel/

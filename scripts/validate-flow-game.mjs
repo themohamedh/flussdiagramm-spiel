@@ -510,6 +510,29 @@ await checkGroup("Tarif Toni als optionaler Begleiter", (requireCondition) => {
   );
 });
 
+await checkGroup("Tarif Toni Chat ohne Frontend-Geheimnisse", (requireCondition) => {
+  requireCondition(
+    /id=["']toniChat["']/.test(indexSource) &&
+      /id=["']toniChatInput["']/.test(indexSource) &&
+      /id=["']toniChatSend["']/.test(indexSource) &&
+      /id=["']toniChatClose["']/.test(indexSource),
+    "Der Toni-Chat braucht Fenster, Eingabe, Senden- und Schliessen-Button."
+  );
+  requireCondition(
+    /fetch\s*\(\s*TONI_CHAT_API_URL/.test(indexSource) &&
+      /mode:\s*currentMode\s*===\s*["']exam["']\s*\?\s*["']exam["']\s*:\s*["']learning["']/.test(indexSource),
+    "Der Toni-Chat muss die sichere API-Zwischenstelle mit dem aktuellen Modus aufrufen."
+  );
+  requireCondition(
+    /maxlength=["']500["']/.test(indexSource) && /Tarif Toni denkt kurz nach/.test(indexSource),
+    "Nachrichtenlimit und freundlicher Ladezustand fehlen."
+  );
+  requireCondition(
+    !/OPENROUTER_API_KEY|Bearer\s+[A-Za-z0-9_-]{12,}/.test(indexSource),
+    "Im Frontend darf kein OpenRouter-Key oder Bearer-Token stehen."
+  );
+});
+
 await checkGroup("Dialoge mit grundlegenden ARIA-Merkmalen", (requireCondition) => {
   for (const id of ["infoPopup", "finalOverlay"]) {
     const tag = getOpeningTagById(indexSource, id);

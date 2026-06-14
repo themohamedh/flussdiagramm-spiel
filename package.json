@@ -5,7 +5,9 @@
   "description": "Native iOS/iPadOS wrapper for the Flussdiagramm-Spiel",
   "scripts": {
     "build:app": "node scripts/build-app.mjs",
-    "test": "node scripts/validate-flow-game.mjs",
+    "test": "node scripts/validate-flow-game.mjs && node scripts/test-tarif-toni-api.mjs",
+    "test:api": "node scripts/test-tarif-toni-api.mjs",
+    "serve": "node scripts/serve-local.mjs",
     "ios:add": "npm run build:app && npx cap add ios",
     "ios:sync": "npm run build:app && npx cap sync ios",
     "ios:open": "npx cap open ios"
