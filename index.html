@@ -345,13 +345,6 @@
       min-width: 150px;
     }
 
-    #toniMoveToggle {
-      --btn-bg: linear-gradient(150deg, rgba(242, 248, 255, 0.96), rgba(221, 233, 249, 0.86));
-      --btn-color: #38546d;
-      --btn-border: rgba(148, 176, 207, 0.72);
-      min-width: 190px;
-    }
-
     .progress {
       border: 1px solid #b8cbeb;
       background: linear-gradient(130deg, #edf4ff, #dceaff);
@@ -1454,7 +1447,6 @@
             <div class="meta-group">
               <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
               <button id="toniToggle" aria-pressed="true">🧢 Tarif Toni an</button>
-              <button id="toniMoveToggle" aria-pressed="true">🚶 Tarif Toni bewegen: an</button>
               <span id="progress" class="progress">0 / 15 richtig</span>
             </div>
           </div>
@@ -1618,7 +1610,6 @@
     const solveHintEl = document.getElementById("solveHint");
     const soundToggleEl = document.getElementById("soundToggle");
     const toniToggleEl = document.getElementById("toniToggle");
-    const toniMoveToggleEl = document.getElementById("toniMoveToggle");
     const tarifToniEl = document.getElementById("tarifToni");
     const toniFigureEl = document.getElementById("toniFigure");
     const toniBubbleEl = document.getElementById("toniBubble");
@@ -1670,8 +1661,6 @@
     let currentMode = "learn";
     let lastFocusedElement = null;
     let toniEnabled = true;
-    let toniMovementEnabled = true;
-    let toniInteractionPaused = false;
     let toniChatOpen = false;
     let toniMessageTimer = null;
     let toniMoveTimer = null;
@@ -1907,7 +1896,7 @@
     }
 
     function isToniMovementPaused() {
-      return !toniEnabled || !toniMovementEnabled || reducedMotion.matches || toniInteractionPaused || toniChatOpen;
+      return !toniEnabled || reducedMotion.matches || toniChatOpen;
     }
 
     function overlapsImportantArea(candidate) {
@@ -1970,18 +1959,6 @@
       }, delay);
     }
 
-    function setToniMovementEnabled(enabled) {
-      toniMovementEnabled = enabled;
-      toniMoveToggleEl.textContent = enabled ? "🚶 Tarif Toni bewegen: an" : "🚶 Tarif Toni bewegen: aus";
-      toniMoveToggleEl.setAttribute("aria-pressed", String(enabled));
-      if (!enabled) {
-        clearTimeout(toniMoveTimer);
-        clearTimeout(toniMovingTimer);
-        tarifToniEl.classList.remove("is-moving");
-      }
-      scheduleToniMovement();
-    }
-
     function setToniChatOpen(open) {
       toniChatOpen = open && toniEnabled;
       toniChatEl.hidden = !toniChatOpen;
@@ -2022,7 +1999,7 @@
           : chooseToniMessage(TONI_EXAM);
         showToniMessage(greeting, 5000);
       }
-      scheduleToniMovement();
+      scheduleToniMovement(enabled ? 2500 : 30000);
     }
 
     function playCelebrationSound() {
@@ -2769,12 +2746,6 @@
       setToniEnabled(!toniEnabled);
     });
 
-    toniMoveToggleEl.addEventListener("click", () => {
-      registerInteraction();
-      playClickSound();
-      setToniMovementEnabled(!toniMovementEnabled);
-    });
-
     toniFigureEl.addEventListener("click", () => {
       registerInteraction();
       playClickSound();
@@ -2785,35 +2756,6 @@
       event.preventDefault();
       registerInteraction();
       answerToniChat();
-    });
-
-    tarifToniEl.addEventListener("pointerenter", () => {
-      toniInteractionPaused = true;
-      clearTimeout(toniMoveTimer);
-    });
-    tarifToniEl.addEventListener("pointerdown", () => {
-      toniInteractionPaused = true;
-      clearTimeout(toniMoveTimer);
-    });
-    tarifToniEl.addEventListener("pointerup", () => {
-      if (!toniChatOpen) {
-        toniInteractionPaused = false;
-        scheduleToniMovement(30000);
-      }
-    });
-    tarifToniEl.addEventListener("pointerleave", () => {
-      toniInteractionPaused = false;
-      scheduleToniMovement(30000);
-    });
-    tarifToniEl.addEventListener("focusin", () => {
-      toniInteractionPaused = true;
-      clearTimeout(toniMoveTimer);
-    });
-    tarifToniEl.addEventListener("focusout", () => {
-      setTimeout(() => {
-        toniInteractionPaused = tarifToniEl.contains(document.activeElement);
-        if (!toniInteractionPaused) scheduleToniMovement(30000);
-      }, 0);
     });
 
     modeButtons.forEach((button) => {
@@ -2846,7 +2788,7 @@
       positionLearningButtons();
       tarifToniEl.style.setProperty("--toni-x", "0px");
       tarifToniEl.style.setProperty("--toni-y", "0px");
-      scheduleToniMovement(30000);
+      scheduleToniMovement(2500);
     });
     reducedMotion.addEventListener?.("change", () => scheduleToniMovement());
     window.addEventListener("beforeunload", () => {
@@ -2864,7 +2806,6 @@
     updateSolveButtonState();
     setGameMode("learn");
     setToniEnabled(true);
-    setToniMovementEnabled(true);
   </script>
 
   <script>

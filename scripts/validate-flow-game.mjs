@@ -472,7 +472,6 @@ await checkGroup("Tarif Toni als optionaler Begleiter", (requireCondition) => {
   const moveBody = extractFunctionBody(indexSource, "moveTarifToni");
   const scheduleBody = extractFunctionBody(indexSource, "scheduleToniMovement");
   const toggleBody = extractFunctionBody(indexSource, "setToniEnabled");
-  const movementToggleBody = extractFunctionBody(indexSource, "setToniMovementEnabled");
   const movementPauseBody = extractFunctionBody(indexSource, "isToniMovementPaused");
   const targetBody = extractFunctionBody(indexSource, "getSafeToniTarget");
   const chatBody = extractFunctionBody(indexSource, "setToniChatOpen");
@@ -481,8 +480,8 @@ await checkGroup("Tarif Toni als optionaler Begleiter", (requireCondition) => {
   const completionBody = extractFunctionBody(indexSource, "showCompletionOverlay");
 
   requireCondition(
-    /id=["']tarifToni["']/.test(indexSource) && /id=["']toniToggle["']/.test(indexSource) && /id=["']toniMoveToggle["']/.test(indexSource),
-    "Tarif Toni sowie seine Sichtbarkeits- und Bewegungsschalter muessen vorhanden sein."
+    /id=["']tarifToni["']/.test(indexSource) && /id=["']toniToggle["']/.test(indexSource) && !/id=["']toniMoveToggle["']/.test(indexSource),
+    "Tarif Toni und sein Sichtbarkeitsschalter muessen vorhanden sein; ein separater Bewegungsschalter darf nicht erscheinen."
   );
   requireCondition(
     /pointer-events:\s*none/.test(indexSource),
@@ -509,16 +508,17 @@ await checkGroup("Tarif Toni als optionaler Begleiter", (requireCondition) => {
     "Beim Ausschalten muss Toni verschwinden und seine Bewegung stoppen."
   );
   requireCondition(
-    /toniMovementEnabled\s*=\s*enabled/.test(movementToggleBody) && /clearTimeout\s*\(\s*toniMoveTimer\s*\)/.test(movementToggleBody),
-    "Die automatische Bewegung braucht einen unabhaengigen Ein-/Aus-Schalter."
+    /scheduleToniMovement\s*\(\s*enabled\s*\?\s*2500\s*:\s*30000\s*\)/.test(toggleBody)
+      && /window\.addEventListener\s*\(\s*["']resize["'][\s\S]*?scheduleToniMovement\s*\(\s*2500\s*\)/.test(indexSource),
+    "Nach dem Einschalten soll Toni kurzfristig sichtbar loslaufen und danach regelmaessig weiterziehen."
   );
   requireCondition(
-    /toniChatOpen\s*=\s*open/.test(chatBody) && /clearTimeout\s*\(\s*toniMoveTimer\s*\)/.test(chatBody),
-    "Bei geoeffnetem Toni-Chat muss die automatische Bewegung pausieren."
+    /toniChatOpen\s*=\s*open/.test(chatBody) && /clearTimeout\s*\(\s*toniMoveTimer\s*\)/.test(chatBody) && !/toniInteractionPaused/.test(indexSource),
+    "Nur bei geoeffnetem Toni-Chat darf die automatische Bewegung pausieren."
   );
   requireCondition(
-    /pointerenter/.test(indexSource) && /focusin/.test(indexSource) && /beforeunload/.test(indexSource),
-    "Hover, Fokus und Seitenende muessen Tonis Timer sauber pausieren oder aufraeumen."
+    /beforeunload/.test(indexSource),
+    "Beim Seitenende muessen Tonis Timer sauber aufgeraeumt werden."
   );
   requireCondition(
     /TONI_CORRECT/.test(placementBody) && /TONI_WRONG/.test(placementBody) && /TONI_EXAM/.test(placementBody),
