@@ -918,24 +918,55 @@
 
     .toni-figure {
       flex: 0 0 auto;
-      width: 62px;
-      height: 72px;
+      width: 86px;
+      height: 106px;
       display: grid;
       place-items: center;
-      border: 2px solid rgba(107, 159, 190, .72);
-      border-radius: 48% 48% 42% 42%;
-      background: linear-gradient(155deg, #fff, #d8eef8);
-      box-shadow: 0 12px 24px rgba(32, 78, 108, .22);
-      font-size: 2.05rem;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      filter: drop-shadow(0 8px 5px rgba(25, 48, 72, .28));
       transform-origin: bottom center;
       pointer-events: auto;
       cursor: pointer;
     }
 
-    .tarif-toni.is-talking .toni-figure { animation: toniNod .65s ease; }
-    .tarif-toni.is-moving .toni-figure { animation: toniWalk .7s ease-in-out infinite alternate; }
+    .toni-sprite {
+      width: 82px;
+      height: 102px;
+      overflow: visible;
+      shape-rendering: crispEdges;
+      image-rendering: pixelated;
+      transform-origin: bottom center;
+      transition: transform .18s steps(2, end);
+    }
+
+    .toni-shadow { transform-origin: center; }
+    .toni-body,
+    .toni-head,
+    .toni-arm-left,
+    .toni-arm-right,
+    .toni-leg-left,
+    .toni-leg-right { transform-box: fill-box; }
+    .toni-body,
+    .toni-head { transform-origin: center bottom; }
+    .toni-arm-left,
+    .toni-arm-right,
+    .toni-leg-left,
+    .toni-leg-right { transform-origin: center top; }
+
+    .tarif-toni.facing-left .toni-sprite { transform: scaleX(-1); }
+    .tarif-toni.is-talking .toni-head { animation: toniPixelNod .55s steps(3, end) 2; }
+    .tarif-toni.is-talking .toni-arm-right { animation: toniPixelPoint .55s steps(3, end) 2; }
+    .tarif-toni.is-moving .toni-body { animation: toniPixelBob .42s steps(2, end) infinite; }
+    .tarif-toni.is-moving .toni-head { animation: toniPixelHeadBob .42s steps(2, end) infinite; }
+    .tarif-toni.is-moving .toni-arm-left,
+    .tarif-toni.is-moving .toni-leg-right { animation: toniPixelLimbA .42s steps(2, end) infinite; }
+    .tarif-toni.is-moving .toni-arm-right,
+    .tarif-toni.is-moving .toni-leg-left { animation: toniPixelLimbB .42s steps(2, end) infinite; }
+    .tarif-toni.is-moving .toni-shadow { animation: toniPixelShadow .42s steps(2, end) infinite; }
     .toni-figure:hover,
-    .toni-figure:focus-visible { box-shadow: 0 0 0 4px rgba(47, 129, 255, .18), 0 12px 24px rgba(32, 78, 108, .25); }
+    .toni-figure:focus-visible { filter: drop-shadow(0 0 5px rgba(47, 129, 255, .8)) drop-shadow(0 8px 5px rgba(25, 48, 72, .28)); }
 
     .toni-bubble {
       max-width: 196px;
@@ -984,15 +1015,39 @@
     }
     .toni-chat-form button { min-height: 38px; padding: 8px 10px; }
 
-    @keyframes toniNod {
-      0%, 100% { transform: rotate(0) translateY(0); }
-      40% { transform: rotate(-4deg) translateY(-3px); }
-      70% { transform: rotate(3deg) translateY(-1px); }
+    @keyframes toniPixelNod {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(3px) rotate(4deg); }
     }
 
-    @keyframes toniWalk {
-      from { transform: translateY(0) rotate(-2deg); }
-      to { transform: translateY(-5px) rotate(2deg); }
+    @keyframes toniPixelPoint {
+      0%, 100% { transform: rotate(0); }
+      50% { transform: rotate(-58deg) translate(-2px, -1px); }
+    }
+
+    @keyframes toniPixelBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    @keyframes toniPixelHeadBob {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-3px) rotate(2deg); }
+    }
+
+    @keyframes toniPixelLimbA {
+      0%, 100% { transform: rotate(24deg); }
+      50% { transform: rotate(-24deg); }
+    }
+
+    @keyframes toniPixelLimbB {
+      0%, 100% { transform: rotate(-24deg); }
+      50% { transform: rotate(24deg); }
+    }
+
+    @keyframes toniPixelShadow {
+      0%, 100% { transform: scaleX(1); opacity: .38; }
+      50% { transform: scaleX(.72); opacity: .24; }
     }
 
     .confetti-piece {
@@ -1311,7 +1366,8 @@
       .bar-row { grid-template-columns: 1fr; gap: 4px; }
       .pie-chart { width: 118px; height: 118px; }
       .tarif-toni { right: 8px; bottom: 8px; width: min(230px, calc(100vw - 16px)); }
-      .toni-figure { width: 50px; height: 58px; font-size: 1.65rem; }
+      .toni-figure { width: 66px; height: 82px; }
+      .toni-sprite { width: 64px; height: 80px; }
       .toni-bubble { max-width: 164px; font-size: .76rem; }
       .toni-chat { bottom: 67px; width: min(250px, calc(100vw - 16px)); }
       .footer-github-link {
@@ -1532,7 +1588,53 @@
   <div id="celebrationLayer" class="celebration-layer" aria-hidden="true"></div>
   <div id="tryAgainLayer" class="try-again-layer" aria-hidden="true"></div>
   <aside id="tarifToni" class="tarif-toni" aria-label="Tarif Toni, optionaler Lernbegleiter" aria-live="polite">
-    <button id="toniFigure" class="toni-figure" type="button" aria-expanded="false" aria-controls="toniChat" aria-label="Chat mit Tarif Toni öffnen">🧑‍🏭</button>
+    <button id="toniFigure" class="toni-figure" type="button" aria-expanded="false" aria-controls="toniChat" aria-label="Chat mit Tarif Toni öffnen">
+      <svg class="toni-sprite" viewBox="0 0 64 80" role="img" aria-label="Tarif Toni als Retro-Pixel-Figur">
+        <ellipse class="toni-shadow" cx="32" cy="75" rx="20" ry="4" fill="#16324a" opacity=".35"/>
+        <g class="toni-leg-left">
+          <path d="M24 52h9v16h-4v6H17v-5h7z" fill="#234b83"/>
+          <path d="M17 69h13v6H15v-4z" fill="#17283c"/>
+          <path d="M20 69h10v2H18z" fill="#4f7195"/>
+        </g>
+        <g class="toni-leg-right">
+          <path d="M34 52h9v17h7v5H35v-7h-3z" fill="#315f9b"/>
+          <path d="M37 69h14v6H35v-4z" fill="#17283c"/>
+          <path d="M38 69h11v2H36z" fill="#5c82aa"/>
+        </g>
+        <g class="toni-body">
+          <path d="M19 31h26l5 9-5 19H18l-5-19z" fill="#b52d3a"/>
+          <path d="M22 32h7v27h-9l-4-18z" fill="#df4350"/>
+          <path d="M29 31h6v28h-6z" fill="#f2c443"/>
+          <path d="M35 31h8l4 10-4 18h-8z" fill="#8e2030"/>
+          <path d="M18 51h28v7H18z" fill="#203a59"/>
+          <path d="M29 51h7v7h-7z" fill="#e5b52f"/>
+          <path d="M17 38h31v3H17z" fill="#f05a5f" opacity=".7"/>
+        </g>
+        <g class="toni-arm-left">
+          <path d="M15 34h8v20h-7l-5-15z" fill="#c63242"/>
+          <path d="M14 51h9v8h-8l-4-5z" fill="#f0b07a"/>
+          <path d="M14 55h9v4h-8z" fill="#e58e61"/>
+        </g>
+        <g class="toni-arm-right">
+          <path d="M42 34h8l4 17-7 3-7-16z" fill="#8e2030"/>
+          <path d="M46 50h9v8h-8l-3-4z" fill="#f0b07a"/>
+          <path d="M47 54h8v4h-8z" fill="#e58e61"/>
+        </g>
+        <g class="toni-head">
+          <path d="M20 12h25v18l-7 7H26l-7-7z" fill="#f2b57f"/>
+          <path d="M20 17h4v13h-5V19zM41 17h5v13h-5z" fill="#d98658"/>
+          <path d="M24 14h18v5H24z" fill="#683923"/>
+          <path d="M24 22h5v4h-5zM36 22h5v4h-5z" fill="#17283c"/>
+          <path d="M26 23h2v2h-2zM38 23h2v2h-2z" fill="#f6f4d4"/>
+          <path d="M29 29h9v3h-9z" fill="#85323c"/>
+          <path d="M31 27h4v2h-4z" fill="#d98658"/>
+          <path d="M20 9h25v8H20z" fill="#1f548a"/>
+          <path d="M24 5h17v7H24z" fill="#2f75ad"/>
+          <path d="M40 10h10v4H40z" fill="#173e6a"/>
+          <path d="M27 7h10v3H27z" fill="#f0c33c"/>
+        </g>
+      </svg>
+    </button>
     <div id="toniBubble" class="toni-bubble"></div>
     <section id="toniChat" class="toni-chat" aria-label="Chat mit Tarif Toni" hidden>
       <p id="toniChatResponse">Frag mich nach einem Denkanstoß. Im Prüfungsmodus bleibe ich neutral.</p>
@@ -1940,6 +2042,8 @@
       const baseLeft = window.innerWidth - tarifToniEl.offsetWidth - margin;
       const baseTop = window.innerHeight - tarifToniEl.offsetHeight - margin;
       const target = getSafeToniTarget();
+      const currentLeft = tarifToniEl.getBoundingClientRect().left;
+      tarifToniEl.classList.toggle("facing-left", target.left < currentLeft);
       tarifToniEl.classList.add("is-moving");
       clearTimeout(toniMovingTimer);
       requestAnimationFrame(() => {
