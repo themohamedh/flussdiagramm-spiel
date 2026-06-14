@@ -696,6 +696,10 @@
       animation: shake .25s ease;
     }
 
+    .slot.try-again-shake {
+      animation: tryAgainShake .55s ease;
+    }
+
     @keyframes markIn {
       from { transform: translateY(-1px) scale(0.99); }
       to { transform: translateY(0) scale(1); }
@@ -707,6 +711,13 @@
       50% { transform: translateX(2px); }
       75% { transform: translateX(-1px); }
       100% { transform: translateX(0); }
+    }
+
+    @keyframes tryAgainShake {
+      0%, 100% { transform: translateX(0) rotate(0); }
+      25% { transform: translateX(-3px) rotate(-0.5deg); }
+      50% { transform: translateX(3px) rotate(0.5deg); }
+      75% { transform: translateX(-2px) rotate(-0.25deg); }
     }
 
     .slot.drop-ok {
@@ -855,6 +866,100 @@
     .info-popup.open,
     .final-overlay.open {
       display: flex;
+    }
+
+    .celebration-layer,
+    .try-again-layer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .celebration-layer {
+      z-index: 50;
+    }
+
+    .try-again-layer {
+      z-index: 35;
+      display: grid;
+      place-items: center;
+    }
+
+    .celebration-layer.active,
+    .try-again-layer.active {
+      visibility: visible;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      left: var(--start-x);
+      top: var(--start-y);
+      width: var(--size);
+      height: calc(var(--size) * 0.55);
+      border-radius: 3px;
+      background: var(--color);
+      opacity: 0;
+      animation: confettiBurst var(--duration) cubic-bezier(.18, .7, .25, 1) var(--delay) forwards;
+    }
+
+    @keyframes confettiBurst {
+      0% {
+        opacity: 0;
+        transform: translate(0, 0) rotate(0);
+      }
+      8% { opacity: 1; }
+      100% {
+        opacity: 0;
+        transform: translate(var(--travel-x), var(--travel-y)) rotate(var(--rotation));
+      }
+    }
+
+    .final-card.success-pulse {
+      animation: successPulse .8s ease;
+    }
+
+    @keyframes successPulse {
+      0% { transform: scale(.96); box-shadow: 0 18px 36px rgba(23, 58, 84, .2); }
+      45% { transform: scale(1.025); box-shadow: 0 0 0 8px rgba(42, 155, 109, .14), 0 28px 48px rgba(23, 58, 84, .28); }
+      100% { transform: scale(1); }
+    }
+
+    .try-again-message {
+      position: relative;
+      max-width: min(420px, calc(100vw - 32px));
+      padding: 14px 18px;
+      border: 1px solid rgba(116, 158, 194, .58);
+      border-radius: 18px;
+      color: #244f73;
+      background: rgba(246, 251, 255, .94);
+      box-shadow: 0 18px 40px rgba(31, 72, 105, .2);
+      font-weight: 700;
+      text-align: center;
+      opacity: 0;
+      animation: tryAgainMessage 1.8s ease forwards;
+    }
+
+    .try-again-card {
+      position: absolute;
+      width: 34px;
+      height: 24px;
+      border: 2px solid rgba(82, 137, 180, .42);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, .88);
+      opacity: 0;
+      animation: thoughtCard 1.5s ease var(--delay) forwards;
+    }
+
+    @keyframes tryAgainMessage {
+      0%, 100% { opacity: 0; transform: translateY(8px) scale(.96); }
+      18%, 78% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes thoughtCard {
+      0%, 100% { opacity: 0; transform: translate(0, 8px) scale(.8) rotate(0); }
+      25%, 70% { opacity: .9; transform: translate(var(--x), var(--y)) scale(1) rotate(var(--rotation)); }
     }
 
     .info-card,
@@ -1316,6 +1421,9 @@
     <a class="footer-github-link" href="https://github.com/themohamedh" target="_blank" rel="noopener noreferrer">GitHub-Profil: themohamedh</a>
   </footer>
 
+  <div id="celebrationLayer" class="celebration-layer" aria-hidden="true"></div>
+  <div id="tryAgainLayer" class="try-again-layer" aria-hidden="true"></div>
+
   <div id="infoPopup" class="info-popup" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
     <div class="info-card" tabindex="-1">
       <h3 id="infoTitle">Warum ist das wichtig?</h3>
@@ -1387,6 +1495,7 @@
     const infoTextEl = document.getElementById("infoText");
     const closeInfoBtnEl = document.getElementById("closeInfoBtn");
     const finalOverlayEl = document.getElementById("finalOverlay");
+    const finalCardEl = finalOverlayEl.querySelector(".final-card");
     const finalTitleEl = document.getElementById("finalTitle");
     const finalRestartBtnEl = document.getElementById("finalRestartBtn");
     const finalStatsEl = document.getElementById("finalStats");
@@ -1401,6 +1510,8 @@
     const barRightLabelEl = document.getElementById("barRightLabel");
     const barWrongLabelEl = document.getElementById("barWrongLabel");
     const pieStatsEl = document.getElementById("pieStats");
+    const celebrationLayerEl = document.getElementById("celebrationLayer");
+    const tryAgainLayerEl = document.getElementById("tryAgainLayer");
     const modeButtons = [...document.querySelectorAll(".mode-option")];
     const connectors = [...document.querySelectorAll(".connector")];
     const infoButtons = [...document.querySelectorAll(".info-btn")];
@@ -1422,6 +1533,11 @@
     let soundEnabled = true;
     let currentMode = "learn";
     let lastFocusedElement = null;
+    let celebrationActive = false;
+    let tryAgainActive = false;
+    let celebrationTimer = null;
+    let tryAgainTimer = null;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15"];
     const SLOT_HINTS = {
       s1: {
@@ -1614,6 +1730,94 @@
 
     function playWrongSound() {
       playTone({ frequency: 260, duration: 0.12, type: "sawtooth", volume: 0.035 });
+    }
+
+    function playCelebrationSound() {
+      [660, 790, 990].forEach((frequency, index) => {
+        setTimeout(() => playTone({ frequency, duration: 0.12, type: "triangle", volume: 0.035 }), index * 85);
+      });
+    }
+
+    function clearCelebration() {
+      clearTimeout(celebrationTimer);
+      celebrationTimer = null;
+      celebrationActive = false;
+      celebrationLayerEl.classList.remove("active");
+      celebrationLayerEl.replaceChildren();
+      finalCardEl.classList.remove("success-pulse");
+    }
+
+    function clearTryAgainAnimation() {
+      clearTimeout(tryAgainTimer);
+      tryAgainTimer = null;
+      tryAgainActive = false;
+      tryAgainLayerEl.classList.remove("active");
+      tryAgainLayerEl.replaceChildren();
+      slots.forEach((slot) => slot.classList.remove("try-again-shake"));
+    }
+
+    function triggerSuccessCelebration() {
+      if (celebrationActive) return;
+      clearTryAgainAnimation();
+      celebrationActive = true;
+      celebrationLayerEl.classList.add("active");
+      finalCardEl.classList.add("success-pulse");
+      playCelebrationSound();
+
+      if (!reducedMotion.matches) {
+        const colors = ["#2f81ff", "#2a9b6d", "#f2b84b", "#e76f8a", "#7b61ff"];
+        const fragment = document.createDocumentFragment();
+        const particleCount = Math.max(28, Math.min(48, slots.length * 3));
+        for (let index = 0; index < particleCount; index += 1) {
+          const fromLeft = index % 2 === 0;
+          const particle = document.createElement("span");
+          const startY = 18 + Math.random() * 56;
+          const travelX = 38 + Math.random() * 48;
+          particle.className = "confetti-piece";
+          particle.style.setProperty("--start-x", fromLeft ? "-3vw" : "103vw");
+          particle.style.setProperty("--start-y", `${startY}vh`);
+          particle.style.setProperty("--travel-x", `${fromLeft ? travelX : -travelX}vw`);
+          particle.style.setProperty("--travel-y", `${18 + Math.random() * 54}vh`);
+          particle.style.setProperty("--rotation", `${(Math.random() * 900) - 450}deg`);
+          particle.style.setProperty("--duration", `${2.2 + Math.random() * 1.2}s`);
+          particle.style.setProperty("--delay", `${Math.random() * .45}s`);
+          particle.style.setProperty("--size", `${7 + Math.random() * 7}px`);
+          particle.style.setProperty("--color", colors[index % colors.length]);
+          fragment.appendChild(particle);
+        }
+        celebrationLayerEl.appendChild(fragment);
+      }
+
+      celebrationTimer = setTimeout(clearCelebration, reducedMotion.matches ? 900 : 3800);
+    }
+
+    function triggerTryAgainAnimation() {
+      if (tryAgainActive || celebrationActive) return;
+      tryAgainActive = true;
+      tryAgainLayerEl.classList.add("active");
+
+      const message = document.createElement("div");
+      message.className = "try-again-message";
+      message.textContent = "Fast geschafft. Schau dir die Reihenfolge nochmal genau an.";
+      tryAgainLayerEl.appendChild(message);
+
+      slots
+        .filter((slot) => placed[slot.dataset.key] !== SOLUTION[slot.dataset.key])
+        .forEach((slot) => slot.classList.add("try-again-shake"));
+
+      if (!reducedMotion.matches) {
+        for (let index = 0; index < 5; index += 1) {
+          const thoughtCard = document.createElement("span");
+          thoughtCard.className = "try-again-card";
+          thoughtCard.style.setProperty("--delay", `${index * .08}s`);
+          thoughtCard.style.setProperty("--x", `${(index - 2) * 42}px`);
+          thoughtCard.style.setProperty("--y", `${index % 2 ? -58 : 54}px`);
+          thoughtCard.style.setProperty("--rotation", `${(index - 2) * 5}deg`);
+          message.appendChild(thoughtCard);
+        }
+      }
+
+      tryAgainTimer = setTimeout(clearTryAgainAnimation, reducedMotion.matches ? 900 : 1900);
     }
 
     function formatDuration(ms) {
@@ -1868,6 +2072,7 @@
       renderMistakeAnalysis();
       finalOverlayEl.classList.add("open");
       finalOverlayEl.setAttribute("aria-hidden", "false");
+      triggerSuccessCelebration();
       updateLearningButtons();
       lastFocusedElement = document.activeElement;
       finalRestartBtnEl.focus();
@@ -2093,6 +2298,7 @@
         );
       }
       if (currentMode === "exam" && empty === 0 && wrong === 0) showCompletionOverlay();
+      if (wrong > 0 || empty > 0) triggerTryAgainAnimation();
       updateProgress();
       renderCards();
       updateConnectors();
@@ -2128,6 +2334,8 @@
       finalOverlayEl.classList.remove("open");
       finalOverlayEl.setAttribute("aria-hidden", "true");
       finalTitleEl.textContent = "Spiel erfolgreich abgeschlossen";
+      clearCelebration();
+      clearTryAgainAnimation();
       renderCards();
       updateProgress();
       updateConnectors();

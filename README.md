@@ -10,12 +10,20 @@ Interaktives Lernspiel mit Flussdiagramm und Einsetz-Puzzle
 
 Fachliche Quellen und Hinweise sind direkt im Spiel und in `unterrichtsmaterial.js` dokumentiert.
 
+## Abschluss-Effekte
+
+- Eine vollständig richtige Lösung startet einmalig Konfetti von links und rechts sowie einen kurzen Erfolgsimpuls im Abschlussfenster.
+- Eine noch nicht vollständig richtige Prüfung markiert offene oder falsche Stationen mit einer sanften Animation und einem motivierenden Hinweis.
+- Die Effekte blockieren keine Eingaben, berücksichtigen `prefers-reduced-motion` und verwenden keine externen Bibliotheken.
+
 ## Prüfung
 
 ```powershell
 npm test
 npm run build:app
 ```
+
+Für einen manuellen Test beide Spielmodi prüfen: einmal vollständig richtig lösen und einmal mit offenen oder falschen Stationen auf „Prüfen“ klicken.
 
 ## Design Reference
 - See `APPLE_WEB_DESIGN_SYSTEM.md` for the Apple-inspired UI system specification.
