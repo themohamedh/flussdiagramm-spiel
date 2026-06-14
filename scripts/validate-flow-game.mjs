@@ -472,29 +472,53 @@ await checkGroup("Tarif Toni als optionaler Begleiter", (requireCondition) => {
   const moveBody = extractFunctionBody(indexSource, "moveTarifToni");
   const scheduleBody = extractFunctionBody(indexSource, "scheduleToniMovement");
   const toggleBody = extractFunctionBody(indexSource, "setToniEnabled");
+  const movementToggleBody = extractFunctionBody(indexSource, "setToniMovementEnabled");
+  const movementPauseBody = extractFunctionBody(indexSource, "isToniMovementPaused");
+  const targetBody = extractFunctionBody(indexSource, "getSafeToniTarget");
+  const chatBody = extractFunctionBody(indexSource, "setToniChatOpen");
   const placementBody = extractFunctionBody(indexSource, "moveCardToSlot");
   const modeBody = extractFunctionBody(indexSource, "setGameMode");
   const completionBody = extractFunctionBody(indexSource, "showCompletionOverlay");
 
   requireCondition(
-    /id=["']tarifToni["']/.test(indexSource) && /id=["']toniToggle["']/.test(indexSource),
-    "Tarif Toni und sein Ein-/Aus-Schalter muessen vorhanden sein."
+    /id=["']tarifToni["']/.test(indexSource) && /id=["']toniToggle["']/.test(indexSource) && /id=["']toniMoveToggle["']/.test(indexSource),
+    "Tarif Toni sowie seine Sichtbarkeits- und Bewegungsschalter muessen vorhanden sein."
   );
   requireCondition(
     /pointer-events:\s*none/.test(indexSource),
     "Tarif Toni darf Touch-, Klick- und Drag-and-Drop-Eingaben nicht blockieren."
   );
   requireCondition(
-    /setInterval\s*\(\s*moveTarifToni\s*,\s*30000\s*\)/.test(scheduleBody),
+    /setTimeout/.test(scheduleBody) && /delay\s*=\s*30000/.test(indexSource),
     "Tarif Toni soll seine Position etwa alle 30 Sekunden wechseln."
   );
   requireCondition(
-    /reducedMotion\.matches/.test(moveBody) && /reducedMotion\.matches/.test(scheduleBody),
+    /translate3d\s*\(\s*var\(--toni-x/.test(indexSource) && /requestAnimationFrame/.test(moveBody),
+    "Tonis sichtbare Bewegung muss performant ueber transform und requestAnimationFrame laufen."
+  );
+  requireCondition(
+    /overlapsImportantArea/.test(targetBody) && /window\.innerWidth/.test(targetBody) && /window\.innerHeight/.test(targetBody),
+    "Zufaellige Toni-Ziele muessen im Viewport liegen und wichtige Bereiche beruecksichtigen."
+  );
+  requireCondition(
+    /reducedMotion\.matches/.test(movementPauseBody),
     "Automatische Toni-Bewegung muss bei reduzierter Bewegung deaktiviert sein."
   );
   requireCondition(
-    /tarifToniEl\.hidden\s*=\s*!enabled/.test(toggleBody) && /clearInterval\s*\(\s*toniMoveTimer\s*\)/.test(scheduleBody),
+    /tarifToniEl\.hidden\s*=\s*!enabled/.test(toggleBody) && /clearTimeout\s*\(\s*toniMoveTimer\s*\)/.test(scheduleBody),
     "Beim Ausschalten muss Toni verschwinden und seine Bewegung stoppen."
+  );
+  requireCondition(
+    /toniMovementEnabled\s*=\s*enabled/.test(movementToggleBody) && /clearTimeout\s*\(\s*toniMoveTimer\s*\)/.test(movementToggleBody),
+    "Die automatische Bewegung braucht einen unabhaengigen Ein-/Aus-Schalter."
+  );
+  requireCondition(
+    /toniChatOpen\s*=\s*open/.test(chatBody) && /clearTimeout\s*\(\s*toniMoveTimer\s*\)/.test(chatBody),
+    "Bei geoeffnetem Toni-Chat muss die automatische Bewegung pausieren."
+  );
+  requireCondition(
+    /pointerenter/.test(indexSource) && /focusin/.test(indexSource) && /beforeunload/.test(indexSource),
+    "Hover, Fokus und Seitenende muessen Tonis Timer sauber pausieren oder aufraeumen."
   );
   requireCondition(
     /TONI_CORRECT/.test(placementBody) && /TONI_WRONG/.test(placementBody) && /TONI_EXAM/.test(placementBody),

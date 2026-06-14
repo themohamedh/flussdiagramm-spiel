@@ -20,8 +20,10 @@ Fachliche Quellen und Hinweise sind direkt im Spiel und in `unterrichtsmaterial.
 
 - Der optionale Bildschirm-Begleiter reagiert im Lernmodus auf richtige und falsche Zuordnungen, ohne Lösungen vorwegzunehmen.
 - Im Prüfungsmodus zeigt Toni ausschließlich neutrale Motivation.
-- Der Schalter „Tarif Toni an/aus“ blendet Figur, Nachrichten und automatische Bewegung vollständig ein oder aus.
-- Toni wechselt auf Desktop etwa alle 30 Sekunden zwischen freien Randpositionen. Auf Smartphones nutzt er nur die unteren Ecken; bei `prefers-reduced-motion` bleibt er statisch.
+- Der Schalter „Tarif Toni an/aus“ blendet Figur, Nachrichten und Chat vollständig ein oder aus. „Tarif Toni bewegen: an/aus“ steuert die Bewegung unabhängig davon.
+- Toni gleitet etwa alle 30 Sekunden per `transform` zu einer zufälligen, kollisionsgeprüften Position im sichtbaren Bereich.
+- Ein Klick auf Toni öffnet einen kleinen lokalen Denkanstoß-Chat. Während Chat, Hover oder Fokus pausiert die Bewegung.
+- Auf Smartphones nutzt Toni wenige sichere Ziele; bei `prefers-reduced-motion` bleibt er statisch.
 
 ## Prüfung
 

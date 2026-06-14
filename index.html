@@ -345,6 +345,13 @@
       min-width: 150px;
     }
 
+    #toniMoveToggle {
+      --btn-bg: linear-gradient(150deg, rgba(242, 248, 255, 0.96), rgba(221, 233, 249, 0.86));
+      --btn-color: #38546d;
+      --btn-border: rgba(148, 176, 207, 0.72);
+      min-width: 190px;
+    }
+
     .progress {
       border: 1px solid #b8cbeb;
       background: linear-gradient(130deg, #edf4ff, #dceaff);
@@ -909,13 +916,12 @@
       align-items: flex-end;
       gap: 9px;
       pointer-events: none;
-      transition: left 1.6s ease, right 1.6s ease, top 1.6s ease, bottom 1.6s ease;
+      transform: translate3d(var(--toni-x, 0px), var(--toni-y, 0px), 0);
+      transition: transform 3.2s cubic-bezier(.22, .72, .22, 1);
+      will-change: transform;
     }
 
     .tarif-toni[hidden] { display: none; }
-    .tarif-toni.position-bottom-left { left: 18px; right: auto; flex-direction: row-reverse; }
-    .tarif-toni.position-top-right { top: 18px; right: 18px; bottom: auto; align-items: flex-start; }
-    .tarif-toni.position-top-left { top: 18px; left: 18px; right: auto; bottom: auto; align-items: flex-start; flex-direction: row-reverse; }
 
     .toni-figure {
       flex: 0 0 auto;
@@ -929,9 +935,14 @@
       box-shadow: 0 12px 24px rgba(32, 78, 108, .22);
       font-size: 2.05rem;
       transform-origin: bottom center;
+      pointer-events: auto;
+      cursor: pointer;
     }
 
     .tarif-toni.is-talking .toni-figure { animation: toniNod .65s ease; }
+    .tarif-toni.is-moving .toni-figure { animation: toniWalk .7s ease-in-out infinite alternate; }
+    .toni-figure:hover,
+    .toni-figure:focus-visible { box-shadow: 0 0 0 4px rgba(47, 129, 255, .18), 0 12px 24px rgba(32, 78, 108, .25); }
 
     .toni-bubble {
       max-width: 196px;
@@ -950,13 +961,45 @@
     }
 
     .tarif-toni.is-talking .toni-bubble { opacity: 1; transform: translateY(0) scale(1); }
-    .tarif-toni.position-bottom-left .toni-bubble,
-    .tarif-toni.position-top-left .toni-bubble { border-radius: 16px 16px 16px 4px; }
+
+    .toni-chat {
+      position: absolute;
+      right: 0;
+      bottom: 82px;
+      width: min(290px, calc(100vw - 24px));
+      padding: 12px;
+      border: 1px solid rgba(129, 174, 203, .72);
+      border-radius: 18px;
+      color: #234b67;
+      background: rgba(250, 253, 255, .98);
+      box-shadow: 0 18px 38px rgba(32, 78, 108, .24);
+      pointer-events: auto;
+    }
+
+    .toni-chat[hidden] { display: none; }
+    .toni-chat p { margin: 0 0 9px; font-size: .8rem; line-height: 1.4; }
+    .toni-chat-form { display: flex; gap: 7px; }
+    .toni-chat-form input {
+      min-width: 0;
+      flex: 1 1 auto;
+      border: 1px solid #b6cede;
+      border-radius: 10px;
+      padding: 8px 9px;
+      font: inherit;
+      color: #244f73;
+      background: #fff;
+    }
+    .toni-chat-form button { min-height: 38px; padding: 8px 10px; }
 
     @keyframes toniNod {
       0%, 100% { transform: rotate(0) translateY(0); }
       40% { transform: rotate(-4deg) translateY(-3px); }
       70% { transform: rotate(3deg) translateY(-1px); }
+    }
+
+    @keyframes toniWalk {
+      from { transform: translateY(0) rotate(-2deg); }
+      to { transform: translateY(-5px) rotate(2deg); }
     }
 
     .confetti-piece {
@@ -1275,12 +1318,9 @@
       .bar-row { grid-template-columns: 1fr; gap: 4px; }
       .pie-chart { width: 118px; height: 118px; }
       .tarif-toni { right: 8px; bottom: 8px; width: min(230px, calc(100vw - 16px)); }
-      .tarif-toni.position-bottom-left,
-      .tarif-toni.position-top-left { left: 8px; }
-      .tarif-toni.position-top-left,
-      .tarif-toni.position-top-right { top: auto; bottom: 8px; }
       .toni-figure { width: 50px; height: 58px; font-size: 1.65rem; }
       .toni-bubble { max-width: 164px; font-size: .76rem; }
+      .toni-chat { bottom: 67px; width: min(250px, calc(100vw - 16px)); }
       .footer-github-link {
         margin-top: 10px;
         font-size: 0.92rem;
@@ -1414,6 +1454,7 @@
             <div class="meta-group">
               <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
               <button id="toniToggle" aria-pressed="true">🧢 Tarif Toni an</button>
+              <button id="toniMoveToggle" aria-pressed="true">🚶 Tarif Toni bewegen: an</button>
               <span id="progress" class="progress">0 / 15 richtig</span>
             </div>
           </div>
@@ -1499,8 +1540,15 @@
   <div id="celebrationLayer" class="celebration-layer" aria-hidden="true"></div>
   <div id="tryAgainLayer" class="try-again-layer" aria-hidden="true"></div>
   <aside id="tarifToni" class="tarif-toni" aria-label="Tarif Toni, optionaler Lernbegleiter" aria-live="polite">
-    <div class="toni-figure" aria-hidden="true">🧑‍🏭</div>
+    <button id="toniFigure" class="toni-figure" type="button" aria-expanded="false" aria-controls="toniChat" aria-label="Chat mit Tarif Toni öffnen">🧑‍🏭</button>
     <div id="toniBubble" class="toni-bubble"></div>
+    <section id="toniChat" class="toni-chat" aria-label="Chat mit Tarif Toni" hidden>
+      <p id="toniChatResponse">Frag mich nach einem Denkanstoß. Im Prüfungsmodus bleibe ich neutral.</p>
+      <form id="toniChatForm" class="toni-chat-form">
+        <input id="toniChatInput" type="text" maxlength="100" autocomplete="off" aria-label="Nachricht an Tarif Toni" placeholder="Kurze Frage an Toni">
+        <button type="submit">Fragen</button>
+      </form>
+    </section>
   </aside>
 
   <div id="infoPopup" class="info-popup" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
@@ -1570,8 +1618,14 @@
     const solveHintEl = document.getElementById("solveHint");
     const soundToggleEl = document.getElementById("soundToggle");
     const toniToggleEl = document.getElementById("toniToggle");
+    const toniMoveToggleEl = document.getElementById("toniMoveToggle");
     const tarifToniEl = document.getElementById("tarifToni");
+    const toniFigureEl = document.getElementById("toniFigure");
     const toniBubbleEl = document.getElementById("toniBubble");
+    const toniChatEl = document.getElementById("toniChat");
+    const toniChatFormEl = document.getElementById("toniChatForm");
+    const toniChatInputEl = document.getElementById("toniChatInput");
+    const toniChatResponseEl = document.getElementById("toniChatResponse");
     const infoPopupEl = document.getElementById("infoPopup");
     const infoTitleEl = document.getElementById("infoTitle");
     const infoTextEl = document.getElementById("infoText");
@@ -1616,9 +1670,12 @@
     let currentMode = "learn";
     let lastFocusedElement = null;
     let toniEnabled = true;
+    let toniMovementEnabled = true;
+    let toniInteractionPaused = false;
+    let toniChatOpen = false;
     let toniMessageTimer = null;
     let toniMoveTimer = null;
-    let toniPositionIndex = 0;
+    let toniMovingTimer = null;
     let celebrationActive = false;
     let tryAgainActive = false;
     let celebrationTimer = null;
@@ -1849,25 +1906,105 @@
       toniMessageTimer = setTimeout(() => tarifToniEl.classList.remove("is-talking"), duration);
     }
 
-    function getToniPositions() {
-      return window.matchMedia("(max-width: 640px)").matches
-        ? ["position-bottom-right", "position-bottom-left"]
-        : ["position-bottom-right", "position-top-right", "position-bottom-left", "position-top-left"];
+    function isToniMovementPaused() {
+      return !toniEnabled || !toniMovementEnabled || reducedMotion.matches || toniInteractionPaused || toniChatOpen;
+    }
+
+    function overlapsImportantArea(candidate) {
+      const importantElements = document.querySelectorAll(".controls, .card, .slot, .info-card, .final-card, input");
+      return [...importantElements].some((element) => {
+        const rect = element.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return false;
+        const padding = 12;
+        return candidate.left < rect.right + padding
+          && candidate.right > rect.left - padding
+          && candidate.top < rect.bottom + padding
+          && candidate.bottom > rect.top - padding;
+      });
+    }
+
+    function getSafeToniTarget() {
+      const margin = window.matchMedia("(max-width: 640px)").matches ? 8 : 18;
+      const width = tarifToniEl.offsetWidth;
+      const height = tarifToniEl.offsetHeight;
+      const maxLeft = Math.max(margin, window.innerWidth - width - margin);
+      const maxTop = Math.max(margin, window.innerHeight - height - margin);
+      const isMobile = window.matchMedia("(max-width: 640px)").matches;
+
+      for (let attempt = 0; attempt < 24; attempt += 1) {
+        const left = isMobile
+          ? (attempt % 2 === 0 ? margin : maxLeft)
+          : margin + Math.random() * Math.max(0, maxLeft - margin);
+        const top = isMobile
+          ? Math.max(margin, maxTop - (attempt % 3) * Math.min(120, maxTop / 3))
+          : margin + Math.random() * Math.max(0, maxTop - margin);
+        const candidate = { left, top, right: left + width, bottom: top + height };
+        if (!overlapsImportantArea(candidate)) return candidate;
+      }
+
+      return { left: maxLeft, top: maxTop, right: maxLeft + width, bottom: maxTop + height };
     }
 
     function moveTarifToni() {
-      if (!toniEnabled || reducedMotion.matches) return;
-      const positions = getToniPositions();
-      tarifToniEl.classList.remove("position-bottom-right", "position-bottom-left", "position-top-right", "position-top-left");
-      toniPositionIndex = (toniPositionIndex + 1) % positions.length;
-      tarifToniEl.classList.add(positions[toniPositionIndex]);
+      if (isToniMovementPaused()) return;
+      const margin = window.matchMedia("(max-width: 640px)").matches ? 8 : 18;
+      const baseLeft = window.innerWidth - tarifToniEl.offsetWidth - margin;
+      const baseTop = window.innerHeight - tarifToniEl.offsetHeight - margin;
+      const target = getSafeToniTarget();
+      tarifToniEl.classList.add("is-moving");
+      clearTimeout(toniMovingTimer);
+      requestAnimationFrame(() => {
+        tarifToniEl.style.setProperty("--toni-x", `${Math.round(target.left - baseLeft)}px`);
+        tarifToniEl.style.setProperty("--toni-y", `${Math.round(target.top - baseTop)}px`);
+      });
+      toniMovingTimer = setTimeout(() => tarifToniEl.classList.remove("is-moving"), 3400);
     }
 
-    function scheduleToniMovement() {
-      clearInterval(toniMoveTimer);
+    function scheduleToniMovement(delay = 30000) {
+      clearTimeout(toniMoveTimer);
       toniMoveTimer = null;
-      if (!toniEnabled || reducedMotion.matches) return;
-      toniMoveTimer = setInterval(moveTarifToni, 30000);
+      if (isToniMovementPaused()) return;
+      toniMoveTimer = setTimeout(() => {
+        moveTarifToni();
+        scheduleToniMovement();
+      }, delay);
+    }
+
+    function setToniMovementEnabled(enabled) {
+      toniMovementEnabled = enabled;
+      toniMoveToggleEl.textContent = enabled ? "🚶 Tarif Toni bewegen: an" : "🚶 Tarif Toni bewegen: aus";
+      toniMoveToggleEl.setAttribute("aria-pressed", String(enabled));
+      if (!enabled) {
+        clearTimeout(toniMoveTimer);
+        clearTimeout(toniMovingTimer);
+        tarifToniEl.classList.remove("is-moving");
+      }
+      scheduleToniMovement();
+    }
+
+    function setToniChatOpen(open) {
+      toniChatOpen = open && toniEnabled;
+      toniChatEl.hidden = !toniChatOpen;
+      toniFigureEl.setAttribute("aria-expanded", String(toniChatOpen));
+      toniFigureEl.setAttribute("aria-label", toniChatOpen ? "Chat mit Tarif Toni schließen" : "Chat mit Tarif Toni öffnen");
+      if (toniChatOpen) {
+        clearTimeout(toniMoveTimer);
+        toniChatInputEl.focus();
+      } else {
+        scheduleToniMovement(30000);
+        if (toniEnabled) toniFigureEl.focus();
+      }
+    }
+
+    function answerToniChat() {
+      const question = toniChatInputEl.value.trim();
+      if (!question) return;
+      const answer = currentMode === "exam"
+        ? chooseToniMessage(TONI_EXAM)
+        : chooseToniMessage(TONI_LEARN_HINTS);
+      toniChatResponseEl.textContent = answer;
+      toniChatInputEl.value = "";
+      showToniMessage(answer);
     }
 
     function setToniEnabled(enabled) {
@@ -1878,6 +2015,7 @@
       if (!enabled) {
         clearTimeout(toniMessageTimer);
         tarifToniEl.classList.remove("is-talking");
+        setToniChatOpen(false);
       } else {
         const greeting = currentMode === "learn"
           ? "Hi, ich bin Tarif Toni. Ich gebe Denkanstöße, aber verrate keine Lösungen."
@@ -2498,6 +2636,7 @@
       finalTitleEl.textContent = "Spiel erfolgreich abgeschlossen";
       clearCelebration();
       clearTryAgainAnimation();
+      scheduleToniMovement();
       if (toniEnabled) showToniMessage(currentMode === "learn" ? chooseToniMessage(TONI_LEARN_HINTS) : chooseToniMessage(TONI_EXAM));
       renderCards();
       updateProgress();
@@ -2630,6 +2769,53 @@
       setToniEnabled(!toniEnabled);
     });
 
+    toniMoveToggleEl.addEventListener("click", () => {
+      registerInteraction();
+      playClickSound();
+      setToniMovementEnabled(!toniMovementEnabled);
+    });
+
+    toniFigureEl.addEventListener("click", () => {
+      registerInteraction();
+      playClickSound();
+      setToniChatOpen(!toniChatOpen);
+    });
+
+    toniChatFormEl.addEventListener("submit", (event) => {
+      event.preventDefault();
+      registerInteraction();
+      answerToniChat();
+    });
+
+    tarifToniEl.addEventListener("pointerenter", () => {
+      toniInteractionPaused = true;
+      clearTimeout(toniMoveTimer);
+    });
+    tarifToniEl.addEventListener("pointerdown", () => {
+      toniInteractionPaused = true;
+      clearTimeout(toniMoveTimer);
+    });
+    tarifToniEl.addEventListener("pointerup", () => {
+      if (!toniChatOpen) {
+        toniInteractionPaused = false;
+        scheduleToniMovement(30000);
+      }
+    });
+    tarifToniEl.addEventListener("pointerleave", () => {
+      toniInteractionPaused = false;
+      scheduleToniMovement(30000);
+    });
+    tarifToniEl.addEventListener("focusin", () => {
+      toniInteractionPaused = true;
+      clearTimeout(toniMoveTimer);
+    });
+    tarifToniEl.addEventListener("focusout", () => {
+      setTimeout(() => {
+        toniInteractionPaused = tarifToniEl.contains(document.activeElement);
+        if (!toniInteractionPaused) scheduleToniMovement(30000);
+      }, 0);
+    });
+
     modeButtons.forEach((button) => {
       button.addEventListener("click", () => {
         registerInteraction();
@@ -2640,6 +2826,10 @@
 
     document.addEventListener("keydown", (event) => {
       if (event.key !== "Escape") return;
+      if (toniChatOpen) {
+        setToniChatOpen(false);
+        return;
+      }
       if (infoPopupEl.classList.contains("open")) {
         closeInfoPopup();
         return;
@@ -2654,15 +2844,16 @@
 
     window.addEventListener("resize", () => {
       positionLearningButtons();
-      if (!window.matchMedia("(max-width: 640px)").matches) return;
-      if (tarifToniEl.classList.contains("position-top-right")) {
-        tarifToniEl.classList.replace("position-top-right", "position-bottom-right");
-      }
-      if (tarifToniEl.classList.contains("position-top-left")) {
-        tarifToniEl.classList.replace("position-top-left", "position-bottom-left");
-      }
+      tarifToniEl.style.setProperty("--toni-x", "0px");
+      tarifToniEl.style.setProperty("--toni-y", "0px");
+      scheduleToniMovement(30000);
     });
-    reducedMotion.addEventListener?.("change", scheduleToniMovement);
+    reducedMotion.addEventListener?.("change", () => scheduleToniMovement());
+    window.addEventListener("beforeunload", () => {
+      clearTimeout(toniMessageTimer);
+      clearTimeout(toniMoveTimer);
+      clearTimeout(toniMovingTimer);
+    });
 
     // Initialzustand
     slots.forEach((slot) => setSlotText(slot));
@@ -2673,6 +2864,7 @@
     updateSolveButtonState();
     setGameMode("learn");
     setToniEnabled(true);
+    setToniMovementEnabled(true);
   </script>
 
   <script>
