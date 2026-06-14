@@ -1,4 +1,4 @@
-const CACHE_NAME = "flussdiagramm-spiel-v3";
+const CACHE_NAME = "flussdiagramm-spiel-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,7 +6,8 @@ const APP_SHELL = [
   "./unterrichtsmaterial.js",
   "./manifest.webmanifest",
   "./app-icon.svg",
-  "./C9BD4168-EDB7-44C9-8257-97976AA34FB8.png"
+  "./C9BD4168-EDB7-44C9-8257-97976AA34FB8.png",
+  "./tarif-toni-character-sheet.png"
 ];
 
 self.addEventListener("install", (event) => {

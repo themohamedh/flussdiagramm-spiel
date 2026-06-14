@@ -11,6 +11,7 @@ const appFiles = [
   "manifest.webmanifest",
   "app-icon.svg",
   "C9BD4168-EDB7-44C9-8257-97976AA34FB8.png",
+  "tarif-toni-character-sheet.png",
   "privacy.html",
   "support.html"
 ];
