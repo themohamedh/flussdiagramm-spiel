@@ -1,4 +1,4 @@
-const CACHE_NAME = "flussdiagramm-spiel-v2";
+const CACHE_NAME = "flussdiagramm-spiel-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
