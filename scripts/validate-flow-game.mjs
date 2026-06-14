@@ -491,6 +491,10 @@ await checkGroup("Tarif Toni als optionaler Begleiter", (requireCondition) => {
     "Tarif Toni muss als eigenstaendige animierte Retro-Pixel-Figur statt als Emoji umgesetzt sein."
   );
   requireCondition(
+    /\.toni-figure\s*\{[\s\S]*?background:\s*none\s*!important[\s\S]*?backdrop-filter:\s*none\s*!important[\s\S]*?box-shadow:\s*none\s*!important/.test(indexSource),
+    "Die Toni-Figur muss ohne weisse Button-Flaeche oder Glas-Hintergrund dargestellt sein."
+  );
+  requireCondition(
     /pointer-events:\s*none/.test(indexSource),
     "Tarif Toni darf Touch-, Klick- und Drag-and-Drop-Eingaben nicht blockieren."
   );

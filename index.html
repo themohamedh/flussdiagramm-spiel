@@ -922,9 +922,15 @@
       height: 106px;
       display: grid;
       place-items: center;
-      border: 0;
-      padding: 0;
-      background: transparent;
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      background: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: none !important;
       filter: drop-shadow(0 8px 5px rgba(25, 48, 72, .28));
       transform-origin: bottom center;
       pointer-events: auto;
@@ -966,7 +972,19 @@
     .tarif-toni.is-moving .toni-leg-left { animation: toniPixelLimbB .42s steps(2, end) infinite; }
     .tarif-toni.is-moving .toni-shadow { animation: toniPixelShadow .42s steps(2, end) infinite; }
     .toni-figure:hover,
-    .toni-figure:focus-visible { filter: drop-shadow(0 0 5px rgba(47, 129, 255, .8)) drop-shadow(0 8px 5px rgba(25, 48, 72, .28)); }
+    .toni-figure:active {
+      background: none !important;
+      box-shadow: none !important;
+      transform: none;
+    }
+
+    .toni-figure:focus-visible {
+      outline: 2px dashed rgba(47, 129, 255, .78);
+      outline-offset: 2px;
+      background: none !important;
+      box-shadow: none !important;
+      filter: drop-shadow(0 8px 5px rgba(25, 48, 72, .28));
+    }
 
     .toni-bubble {
       max-width: 196px;
