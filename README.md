@@ -21,6 +21,7 @@ Fachliche Quellen und Hinweise sind direkt im Spiel und in `unterrichtsmaterial.
 - Der optionale Bildschirm-Begleiter reagiert im Lernmodus auf richtige und falsche Zuordnungen, ohne Lösungen vorwegzunehmen.
 - Im Prüfungsmodus zeigt Toni ausschließlich neutrale Motivation.
 - Der Schalter „Tarif Toni an/aus“ blendet Figur, Nachrichten, Chat und Bewegung vollständig ein oder aus. Einen separaten Bewegungsschalter gibt es nicht.
+- Toni ist eine eigenständige Retro-Pixel-Figur mit animierten Armen, Beinen, Körper und Kopf statt eines Emoji.
 - Toni gleitet kurz nach dem Laden erstmals los und danach etwa alle 30 Sekunden per `transform` zu einer zufälligen, kollisionsgeprüften Position im sichtbaren Bereich.
 - Ein Klick auf Toni öffnet einen kleinen lokalen Denkanstoß-Chat. Nur während der Chat geöffnet ist, pausiert die Bewegung.
 - Auf Smartphones nutzt Toni wenige sichere Ziele; bei `prefers-reduced-motion` bleibt er statisch.

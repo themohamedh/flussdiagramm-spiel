@@ -484,6 +484,13 @@ await checkGroup("Tarif Toni als optionaler Begleiter", (requireCondition) => {
     "Tarif Toni und sein Sichtbarkeitsschalter muessen vorhanden sein; ein separater Bewegungsschalter darf nicht erscheinen."
   );
   requireCondition(
+    /class=["']toni-sprite["']/.test(indexSource)
+      && /toni-arm-left/.test(indexSource)
+      && /toni-leg-right/.test(indexSource)
+      && /toniPixelLimbA/.test(indexSource),
+    "Tarif Toni muss als eigenstaendige animierte Retro-Pixel-Figur statt als Emoji umgesetzt sein."
+  );
+  requireCondition(
     /pointer-events:\s*none/.test(indexSource),
     "Tarif Toni darf Touch-, Klick- und Drag-and-Drop-Eingaben nicht blockieren."
   );
