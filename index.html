@@ -338,6 +338,13 @@
       min-width: 138px;
     }
 
+    #toniToggle {
+      --btn-bg: linear-gradient(150deg, rgba(238, 250, 255, 0.96), rgba(207, 236, 250, 0.86));
+      --btn-color: #24536f;
+      --btn-border: rgba(122, 180, 210, 0.72);
+      min-width: 150px;
+    }
+
     .progress {
       border: 1px solid #b8cbeb;
       background: linear-gradient(130deg, #edf4ff, #dceaff);
@@ -892,6 +899,66 @@
       visibility: visible;
     }
 
+    .tarif-toni {
+      position: fixed;
+      z-index: 55;
+      right: 18px;
+      bottom: 18px;
+      width: min(270px, calc(100vw - 24px));
+      display: flex;
+      align-items: flex-end;
+      gap: 9px;
+      pointer-events: none;
+      transition: left 1.6s ease, right 1.6s ease, top 1.6s ease, bottom 1.6s ease;
+    }
+
+    .tarif-toni[hidden] { display: none; }
+    .tarif-toni.position-bottom-left { left: 18px; right: auto; flex-direction: row-reverse; }
+    .tarif-toni.position-top-right { top: 18px; right: 18px; bottom: auto; align-items: flex-start; }
+    .tarif-toni.position-top-left { top: 18px; left: 18px; right: auto; bottom: auto; align-items: flex-start; flex-direction: row-reverse; }
+
+    .toni-figure {
+      flex: 0 0 auto;
+      width: 62px;
+      height: 72px;
+      display: grid;
+      place-items: center;
+      border: 2px solid rgba(107, 159, 190, .72);
+      border-radius: 48% 48% 42% 42%;
+      background: linear-gradient(155deg, #fff, #d8eef8);
+      box-shadow: 0 12px 24px rgba(32, 78, 108, .22);
+      font-size: 2.05rem;
+      transform-origin: bottom center;
+    }
+
+    .tarif-toni.is-talking .toni-figure { animation: toniNod .65s ease; }
+
+    .toni-bubble {
+      max-width: 196px;
+      padding: 10px 12px;
+      border: 1px solid rgba(129, 174, 203, .68);
+      border-radius: 16px 16px 4px 16px;
+      color: #234b67;
+      background: rgba(250, 253, 255, .96);
+      box-shadow: 0 10px 24px rgba(32, 78, 108, .18);
+      font-size: .82rem;
+      font-weight: 650;
+      line-height: 1.35;
+      opacity: 0;
+      transform: translateY(5px) scale(.97);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .tarif-toni.is-talking .toni-bubble { opacity: 1; transform: translateY(0) scale(1); }
+    .tarif-toni.position-bottom-left .toni-bubble,
+    .tarif-toni.position-top-left .toni-bubble { border-radius: 16px 16px 16px 4px; }
+
+    @keyframes toniNod {
+      0%, 100% { transform: rotate(0) translateY(0); }
+      40% { transform: rotate(-4deg) translateY(-3px); }
+      70% { transform: rotate(3deg) translateY(-1px); }
+    }
+
     .confetti-piece {
       position: absolute;
       left: var(--start-x);
@@ -1207,6 +1274,13 @@
       .stats-visual { grid-template-columns: 1fr; }
       .bar-row { grid-template-columns: 1fr; gap: 4px; }
       .pie-chart { width: 118px; height: 118px; }
+      .tarif-toni { right: 8px; bottom: 8px; width: min(230px, calc(100vw - 16px)); }
+      .tarif-toni.position-bottom-left,
+      .tarif-toni.position-top-left { left: 8px; }
+      .tarif-toni.position-top-left,
+      .tarif-toni.position-top-right { top: auto; bottom: 8px; }
+      .toni-figure { width: 50px; height: 58px; font-size: 1.65rem; }
+      .toni-bubble { max-width: 164px; font-size: .76rem; }
       .footer-github-link {
         margin-top: 10px;
         font-size: 0.92rem;
@@ -1339,6 +1413,7 @@
             </div>
             <div class="meta-group">
               <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
+              <button id="toniToggle" aria-pressed="true">🧢 Tarif Toni an</button>
               <span id="progress" class="progress">0 / 15 richtig</span>
             </div>
           </div>
@@ -1423,6 +1498,10 @@
 
   <div id="celebrationLayer" class="celebration-layer" aria-hidden="true"></div>
   <div id="tryAgainLayer" class="try-again-layer" aria-hidden="true"></div>
+  <aside id="tarifToni" class="tarif-toni" aria-label="Tarif Toni, optionaler Lernbegleiter" aria-live="polite">
+    <div class="toni-figure" aria-hidden="true">🧑‍🏭</div>
+    <div id="toniBubble" class="toni-bubble"></div>
+  </aside>
 
   <div id="infoPopup" class="info-popup" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
     <div class="info-card" tabindex="-1">
@@ -1490,6 +1569,9 @@
     const solveBtnEl = document.getElementById("solveBtn");
     const solveHintEl = document.getElementById("solveHint");
     const soundToggleEl = document.getElementById("soundToggle");
+    const toniToggleEl = document.getElementById("toniToggle");
+    const tarifToniEl = document.getElementById("tarifToni");
+    const toniBubbleEl = document.getElementById("toniBubble");
     const infoPopupEl = document.getElementById("infoPopup");
     const infoTitleEl = document.getElementById("infoTitle");
     const infoTextEl = document.getElementById("infoText");
@@ -1533,11 +1615,32 @@
     let soundEnabled = true;
     let currentMode = "learn";
     let lastFocusedElement = null;
+    let toniEnabled = true;
+    let toniMessageTimer = null;
+    let toniMoveTimer = null;
+    let toniPositionIndex = 0;
     let celebrationActive = false;
     let tryAgainActive = false;
     let celebrationTimer = null;
     let tryAgainTimer = null;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const TONI_LEARN_HINTS = [
+      "Denk an die Reihenfolge einer Tarifrunde.",
+      "Was passiert normalerweise, bevor gestreikt wird?",
+      "Schau, welche Schritte eher am Anfang oder Ende liegen."
+    ];
+    const TONI_CORRECT = ["Stark, genau richtig!", "Sauber eingeordnet!", "Das passt zur Tarifrunde."];
+    const TONI_WRONG = [
+      "Fast, aber dieser Schritt gehört wahrscheinlich an eine andere Stelle.",
+      "Nicht schlimm, nochmal überlegen.",
+      "Schau dir die Reihenfolge der Ereignisse nochmal genau an."
+    ];
+    const TONI_EXAM = ["Bleib ruhig und denk Schritt für Schritt.", "Du schaffst das.", "Konzentrier dich auf die Reihenfolge."];
+    const TONI_SUCCESS = [
+      "Tarifrunde abgeschlossen. Stark gemacht!",
+      "Alle Schritte richtig. Das war richtig gut!",
+      "Mission Tarifrunde erfolgreich beendet!"
+    ];
     const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15"];
     const SLOT_HINTS = {
       s1: {
@@ -1730,6 +1833,58 @@
 
     function playWrongSound() {
       playTone({ frequency: 260, duration: 0.12, type: "sawtooth", volume: 0.035 });
+    }
+
+    function chooseToniMessage(messages) {
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    function showToniMessage(message, duration = 4200) {
+      if (!toniEnabled) return;
+      clearTimeout(toniMessageTimer);
+      toniBubbleEl.textContent = message;
+      tarifToniEl.classList.remove("is-talking");
+      void tarifToniEl.offsetWidth;
+      tarifToniEl.classList.add("is-talking");
+      toniMessageTimer = setTimeout(() => tarifToniEl.classList.remove("is-talking"), duration);
+    }
+
+    function getToniPositions() {
+      return window.matchMedia("(max-width: 640px)").matches
+        ? ["position-bottom-right", "position-bottom-left"]
+        : ["position-bottom-right", "position-top-right", "position-bottom-left", "position-top-left"];
+    }
+
+    function moveTarifToni() {
+      if (!toniEnabled || reducedMotion.matches) return;
+      const positions = getToniPositions();
+      tarifToniEl.classList.remove("position-bottom-right", "position-bottom-left", "position-top-right", "position-top-left");
+      toniPositionIndex = (toniPositionIndex + 1) % positions.length;
+      tarifToniEl.classList.add(positions[toniPositionIndex]);
+    }
+
+    function scheduleToniMovement() {
+      clearInterval(toniMoveTimer);
+      toniMoveTimer = null;
+      if (!toniEnabled || reducedMotion.matches) return;
+      toniMoveTimer = setInterval(moveTarifToni, 30000);
+    }
+
+    function setToniEnabled(enabled) {
+      toniEnabled = enabled;
+      tarifToniEl.hidden = !enabled;
+      toniToggleEl.textContent = enabled ? "🧢 Tarif Toni an" : "🧢 Tarif Toni aus";
+      toniToggleEl.setAttribute("aria-pressed", String(enabled));
+      if (!enabled) {
+        clearTimeout(toniMessageTimer);
+        tarifToniEl.classList.remove("is-talking");
+      } else {
+        const greeting = currentMode === "learn"
+          ? "Hi, ich bin Tarif Toni. Ich gebe Denkanstöße, aber verrate keine Lösungen."
+          : chooseToniMessage(TONI_EXAM);
+        showToniMessage(greeting, 5000);
+      }
+      scheduleToniMovement();
     }
 
     function playCelebrationSound() {
@@ -2073,6 +2228,7 @@
       finalOverlayEl.classList.add("open");
       finalOverlayEl.setAttribute("aria-hidden", "false");
       triggerSuccessCelebration();
+      showToniMessage(chooseToniMessage(TONI_SUCCESS), 6500);
       updateLearningButtons();
       lastFocusedElement = document.activeElement;
       finalRestartBtnEl.focus();
@@ -2118,9 +2274,11 @@
       if (currentMode === "learn") {
         setStatusState(null, "Lernmodus aktiv: Du erhältst direktes Feedback mit kurzer Erklärung.");
         setFeedbackState(null, "Ordne die Karten zu. Bei Fehlern erhältst du eine kurze Begründung.");
+        showToniMessage(chooseToniMessage(TONI_LEARN_HINTS));
       } else {
         setStatusState(null, "Prüfungsmodus aktiv: Arbeite möglichst selbstständig ohne Hilfetexte.");
         setFeedbackState(null, "Zuordnungen werden gesammelt. Die komplette Auswertung erscheint am Ende.");
+        showToniMessage(chooseToniMessage(TONI_EXAM));
       }
       applyModePresentation();
     }
@@ -2178,9 +2336,11 @@
           playCorrectSound();
           setStatusState("positive", "Richtige Zuordnung gesetzt.");
           setFeedbackState("positive", `✅ Richtig: „${card.label}“. ${SLOT_HINTS[key].right} Öffne jetzt das Fragezeichen am Kästchen.`);
+          showToniMessage(chooseToniMessage(TONI_CORRECT));
         } else {
           setStatusState(null, "Zuordnung gespeichert.");
           setFeedbackState(null, "Zuordnung gespeichert.");
+          showToniMessage(chooseToniMessage(TONI_EXAM));
         }
       } else {
         wrongDecisions += 1;
@@ -2192,9 +2352,11 @@
           playWrongSound();
           setStatusState("negative", "Diese Zuordnung ist noch nicht korrekt.");
           setFeedbackState("negative", `❌ Nicht korrekt: ${SLOT_HINTS[key].wrong}`);
+          showToniMessage(chooseToniMessage(TONI_WRONG), 5200);
         } else {
           setStatusState(null, "Zuordnung gespeichert.");
           setFeedbackState(null, "Zuordnung gespeichert.");
+          showToniMessage(chooseToniMessage(TONI_EXAM));
         }
       }
 
@@ -2336,6 +2498,7 @@
       finalTitleEl.textContent = "Spiel erfolgreich abgeschlossen";
       clearCelebration();
       clearTryAgainAnimation();
+      if (toniEnabled) showToniMessage(currentMode === "learn" ? chooseToniMessage(TONI_LEARN_HINTS) : chooseToniMessage(TONI_EXAM));
       renderCards();
       updateProgress();
       updateConnectors();
@@ -2461,6 +2624,12 @@
       if (soundEnabled) playClickSound();
     });
 
+    toniToggleEl.addEventListener("click", () => {
+      registerInteraction();
+      playClickSound();
+      setToniEnabled(!toniEnabled);
+    });
+
     modeButtons.forEach((button) => {
       button.addEventListener("click", () => {
         registerInteraction();
@@ -2483,7 +2652,17 @@
       }
     });
 
-    window.addEventListener("resize", positionLearningButtons);
+    window.addEventListener("resize", () => {
+      positionLearningButtons();
+      if (!window.matchMedia("(max-width: 640px)").matches) return;
+      if (tarifToniEl.classList.contains("position-top-right")) {
+        tarifToniEl.classList.replace("position-top-right", "position-bottom-right");
+      }
+      if (tarifToniEl.classList.contains("position-top-left")) {
+        tarifToniEl.classList.replace("position-top-left", "position-bottom-left");
+      }
+    });
+    reducedMotion.addEventListener?.("change", scheduleToniMovement);
 
     // Initialzustand
     slots.forEach((slot) => setSlotText(slot));
@@ -2493,6 +2672,7 @@
     updateFocusMode();
     updateSolveButtonState();
     setGameMode("learn");
+    setToniEnabled(true);
   </script>
 
   <script>
