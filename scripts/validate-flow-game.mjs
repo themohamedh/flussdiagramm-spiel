@@ -436,6 +436,38 @@ await checkGroup("Pruefungsmodus ohne vorzeitige Loesungshinweise", (requireCond
   );
 });
 
+await checkGroup("Abschluss-Effekte und reduzierte Bewegung", (requireCondition) => {
+  const successBody = extractFunctionBody(indexSource, "triggerSuccessCelebration");
+  const tryAgainBody = extractFunctionBody(indexSource, "triggerTryAgainAnimation");
+  const completionBody = extractFunctionBody(indexSource, "showCompletionOverlay");
+  const checkAllBody = extractFunctionBody(indexSource, "checkAll");
+
+  requireCondition(
+    /id=["']celebrationLayer["']/.test(indexSource) && /id=["']tryAgainLayer["']/.test(indexSource),
+    "Die Ebenen fuer Erfolgs- und Nochmal-versuchen-Effekte fehlen."
+  );
+  requireCondition(
+    /triggerSuccessCelebration\s*\(\)/.test(completionBody),
+    "Der erfolgreiche Abschluss muss die Erfolgsanimation ausloesen."
+  );
+  requireCondition(
+    /triggerTryAgainAnimation\s*\(\)/.test(checkAllBody),
+    "Eine nicht vollstaendig richtige Pruefung muss die freundliche Fehlversuch-Animation ausloesen."
+  );
+  requireCondition(
+    /slots\.length/.test(successBody) && !/particleCount\s*=\s*1[56]\b/.test(successBody),
+    "Die Konfetti-Menge muss dynamisch aus der vorhandenen Spiellogik abgeleitet werden."
+  );
+  requireCondition(
+    /tryAgainActive\s*\|\|\s*celebrationActive/.test(tryAgainBody) && /if\s*\(celebrationActive\)\s*return/.test(successBody),
+    "Die Effekte brauchen Schutz vor mehrfach gleichzeitig gestarteten Animationen."
+  );
+  requireCondition(
+    /prefers-reduced-motion:\s*reduce/.test(indexSource) && /reducedMotion\.matches/.test(indexSource),
+    "Reduzierte Bewegung muss in CSS und JavaScript beruecksichtigt werden."
+  );
+});
+
 await checkGroup("Dialoge mit grundlegenden ARIA-Merkmalen", (requireCondition) => {
   for (const id of ["infoPopup", "finalOverlay"]) {
     const tag = getOpeningTagById(indexSource, id);
