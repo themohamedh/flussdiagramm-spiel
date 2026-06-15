@@ -1,4 +1,5 @@
 (() => {
+  if(document.querySelector(".tarif-toni__character"))return;
   "use strict";
 
   const STORAGE_KEY = "tarif-toni-preferences";
