@@ -346,3 +346,5 @@
     transition-duration: .01ms !important;
   }
 }
+
+.tarif-toni__character,.tarif-toni__character:hover,.tarif-toni__character:active{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
