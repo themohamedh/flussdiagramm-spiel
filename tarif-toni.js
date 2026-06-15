@@ -1,5 +1,5 @@
 (() => {
-  if(window.__tarifToniLoaded)return;window.__tarifToniLoaded=true;
+    if(window.__tarifToniLoaded)return;window.__tarifToniLoaded=true;
   if(document.querySelector(".tarif-toni__character"))return;
   "use strict";
 
