@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flussdiagramm-Spiel: Tarifrunde & Streik</title>
+  <link rel="stylesheet" href="tarif-toni.css" />
   <style>
     :root {
       --bg-soft-1: #eaf2fb;
@@ -899,7 +900,7 @@
       visibility: visible;
     }
 
-    .tarif-toni {
+    .legacy-tarif-toni {
       position: fixed;
       z-index: 55;
       right: 18px;
@@ -914,7 +915,7 @@
       will-change: transform;
     }
 
-    .tarif-toni[hidden] { display: none; }
+    .legacy-tarif-toni[hidden] { display: none; }
 
     .toni-figure {
       flex: 0 0 auto;
@@ -954,11 +955,11 @@
       will-change: transform, background-position;
     }
 
-    .tarif-toni.facing-left .toni-character { transform: scaleX(-1); }
-    .tarif-toni.is-moving .toni-character-frame {
+    .legacy-tarif-toni.facing-left .toni-character { transform: scaleX(-1); }
+    .legacy-tarif-toni.is-moving .toni-character-frame {
       animation: toniRealWalk .62s steps(1, end) infinite, toniRealBob .62s ease-in-out infinite;
     }
-    .tarif-toni.is-talking:not(.is-moving) .toni-character-frame {
+    .legacy-tarif-toni.is-talking:not(.is-moving) .toni-character-frame {
       animation: toniRealGuide .8s ease-in-out 2;
       background-position: 100% center;
     }
@@ -993,7 +994,7 @@
       transition: opacity .2s ease, transform .2s ease;
     }
 
-    .tarif-toni.is-talking .toni-bubble { opacity: 1; transform: translateY(0) scale(1); }
+    .legacy-tarif-toni.is-talking .toni-bubble { opacity: 1; transform: translateY(0) scale(1); }
 
     .toni-chat {
       position: absolute;
@@ -1354,7 +1355,7 @@
       .stats-visual { grid-template-columns: 1fr; }
       .bar-row { grid-template-columns: 1fr; gap: 4px; }
       .pie-chart { width: 118px; height: 118px; }
-      .tarif-toni { right: 8px; bottom: 8px; width: min(270px, calc(100vw - 16px)); }
+      .legacy-tarif-toni { right: 8px; bottom: 8px; width: min(270px, calc(100vw - 16px)); }
       .toni-figure,
       .toni-character { width: 78px; height: 156px; }
       .toni-bubble { max-width: 164px; font-size: .76rem; }
@@ -1491,7 +1492,7 @@
             </div>
             <div class="meta-group">
               <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
-              <button id="toniToggle" aria-pressed="true">🧢 Tarif Toni an</button>
+              <button id="toniToggle" aria-pressed="false" hidden>Alter Tarif Toni deaktiviert</button>
               <span id="progress" class="progress">0 / 15 richtig</span>
             </div>
           </div>
@@ -1576,7 +1577,7 @@
 
   <div id="celebrationLayer" class="celebration-layer" aria-hidden="true"></div>
   <div id="tryAgainLayer" class="try-again-layer" aria-hidden="true"></div>
-  <aside id="tarifToni" class="tarif-toni" aria-label="Tarif Toni, optionaler Lernbegleiter" aria-live="polite">
+  <aside id="tarifToni" class="legacy-tarif-toni" aria-label="Alter Tarif Toni, deaktiviert" aria-live="off" hidden>
     <button id="toniFigure" class="toni-figure" type="button" aria-expanded="false" aria-controls="toniChat" aria-label="Chat mit Tarif Toni öffnen">
       <span class="toni-character" role="img" aria-label="Tarif Toni als realistischer futuristischer Guide">
         <span class="toni-character-frame"></span>
@@ -1628,6 +1629,8 @@
   </div>
 
   <script src="./unterrichtsmaterial.js"></script>
+  <script src="tarif-toni.js"></script>
+
   <script>
     // Alle Karten für die aktuell sichtbaren Felder im Diagramm
     const CARD_ITEMS = [
@@ -2856,7 +2859,7 @@
     updateFocusMode();
     updateSolveButtonState();
     setGameMode("learn");
-    setToniEnabled(true);
+    setToniEnabled(false);
   </script>
 
   <script>
