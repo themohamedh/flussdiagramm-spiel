@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flussdiagramm-Spiel: Tarifrunde & Streik</title>
-  <link rel="stylesheet" href="tarif-toni.css" />
+  <link rel="stylesheet" href="tarif-toni.css?v=2026-06-30-mobile-a11y" />
   <style>
     :root {
       --bg-soft-1: #eaf2fb;
@@ -511,7 +511,7 @@
     .board.focus-active .legend,
     .board.focus-active .info-btn {
       opacity: 0.42;
-      transition: opacity .28s ease, filter .28s ease, transform .22s ease;
+      transition: opacity .28s ease, filter .28s ease, box-shadow .22s ease;
     }
 
     .board.focus-active .slot.is-focus-target,
@@ -523,7 +523,6 @@
 
     .board.focus-active .slot.is-focus-target {
       box-shadow: 0 0 0 4px rgba(47, 129, 255, 0.24), 0 14px 28px rgba(38, 88, 128, 0.24);
-      transform: translateY(-3px);
       animation: breathe .95s ease-in-out infinite alternate;
     }
 
@@ -581,8 +580,8 @@
     }
 
     @keyframes breathe {
-      from { transform: translateY(-1px) scale(1); }
-      to { transform: translateY(-3px) scale(1.01); }
+      from { box-shadow: 0 0 0 3px rgba(47, 129, 255, 0.18), 0 12px 24px rgba(38, 88, 128, 0.20); }
+      to { box-shadow: 0 0 0 7px rgba(47, 129, 255, 0.30), 0 16px 30px rgba(38, 88, 128, 0.24); }
     }
 
     .legend {
@@ -857,6 +856,13 @@
 
     .source-links li + li {
       margin-top: 5px;
+    }
+
+    .source-links a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 3px 2px;
     }
 
     .info-popup,
@@ -1492,7 +1498,7 @@
             </div>
             <div class="meta-group">
               <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
-              <button id="toniToggle" aria-pressed="false" hidden>Alter Tarif Toni deaktiviert</button>
+              <button id="toniToggle" aria-pressed="true">🧢 Tarif Toni an</button>
               <span id="progress" class="progress">0 / 15 richtig</span>
             </div>
           </div>
@@ -1628,8 +1634,8 @@
     </div>
   </div>
 
-  <script src="./unterrichtsmaterial.js"></script>
-  <script src="tarif-toni.js"></script>
+  <script src="./unterrichtsmaterial.js?v=2026-06-30-mobile-a11y"></script>
+  <script src="tarif-toni.js?v=2026-06-30-mobile-a11y"></script>
 
   <script>
     // Alle Karten für die aktuell sichtbaren Felder im Diagramm
@@ -1721,6 +1727,7 @@
     let tryAgainActive = false;
     let celebrationTimer = null;
     let tryAgainTimer = null;
+    const audioToneTimers = new Set();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const TONI_LEARN_HINTS = [
       "Denk an die Reihenfolge einer Tarifrunde.",
@@ -1902,22 +1909,57 @@
       showInfoDialog(entry.title || `Lerninfo zu Schritt ${STEP_ORDER.indexOf(key) + 1}`);
     }
 
+    function getAudioContext() {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return null;
+      if (playTone.context && playTone.context.state !== "closed") return playTone.context;
+      try {
+        playTone.context = new AudioCtx();
+        return playTone.context;
+      } catch {
+        playTone.context = null;
+        return null;
+      }
+    }
+
+    function resumeAudioContext(context) {
+      if (!context || context.state !== "suspended" || typeof context.resume !== "function") return;
+      try {
+        const resumeAttempt = context.resume();
+        if (resumeAttempt && typeof resumeAttempt.catch === "function") resumeAttempt.catch(() => {});
+      } catch {
+        // Audio bleibt optional, wenn der Browser den Kontext blockiert.
+      }
+    }
+
     function playTone({ frequency = 440, duration = 0.08, type = "sine", volume = 0.04 }) {
       if (!soundEnabled) return;
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      const context = playTone.context || new AudioCtx();
-      playTone.context = context;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = type;
-      oscillator.frequency.value = frequency;
-      gain.gain.value = volume;
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start();
-      gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + duration);
-      oscillator.stop(context.currentTime + duration);
+      const context = getAudioContext();
+      if (!context) return;
+      try {
+        resumeAudioContext(context);
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = type;
+        oscillator.frequency.value = frequency;
+        gain.gain.value = volume;
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start();
+        gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + duration);
+        oscillator.stop(context.currentTime + duration);
+      } catch {
+        // Ton darf das Spiel nie unterbrechen.
+      }
+    }
+
+    function scheduleTone(callback, delay) {
+      if (!soundEnabled) return;
+      const timer = setTimeout(() => {
+        audioToneTimers.delete(timer);
+        callback();
+      }, delay);
+      audioToneTimers.add(timer);
     }
 
     function playClickSound() {
@@ -1926,7 +1968,7 @@
 
     function playCorrectSound() {
       playTone({ frequency: 680, duration: 0.08, type: "triangle", volume: 0.045 });
-      setTimeout(() => playTone({ frequency: 860, duration: 0.09, type: "triangle", volume: 0.04 }), 60);
+      scheduleTone(() => playTone({ frequency: 860, duration: 0.09, type: "triangle", volume: 0.04 }), 60);
     }
 
     function playWrongSound() {
@@ -1945,6 +1987,20 @@
       void tarifToniEl.offsetWidth;
       tarifToniEl.classList.add("is-talking");
       toniMessageTimer = setTimeout(() => tarifToniEl.classList.remove("is-talking"), duration);
+    }
+
+    function stopLegacyToniActivity() {
+      clearTimeout(toniMessageTimer);
+      clearTimeout(toniMoveTimer);
+      clearTimeout(toniMovingTimer);
+      toniMessageTimer = null;
+      toniMoveTimer = null;
+      toniMovingTimer = null;
+      tarifToniEl.classList.remove("is-talking", "is-moving");
+    }
+
+    function notifyTarifToni(type, message) {
+      window.dispatchEvent(new CustomEvent("tarif-toni:react", { detail: { type, message } }));
     }
 
     function isToniMovementPaused() {
@@ -2038,27 +2094,29 @@
       showToniMessage(answer);
     }
 
-    function setToniEnabled(enabled) {
+    function updateToniToggleButton(enabled) {
       toniEnabled = enabled;
-      tarifToniEl.hidden = !enabled;
       toniToggleEl.textContent = enabled ? "🧢 Tarif Toni an" : "🧢 Tarif Toni aus";
       toniToggleEl.setAttribute("aria-pressed", String(enabled));
-      if (!enabled) {
-        clearTimeout(toniMessageTimer);
-        tarifToniEl.classList.remove("is-talking");
-        setToniChatOpen(false);
-      } else {
-        const greeting = currentMode === "learn"
-          ? "Hi, ich bin Tarif Toni. Ich gebe Denkanstöße, aber verrate keine Lösungen."
-          : chooseToniMessage(TONI_EXAM);
-        showToniMessage(greeting, 5000);
+      toniToggleEl.hidden = false;
+      toniToggleEl.style.display = "";
+    }
+
+    function setToniEnabled(enabled, notifyModernToni = true) {
+      updateToniToggleButton(enabled);
+      tarifToniEl.hidden = true;
+      stopLegacyToniActivity();
+      setToniChatOpen(false);
+      if (notifyModernToni) {
+        window.dispatchEvent(new CustomEvent("tarif-toni:set-enabled", {
+          detail: { enabled }
+        }));
       }
-      scheduleToniMovement(enabled ? 2500 : 30000);
     }
 
     function playCelebrationSound() {
       [660, 790, 990].forEach((frequency, index) => {
-        setTimeout(() => playTone({ frequency, duration: 0.12, type: "triangle", volume: 0.035 }), index * 85);
+        scheduleTone(() => playTone({ frequency, duration: 0.12, type: "triangle", volume: 0.035 }), index * 85);
       });
     }
 
@@ -2341,6 +2399,27 @@
       lastFocusedElement = null;
     }
 
+    function closeFinalOverlay() {
+      finalOverlayEl.classList.remove("open");
+      finalOverlayEl.setAttribute("aria-hidden", "true");
+      clearCelebration();
+    }
+
+    function markGameEdited() {
+      if (currentMode === "exam") {
+        examEvaluated = false;
+        rightDecisions = 0;
+        wrongDecisions = 0;
+        wrongAttempts = 0;
+        mistakeSlots = new Set();
+      }
+      if (!didComplete) return;
+      didComplete = false;
+      finalTitleEl.textContent = "Spiel erfolgreich abgeschlossen";
+      closeFinalOverlay();
+      lastFocusedElement = null;
+    }
+
     function getRating() {
       if (wrongDecisions <= 2) return "Sehr gut";
       if (wrongDecisions <= 5) return "Gut";
@@ -2398,6 +2477,7 @@
       finalOverlayEl.setAttribute("aria-hidden", "false");
       triggerSuccessCelebration();
       showToniMessage(chooseToniMessage(TONI_SUCCESS), 6500);
+      notifyTarifToni("complete", chooseToniMessage(TONI_SUCCESS));
       updateLearningButtons();
       lastFocusedElement = document.activeElement;
       finalRestartBtnEl.focus();
@@ -2456,6 +2536,7 @@
       const key = slot.dataset.key;
       if (!placed[key]) return;
       const removed = getCardById(placed[key]);
+      markGameEdited();
       playClickSound();
       delete placed[key];
       slot.classList.remove("correct", "wrong");
@@ -2475,7 +2556,7 @@
       const key = slot.dataset.key;
       const card = getCardById(cardId);
       if (!card) return;
-      if (currentMode === "exam") examEvaluated = false;
+      markGameEdited();
       playClickSound();
 
       // Karte ggf. aus altem Slot holen
@@ -2497,31 +2578,34 @@
       setSlotText(slot, card.label);
       slot.classList.remove("correct", "wrong");
 
-      if (SOLUTION[key] === card.id) {
-        rightDecisions += 1;
-        attempts += 1;
+      const isCorrectPlacement = SOLUTION[key] === card.id;
+      attempts += 1;
+
+      if (isCorrectPlacement) {
         if (currentMode === "learn") {
+          rightDecisions += 1;
           slot.classList.add("correct");
           playCorrectSound();
           setStatusState("positive", "Richtige Zuordnung gesetzt.");
           setFeedbackState("positive", `✅ Richtig: „${card.label}“. ${SLOT_HINTS[key].right} Öffne jetzt das Fragezeichen am Kästchen.`);
           showToniMessage(chooseToniMessage(TONI_CORRECT));
+          notifyTarifToni("correct");
         } else {
           setStatusState(null, "Zuordnung gespeichert.");
           setFeedbackState(null, "Zuordnung gespeichert.");
           showToniMessage(chooseToniMessage(TONI_EXAM));
         }
       } else {
-        wrongDecisions += 1;
-        attempts += 1;
-        wrongAttempts += 1;
-        rememberMistakeForKey(key);
         if (currentMode === "learn") {
+          wrongDecisions += 1;
+          wrongAttempts += 1;
+          rememberMistakeForKey(key);
           slot.classList.add("wrong");
           playWrongSound();
           setStatusState("negative", "Diese Zuordnung ist noch nicht korrekt.");
           setFeedbackState("negative", `❌ Nicht korrekt: ${SLOT_HINTS[key].wrong}`);
           showToniMessage(chooseToniMessage(TONI_WRONG), 5200);
+          notifyTarifToni("wrong");
         } else {
           setStatusState(null, "Zuordnung gespeichert.");
           setFeedbackState(null, "Zuordnung gespeichert.");
@@ -2583,6 +2667,7 @@
       let correct = 0;
       let wrong = 0;
       let empty = 0;
+      const wrongKeys = [];
 
       slots.forEach((slot) => {
         const key = slot.dataset.key;
@@ -2600,10 +2685,19 @@
         } else {
           slot.classList.add("wrong");
           wrong += 1;
-          rememberMistakeForKey(key);
+          wrongKeys.push(key);
+          if (currentMode === "learn") rememberMistakeForKey(key);
         }
       });
-      if (currentMode === "exam") examEvaluated = empty === 0;
+      if (currentMode === "exam") {
+        examEvaluated = empty === 0;
+        if (examEvaluated) {
+          rightDecisions = correct;
+          wrongDecisions = wrong;
+          wrongAttempts = wrong;
+          mistakeSlots = new Set(wrongKeys);
+        }
+      }
 
       if (empty > 0 && currentMode === "exam") {
         setStatusState(null, `Prüfung noch nicht abgeschlossen: ${empty} Felder sind leer.`);
@@ -2662,10 +2756,8 @@
         setFeedbackState(null, "Neues Spiel gestartet. Arbeite ohne Hilfetexte bis zur Endauswertung.");
       }
       mistakeAnalysisEl.textContent = "";
-      finalOverlayEl.classList.remove("open");
-      finalOverlayEl.setAttribute("aria-hidden", "true");
+      closeFinalOverlay();
       finalTitleEl.textContent = "Spiel erfolgreich abgeschlossen";
-      clearCelebration();
       clearTryAgainAnimation();
       scheduleToniMovement();
       if (toniEnabled) showToniMessage(currentMode === "learn" ? chooseToniMessage(TONI_LEARN_HINTS) : chooseToniMessage(TONI_EXAM));
@@ -2729,7 +2821,7 @@
         slots.forEach((target) => target.classList.remove("is-valid-target"));
       });
 
-      slot.addEventListener("click", () => {
+      function activateSlot() {
         registerInteraction();
         handleNodeClick(slot);
 
@@ -2743,6 +2835,14 @@
         }
         playClickSound();
         setStatusState(null, "Bitte zuerst eine Karte auswählen.");
+      }
+
+      slot.addEventListener("click", activateSlot);
+
+      slot.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        activateSlot();
       });
     });
 
@@ -2791,13 +2891,22 @@
       soundEnabled = !soundEnabled;
       soundToggleEl.textContent = soundEnabled ? "🔊 Ton an" : "🔇 Ton aus";
       soundToggleEl.setAttribute("aria-pressed", String(soundEnabled));
-      if (soundEnabled) playClickSound();
+      if (soundEnabled) {
+        playClickSound();
+      } else {
+        audioToneTimers.forEach((timer) => clearTimeout(timer));
+        audioToneTimers.clear();
+      }
     });
 
     toniToggleEl.addEventListener("click", () => {
       registerInteraction();
       playClickSound();
       setToniEnabled(!toniEnabled);
+    });
+
+    window.addEventListener("tarif-toni:state", (event) => {
+      updateToniToggleButton(Boolean(event.detail?.enabled));
     });
 
     toniFigureEl.addEventListener("click", () => {
@@ -2831,8 +2940,7 @@
         return;
       }
       if (finalOverlayEl.classList.contains("open")) {
-        finalOverlayEl.classList.remove("open");
-        finalOverlayEl.setAttribute("aria-hidden", "true");
+        closeFinalOverlay();
         if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
         lastFocusedElement = null;
       }
@@ -2846,9 +2954,9 @@
     });
     reducedMotion.addEventListener?.("change", () => scheduleToniMovement());
     window.addEventListener("beforeunload", () => {
-      clearTimeout(toniMessageTimer);
-      clearTimeout(toniMoveTimer);
-      clearTimeout(toniMovingTimer);
+      stopLegacyToniActivity();
+      audioToneTimers.forEach((timer) => clearTimeout(timer));
+      audioToneTimers.clear();
     });
 
     // Initialzustand
@@ -2859,7 +2967,7 @@
     updateFocusMode();
     updateSolveButtonState();
     setGameMode("learn");
-    setToniEnabled(false);
+    setToniEnabled(true);
   </script>
 
   <script>

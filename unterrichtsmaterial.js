@@ -20,7 +20,8 @@ window.TARIFF_FLOW_LEARNING = {
       title: "1. Verhandlungsrunde",
       why: "In der ersten Runde stellen Gewerkschaft und Arbeitgeberseite ihre Forderungen, Interessen und wirtschaftlichen Einschätzungen gegenüber.",
       example: "Die Gewerkschaft fordert sieben Prozent mehr Entgelt und einen zusätzlichen freien Tag. Der Arbeitgeberverband erklärt, welche Kosten er für tragbar hält, und legt ein erstes Angebot vor.",
-      question: "Welche Informationen brauchen beide Seiten, um die Forderungen der anderen Seite beurteilen zu können?"
+      question: "Welche Informationen brauchen beide Seiten, um die Forderungen der anderen Seite beurteilen zu können?",
+      caveat: "Die erste Verhandlungsrunde ist nicht immer der erste Kontakt zwischen den Tarifparteien. Häufig werden Forderungen, Termine und Rahmenbedingungen schon vorher vorbereitet oder öffentlich angekündigt."
     },
     s4: {
       title: "keine Einigung / Ende der Friedenspflicht / Urabstimmung über Streik",
@@ -54,7 +55,8 @@ window.TARIFF_FLOW_LEARNING = {
       title: "2. Verhandlungsrunde",
       why: "Auch während eines Arbeitskampfs bleiben Verhandlungen wichtig, weil nur ein ausgehandelter Kompromiss den Tarifkonflikt dauerhaft lösen kann.",
       example: "Nach mehreren Streiktagen kehren beide Seiten an den Verhandlungstisch zurück. Die Arbeitgeberseite verbessert ihr Angebot, während die Gewerkschaft ihre Forderung anpasst.",
-      question: "Wie können Arbeitskampfmaßnahmen die Bereitschaft zu einem neuen Kompromiss verändern?"
+      question: "Wie können Arbeitskampfmaßnahmen die Bereitschaft zu einem neuen Kompromiss verändern?",
+      caveat: "Weitere Verhandlungsrunden können auch ohne Streik stattfinden. Die Nummerierung im Spiel vereinfacht den Ablauf, damit die wichtigsten Entscheidungspunkte sichtbar bleiben."
     },
     s9: {
       title: "Ergebnis",
@@ -81,7 +83,8 @@ window.TARIFF_FLOW_LEARNING = {
       title: "3. Verhandlungsrunde",
       why: "Eine weitere Verhandlungsrunde gibt beiden Seiten die Chance, neue Vorschläge oder einen Schlichtungsvorschlag zu prüfen und zu einem tragfähigen Abschluss zu kommen.",
       example: "Nach der Schlichtung beraten beide Seiten erneut. Sie übernehmen Teile des Vorschlags und handeln bei Arbeitszeit und Laufzeit noch Änderungen aus.",
-      question: "Warum kann ein neuer Vorschlag helfen, obwohl frühere Verhandlungsrunden gescheitert sind?"
+      question: "Warum kann ein neuer Vorschlag helfen, obwohl frühere Verhandlungsrunden gescheitert sind?",
+      caveat: "Nicht jede Tarifrunde hat genau drei Verhandlungsrunden. Manche Konflikte enden früher, andere brauchen deutlich mehr Gespräche oder besondere Vermittlungsverfahren."
     },
     s13: {
       title: "Einigung (2)",
@@ -106,9 +109,67 @@ window.TARIFF_FLOW_LEARNING = {
     }
 };
 
+window.TARIFF_TONI_KNOWLEDGE = [
+  {
+    id: "tarifverhandlungen",
+    label: "bpb: Tarifverhandlungen und Arbeitskampf",
+    url: "https://www.bpb.de/themen/arbeit/arbeitsmarktpolitik/316978/grundlagen-der-lohnpolitik/",
+    keywords: ["tarif", "verhandlung", "lohn", "gehalt", "arbeitgeber", "gewerkschaft", "tarifautonomie", "tarifvertrag"],
+    tip: "Kleiner Tipp aus der bpb-Quelle: Achte darauf, dass hier Gewerkschaften und Arbeitgeber die Arbeits- und Einkommensbedingungen aushandeln. Der Staat soll diese Verhandlungen normalerweise nicht direkt steuern."
+  },
+  {
+    id: "friedenspflicht",
+    label: "bpb: Tarifverhandlungen und Arbeitskampf",
+    url: "https://www.bpb.de/themen/arbeit/arbeitsmarktpolitik/316978/grundlagen-der-lohnpolitik/",
+    keywords: ["friedenspflicht", "ablauf", "ende", "kündigung", "kuendigung"],
+    tip: "Kleiner Tipp aus der bpb-Quelle: Überlege, wann die Friedenspflicht endet. Erst danach kommen Arbeitskampfmaßnahmen als Druckmittel wirklich in Betracht."
+  },
+  {
+    id: "warnstreik",
+    label: "bpb: Was ist ein Streik?",
+    url: "https://www.bpb.de/kurz-knapp/hintergrund-aktuell/547428/faq-was-ist-ein-streik/",
+    keywords: ["warnstreik", "warnstreiks", "kurzstreik", "druck", "angebot"],
+    tip: "Kleiner Tipp aus der bpb-Quelle: Warnstreiks sind eher kurze Signale während oder zwischen Verhandlungen. Sie zeigen Entschlossenheit, ohne schon der große dauerhafte Streik zu sein."
+  },
+  {
+    id: "streik",
+    label: "bpb: Was ist ein Streik?",
+    url: "https://www.bpb.de/kurz-knapp/hintergrund-aktuell/547428/faq-was-ist-ein-streik/",
+    keywords: ["streik", "arbeitskampf", "arbeit niederlegen", "niederlegung", "streiken"],
+    tip: "Kleiner Tipp aus der bpb-Quelle: Ein Streik ist ein gewerkschaftlich organisierter Arbeitskampf. Frage dich also: Sind die Verhandlungen schon so festgefahren, dass dieses Druckmittel logisch wird?"
+  },
+  {
+    id: "aussperrung",
+    label: "bpb: Tarifverhandlungen und Arbeitskampf",
+    url: "https://www.bpb.de/themen/arbeit/arbeitsmarktpolitik/316978/grundlagen-der-lohnpolitik/",
+    keywords: ["aussperrung", "aussperren", "arbeitgeberseite"],
+    tip: "Kleiner Tipp aus der bpb-Quelle: Die Aussperrung ist die mögliche Reaktion der Arbeitgeberseite auf einen gewerkschaftlichen Streik. Sie gehört also nicht an den Anfang der Tarifrunde."
+  },
+  {
+    id: "schlichtung",
+    label: "bpb: Tarifverhandlungen und Arbeitskampf",
+    url: "https://www.bpb.de/themen/arbeit/arbeitsmarktpolitik/316978/grundlagen-der-lohnpolitik/",
+    keywords: ["schlichtung", "schlichter", "vermittlung", "kompromiss"],
+    tip: "Kleiner Tipp aus der bpb-Quelle: Eine Schlichtung passt besonders dann, wenn die Fronten verhärtet sind. Denke an eine neutrale Vermittlung, nicht an den ersten normalen Verhandlungsschritt."
+  },
+  {
+    id: "urabstimmung",
+    label: "bpb: Urabstimmung",
+    url: "https://www.bpb.de/kurz-knapp/lexika/politiklexikon/296518/urabstimmung/",
+    keywords: ["urabstimmung", "abstimmung", "mitglieder", "75", "mehrheit"],
+    tip: "Kleiner Tipp aus der bpb-Quelle: Bei einer Urabstimmung entscheiden die Mitglieder der Organisation. Im Tarifkonflikt geht es oft darum, ob ein Streik getragen oder ein Ergebnis angenommen wird."
+  },
+  {
+    id: "pruefungsmodus",
+    label: "bpb-Quellen im Spiel",
+    url: "https://www.bpb.de/",
+    keywords: ["lösung", "loesung", "antwort", "wohin", "welches feld", "reihenfolge"],
+    tip: "Ich gebe dir keinen fertigen Platz im Diagramm. Denk lieber an die Logik: Erst werden Forderungen verhandelt, dann steigt bei keiner Einigung der Druck, und am Ende braucht es ein tragfähiges Ergebnis."
+  }
+];
+
 (() => {
   const legacyToni = document.getElementById("tarifToni");
-  const legacyToggle = document.getElementById("toniToggle");
 
   if (legacyToni) {
     legacyToni.hidden = true;
@@ -118,22 +179,11 @@ window.TARIFF_FLOW_LEARNING = {
     legacyToni.setAttribute("aria-hidden", "true");
   }
 
-  if (legacyToggle) {
-    legacyToggle.hidden = true;
-    legacyToggle.style.display = "none";
-  }
-
-  if (!document.querySelector('link[href="tarif-toni.css"]')) {
+  if (!document.querySelector('link[href^="tarif-toni.css"]')) {
     const stylesheet = document.createElement("link");
     stylesheet.rel = "stylesheet";
     stylesheet.href = "tarif-toni.css";
     document.head.appendChild(stylesheet);
-  }
-
-  if (!document.querySelector('script[src="tarif-toni.js"]')) {
-    const script = document.createElement("script");
-    script.src = "tarif-toni.js";
-    document.body.appendChild(script);
   }
 })();
 

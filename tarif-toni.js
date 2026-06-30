@@ -1,14 +1,15 @@
 (() => {
-    if(window.__tarifToniLoaded)return;window.__tarifToniLoaded=true;
-  if(document.querySelector(".tarif-toni__character"))return;
   "use strict";
+
+  if (window.__tarifToniLoaded) return;
+  window.__tarifToniLoaded = true;
 
   const STORAGE_KEY = "tarif-toni-preferences";
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const protectedSelector = [
     "button", ".card", ".slot", ".info-btn", ".status", ".feedback",
     ".info-popup.open", ".final-overlay.open", ".mode-selector", ".controls",
-    ".board-viewport", ".cards", ".page-footer"
+    ".hero-panel", ".reference-box", ".board-viewport", ".cards", ".page-footer"
   ].join(",");
 
   const messages = {
@@ -37,6 +38,14 @@
       <span class="tarif-toni__label">Tarif Toni</span>
       <span class="tarif-toni__message"></span>
     </div>
+    <section class="tarif-toni__ask" aria-label="Tarif Toni fragen" hidden>
+      <p class="tarif-toni__answer">Frag mich nach einem Denkanstoß. Ich nutze die bpb-Quellen aus dem Spiel und verrate keine fertige Lösung.</p>
+      <form class="tarif-toni__form">
+        <input class="tarif-toni__input" type="text" maxlength="120" autocomplete="off" placeholder="Kurze Frage an Toni" aria-label="Kurze Frage an Tarif Toni">
+        <button class="tarif-toni__send" type="submit">Tipp</button>
+      </form>
+      <a class="tarif-toni__source" href="https://www.bpb.de/" target="_blank" rel="noopener noreferrer">Quelle: bpb</a>
+    </section>
     <div class="tarif-toni__tools" aria-label="Tarif Toni steuern">
       <button class="tarif-toni__tool" data-toni-action="pause" type="button" title="Animation pausieren" aria-label="Animation pausieren">Ⅱ</button>
       <button class="tarif-toni__tool" data-toni-action="minimize" type="button" title="Tarif Toni minimieren" aria-label="Tarif Toni minimieren">−</button>
@@ -96,6 +105,11 @@
   const character = root.querySelector(".tarif-toni__character");
   const bubble = root.querySelector(".tarif-toni__bubble");
   const messageEl = root.querySelector(".tarif-toni__message");
+  const askPanel = root.querySelector(".tarif-toni__ask");
+  const answerEl = root.querySelector(".tarif-toni__answer");
+  const formEl = root.querySelector(".tarif-toni__form");
+  const inputEl = root.querySelector(".tarif-toni__input");
+  const sourceEl = root.querySelector(".tarif-toni__source");
   const pauseButton = root.querySelector('[data-toni-action="pause"]');
   const eyes = [...root.querySelectorAll(".tarif-toni__eye")];
   let preferences = loadPreferences();
@@ -106,9 +120,49 @@
   let motionName = "idle";
   let motionEndAt = 0;
   let motionRemaining = 0;
+  let lastReactionType = "";
+  let lastReactionAt = 0;
   let moving = false;
   let activeTravelAnimation = null;
   let cancelTravel = false;
+  let greetingTimer = null;
+  let deferredMessageTimer = null;
+  const observers = [];
+
+  function clearBehaviorTimer() {
+    clearTimeout(behaviorTimer);
+    behaviorTimer = null;
+  }
+
+  function clearBubbleTimer(closeBubble = false) {
+    clearTimeout(bubbleTimer);
+    bubbleTimer = null;
+    if (closeBubble) bubble.classList.remove("open");
+  }
+
+  function clearMotionTimer() {
+    clearTimeout(motionTimer);
+    motionTimer = null;
+    motionRemaining = 0;
+    root.dataset.motion = "idle";
+  }
+
+  function stopTravel() {
+    cancelTravel = true;
+    if (activeTravelAnimation) {
+      try { activeTravelAnimation.cancel(); }
+      catch { /* Ignore animations that were already finished or canceled. */ }
+    }
+    activeTravelAnimation = null;
+    moving = false;
+  }
+
+  function observeElement(target, callback, options) {
+    if (!target || typeof MutationObserver === "undefined") return;
+    const observer = new MutationObserver(callback);
+    observer.observe(target, options);
+    observers.push(observer);
+  }
 
   function loadPreferences() {
     try { return { paused: false, minimized: false, hidden: false, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") }; }
@@ -160,7 +214,7 @@
       { x: maxX, y: midY }, { x: margin, y: midY },
       { x: midX, y: maxY }
     ];
-    return window.innerWidth <= 720 ? candidates.slice(0, 2) : candidates;
+    return window.innerWidth <= 720 ? candidates.slice(0, 4) : candidates;
   }
 
   function scoreCandidate(candidate) {
@@ -179,11 +233,94 @@
   }
 
   function showMessage(text, duration = 4300) {
-    if (preferences.hidden || preferences.minimized) return;
-    clearTimeout(bubbleTimer);
+    if (preferences.hidden || preferences.minimized || !askPanel.hidden) return;
+    clearBubbleTimer();
     messageEl.textContent = text;
     bubble.classList.add("open");
     bubbleTimer = setTimeout(() => bubble.classList.remove("open"), duration);
+  }
+
+  function getKnowledge() {
+    return Array.isArray(window.TARIFF_TONI_KNOWLEDGE) ? window.TARIFF_TONI_KNOWLEDGE : [];
+  }
+
+  function normalizeText(text) {
+    return String(text || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function scoreKnowledge(entry, question) {
+    const normalizedQuestion = normalizeText(question);
+    return (entry.keywords || []).reduce((score, keyword) => {
+      return normalizedQuestion.includes(normalizeText(keyword)) ? score + 1 : score;
+    }, 0);
+  }
+
+  function getFocusedStepTip() {
+    const focusedSlot = document.querySelector(".slot.is-focus-target");
+    const key = focusedSlot?.dataset.key;
+    const entry = key ? window.TARIFF_FLOW_LEARNING?.[key] : null;
+    if (!entry) return "";
+    return `Gerade hilft dir vielleicht diese Denkfrage: ${entry.question}`;
+  }
+
+  function findSourceTip(question) {
+    const knowledge = getKnowledge();
+    const ranked = knowledge
+      .map((entry) => ({ entry, score: scoreKnowledge(entry, question) }))
+      .sort((a, b) => b.score - a.score);
+    const match = ranked.find((item) => item.score > 0)?.entry || knowledge[Math.floor(Math.random() * Math.max(1, knowledge.length))];
+    const focusedTip = getFocusedStepTip();
+    return {
+      text: match
+        ? `${match.tip}${focusedTip ? ` ${focusedTip}` : ""}`
+        : focusedTip || "Kleiner Tipp: Schau zuerst, ob es gerade um Verhandlung, Druckmittel oder Ergebnis geht.",
+      source: match || null
+    };
+  }
+
+  function answerQuestion(question) {
+    const trimmedQuestion = question.trim();
+    if (!trimmedQuestion) return;
+    setMotion("thinking", 1600);
+
+    if (getMode() === "exam") {
+      answerEl.textContent = "Im Prüfungsmodus bleibe ich neutral: Ich kann dich motivieren, aber keine fachlichen Hinweise geben. Denk Schritt für Schritt an den Ablauf.";
+      sourceEl.textContent = "Prüfungsmodus: keine Quelle als Tipp";
+      sourceEl.removeAttribute("href");
+      showMessage("Im Prüfungsmodus keine Tipps von mir.");
+      return;
+    }
+
+    const result = findSourceTip(trimmedQuestion);
+    answerEl.textContent = result.text;
+    if (result.source) {
+      sourceEl.textContent = `Quelle: ${result.source.label}`;
+      sourceEl.href = result.source.url;
+    } else {
+      sourceEl.textContent = "Quelle: bpb-Quellen im Spiel";
+      sourceEl.href = "https://www.bpb.de/";
+    }
+    showMessage("Ich gebe dir einen kleinen Tipp, keine fertige Lösung.");
+  }
+
+  function setAskPanelOpen(open) {
+    const shouldOpen = Boolean(open && !preferences.hidden && !preferences.minimized);
+    askPanel.hidden = !shouldOpen;
+    root.classList.toggle("is-asking", shouldOpen);
+    character.setAttribute("aria-expanded", String(shouldOpen));
+    if (shouldOpen) {
+      clearBehaviorTimer();
+      stopTravel();
+      position = findFreePosition();
+      applyPosition();
+      clearBubbleTimer(true);
+      inputEl.focus();
+    } else if (!preferences.paused && !preferences.hidden && !preferences.minimized) {
+      scheduleBehavior();
+    }
   }
 
   function setMotion(name, duration = 1600) {
@@ -243,7 +380,7 @@
   }
 
   function runBehavior() {
-    if (preferences.paused || preferences.hidden) return scheduleBehavior();
+    if (preferences.paused || preferences.hidden || preferences.minimized) return;
     const roll = Math.random();
     if (roll < .4) setMotion(choose(["thinking", "idle"]), 1900);
     else if (roll < .6) travel("walk");
@@ -255,13 +392,19 @@
   }
 
   function scheduleBehavior(initial = false) {
-    clearTimeout(behaviorTimer);
+    clearBehaviorTimer();
+    if (preferences.paused || preferences.hidden || preferences.minimized) return;
     const modeDelay = getMode() === "exam" ? 10000 : 0;
     const delay = initial ? 5000 : reduceMotion.matches ? 60000 : 20000 + modeDelay + Math.random() * 25000;
     behaviorTimer = setTimeout(runBehavior, delay);
   }
 
-  function react(type) {
+  function react(type, customMessage) {
+    const now = Date.now();
+    if (type === lastReactionType && now - lastReactionAt < 700) return;
+    lastReactionType = type;
+    lastReactionAt = now;
+
     if (getMode() === "exam" && (type === "correct" || type === "wrong")) {
       setMotion("idle", 1200);
       return;
@@ -269,7 +412,7 @@
     if (type === "complete") setMotion("celebrate", 2200);
     else if (type === "correct") setMotion("celebrate", 1500);
     else if (type === "wrong") setMotion("thinking", 1800);
-    showMessage(choose(messages[type]));
+    showMessage(customMessage || choose(messages[type]));
   }
 
   function syncPreferences() {
@@ -280,22 +423,32 @@
     pauseButton.textContent = preferences.paused ? "▶" : "Ⅱ";
     pauseButton.title = preferences.paused ? "Animation fortsetzen" : "Animation pausieren";
     pauseButton.setAttribute("aria-label", pauseButton.title);
-    if (preferences.paused && motionRemaining > 0) {
-      motionRemaining = Math.max(1, motionEndAt - Date.now());
-      clearTimeout(motionTimer);
-    } else if (!preferences.paused && motionRemaining > 0) {
-      scheduleMotionEnd();
-    }
-    if (activeTravelAnimation) {
-      if (preferences.minimized || preferences.hidden) {
-        cancelTravel = true;
-        activeTravelAnimation.cancel();
+    if (preferences.hidden || preferences.minimized) {
+      setAskPanelOpen(false);
+      clearBubbleTimer(true);
+      clearMotionTimer();
+      stopTravel();
+      clearBehaviorTimer();
+    } else {
+      if (preferences.paused && motionRemaining > 0) {
+        motionRemaining = Math.max(1, motionEndAt - Date.now());
+        clearTimeout(motionTimer);
+      } else if (!preferences.paused && motionRemaining > 0) {
+        scheduleMotionEnd();
       }
-      else if (preferences.paused) activeTravelAnimation.pause();
-      else activeTravelAnimation.play();
+      if (activeTravelAnimation) {
+        try {
+          if (preferences.paused) activeTravelAnimation.pause();
+          else activeTravelAnimation.play();
+        } catch { /* Ignore animations that cannot be resumed by the browser. */ }
+      }
+      if (preferences.paused) clearBehaviorTimer();
+      else scheduleBehavior();
     }
-    if (!preferences.paused) scheduleBehavior();
     savePreferences();
+    window.dispatchEvent(new CustomEvent("tarif-toni:state", {
+      detail: { enabled: !preferences.hidden }
+    }));
   }
 
   character.addEventListener("click", () => {
@@ -306,7 +459,14 @@
       return;
     }
     setMotion("thinking", 1600);
-    showMessage(choose(messages[getMode()]));
+    setAskPanelOpen(askPanel.hidden);
+    if (askPanel.hidden) showMessage(choose(messages[getMode()]));
+  });
+
+  formEl.addEventListener("submit", (event) => {
+    event.preventDefault();
+    answerQuestion(inputEl.value);
+    inputEl.value = "";
   });
 
   root.querySelector(".tarif-toni__tools").addEventListener("click", (event) => {
@@ -315,6 +475,7 @@
     if (action === "pause") preferences.paused = !preferences.paused;
     if (action === "minimize") preferences.minimized = !preferences.minimized;
     if (action === "hide") preferences.hidden = true;
+    if (preferences.minimized || preferences.hidden) setAskPanelOpen(false);
     syncPreferences();
   });
 
@@ -336,44 +497,84 @@
   document.addEventListener("dragstart", () => root.classList.add("is-user-active"));
   document.addEventListener("dragend", () => root.classList.remove("is-user-active"));
 
-  root.addEventListener("focusin", () => activeTravelAnimation?.pause());
+  root.addEventListener("focusin", () => {
+    try { activeTravelAnimation?.pause(); }
+    catch { /* Ignore animations that cannot be paused by the browser. */ }
+  });
   root.addEventListener("focusout", () => {
-    if (!preferences.paused) activeTravelAnimation?.play();
+    if (!preferences.paused) {
+      try { activeTravelAnimation?.play(); }
+      catch { /* Ignore animations that cannot be resumed by the browser. */ }
+    }
   });
 
   document.querySelectorAll(".mode-option").forEach((button) => {
     button.addEventListener("click", () => {
-      window.setTimeout(() => showMessage(choose(messages[getMode()])), 120);
+      clearTimeout(deferredMessageTimer);
+      deferredMessageTimer = window.setTimeout(() => {
+        deferredMessageTimer = null;
+        showMessage(choose(messages[getMode()]));
+      }, 120);
     });
   });
 
   const status = document.getElementById("status");
   if (status) {
-    new MutationObserver(() => {
+    observeElement(status, () => {
       if (status.classList.contains("is-positive")) react("correct");
       else if (status.classList.contains("is-negative")) react("wrong");
-    }).observe(status, { childList: true, attributes: true, attributeFilter: ["class"] });
+    }, { childList: true, attributes: true, attributeFilter: ["class"] });
   }
 
   const finalOverlay = document.getElementById("finalOverlay");
   if (finalOverlay) {
-    new MutationObserver(() => {
+    observeElement(finalOverlay, () => {
       if (finalOverlay.classList.contains("open")) react("complete");
-    }).observe(finalOverlay, { attributes: true, attributeFilter: ["class"] });
+    }, { attributes: true, attributeFilter: ["class"] });
   }
 
+  window.addEventListener("tarif-toni:react", (event) => {
+    const type = event.detail?.type;
+    if (!messages[type]) return;
+    react(type, event.detail?.message);
+  });
+
+  window.addEventListener("tarif-toni:set-enabled", (event) => {
+    const enabled = Boolean(event.detail?.enabled);
+    preferences.hidden = !enabled;
+    if (enabled) {
+      preferences.minimized = false;
+      position = findFreePosition();
+      applyPosition();
+    } else {
+      setAskPanelOpen(false);
+    }
+    syncPreferences();
+    if (enabled) showMessage("Tarif Toni ist wieder da.");
+  });
+
   window.addEventListener("resize", () => {
-    activeTravelAnimation?.cancel();
-    activeTravelAnimation = null;
-    moving = false;
+    stopTravel();
     position = findFreePosition();
     applyPosition();
   }, { passive: true });
 
   reduceMotion.addEventListener?.("change", () => scheduleBehavior());
+
+  window.addEventListener("beforeunload", () => {
+    clearBehaviorTimer();
+    clearBubbleTimer();
+    clearMotionTimer();
+    clearTimeout(greetingTimer);
+    clearTimeout(deferredMessageTimer);
+    stopTravel();
+    observers.forEach((observer) => observer.disconnect());
+    observers.length = 0;
+  }, { once: true });
+
   position = findFreePosition();
   applyPosition();
   syncPreferences();
   scheduleBehavior(true);
-  window.setTimeout(() => showMessage("Hallo, ich bin Tarif Toni. Klick mich an, wenn du mich brauchst."), 900);
+  greetingTimer = window.setTimeout(() => showMessage("Hallo, ich bin Tarif Toni. Klick mich an, wenn du mich brauchst."), 900);
 })();

@@ -25,33 +25,41 @@
 .tarif-toni__character {
   position: absolute;
   inset: 22px 8px 8px;
-  border: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
   padding: 0;
-  background: transparent;
+  background: transparent !important;
   color: inherit;
   cursor: pointer;
   pointer-events: auto;
   transform-origin: 50% 86%;
   filter: drop-shadow(0 0 9px rgba(0, 210, 255, .34));
-  box-shadow: none;
-  backdrop-filter: none;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .tarif-toni__character:hover {
   transform: none;
-  box-shadow: none;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   filter: drop-shadow(0 0 15px rgba(0, 225, 255, .62));
 }
 
 .tarif-toni__character:active {
   transform: none;
-  box-shadow: none;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .tarif-toni__character:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 4px;
-  border-radius: 34px;
+  border-radius: 34px !important;
 }
 
 .tarif-toni__svg {
@@ -177,6 +185,92 @@
   transform: translateY(0) scale(1);
 }
 
+.tarif-toni__ask {
+  position: absolute;
+  right: 114px;
+  bottom: 78px;
+  width: min(310px, calc(100vw - 34px));
+  padding: 12px;
+  border: 1px solid rgba(80, 212, 255, .72);
+  border-radius: 18px 18px 5px 18px;
+  background: linear-gradient(150deg, rgba(7, 25, 55, .97), rgba(10, 53, 91, .95));
+  color: #eafcff;
+  box-shadow: 0 16px 36px rgba(4, 25, 58, .32), inset 0 0 22px rgba(26, 205, 255, .1);
+  font: 600 .82rem/1.42 "Inter", "Segoe UI", sans-serif;
+  pointer-events: auto;
+  max-height: min(430px, calc(100vh - 104px));
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.tarif-toni[data-side="left"] .tarif-toni__ask {
+  right: auto;
+  left: 114px;
+  border-radius: 18px 18px 18px 5px;
+}
+
+.tarif-toni__answer {
+  margin: 0 0 10px;
+}
+
+.tarif-toni__form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+}
+
+.tarif-toni__input {
+  min-width: 0;
+  height: 36px;
+  border: 1px solid rgba(113, 224, 255, .56);
+  border-radius: 10px;
+  padding: 0 10px;
+  background: rgba(224, 249, 255, .1);
+  color: #f4fdff;
+  font: inherit;
+  outline: none;
+}
+
+.tarif-toni__input::placeholder {
+  color: rgba(224, 249, 255, .68);
+}
+
+.tarif-toni__input:focus-visible {
+  border-color: rgba(164, 242, 255, .94);
+  box-shadow: 0 0 0 3px rgba(31, 210, 255, .2);
+}
+
+.tarif-toni__send {
+  height: 36px;
+  border: 1px solid rgba(113, 224, 255, .7);
+  border-radius: 10px;
+  padding: 0 12px;
+  background: rgba(21, 119, 167, .86);
+  color: #f7fdff;
+  font: 800 .78rem/1 "Inter", "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+.tarif-toni__send:hover,
+.tarif-toni__send:focus-visible {
+  background: #0b79ad;
+  outline: 2px solid rgba(80, 225, 255, .5);
+  outline-offset: 2px;
+}
+
+.tarif-toni__source {
+  display: inline-block;
+  margin-top: 8px;
+  color: #7cecff;
+  font-size: .72rem;
+  text-decoration: none;
+}
+
+.tarif-toni__source:hover,
+.tarif-toni__source:focus-visible {
+  text-decoration: underline;
+}
+
 .tarif-toni__label {
   display: block;
   margin-bottom: 3px;
@@ -190,6 +284,7 @@
   position: absolute;
   top: 0;
   right: 3px;
+  z-index: 2;
   display: flex;
   gap: 5px;
   opacity: 0;
@@ -204,12 +299,17 @@
   transform: translateY(0);
 }
 
+.tarif-toni.is-asking .tarif-toni__tools {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .tarif-toni__tool,
 .tarif-toni__restore {
   display: grid;
   place-items: center;
-  width: 29px;
-  height: 29px;
+  width: 40px;
+  height: 40px;
   border: 1px solid rgba(95, 205, 245, .66);
   border-radius: 50%;
   padding: 0;
@@ -218,6 +318,14 @@
   box-shadow: 0 5px 14px rgba(2, 24, 52, .26);
   cursor: pointer;
   font: 700 13px/1 "Inter", sans-serif;
+}
+
+.tarif-toni .tarif-toni__tools > .tarif-toni__tool {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
 }
 
 .tarif-toni__tool:hover,
@@ -246,6 +354,7 @@
 }
 
 .tarif-toni.is-minimized .tarif-toni__bubble,
+.tarif-toni.is-minimized .tarif-toni__ask,
 .tarif-toni.is-minimized .tarif-toni__tools {
   display: none;
 }
@@ -320,6 +429,13 @@
     height: 124px;
   }
 
+  .tarif-toni__tools {
+    top: -2px;
+    right: -2px;
+    flex-direction: column;
+    gap: 4px;
+  }
+
   .tarif-toni__bubble {
     right: 66px;
     bottom: 82px;
@@ -329,6 +445,26 @@
 
   .tarif-toni[data-side="left"] .tarif-toni__bubble {
     left: 66px;
+  }
+
+  .tarif-toni__ask {
+    right: 66px;
+    bottom: 36px;
+    width: min(245px, calc(100vw - 24px));
+    font-size: .75rem;
+    max-height: min(320px, 54vh);
+  }
+
+  .tarif-toni[data-side="left"] .tarif-toni__ask {
+    left: 66px;
+  }
+
+  .tarif-toni__form {
+    grid-template-columns: 1fr;
+  }
+
+  .tarif-toni__send {
+    width: 100%;
   }
 }
 
@@ -346,5 +482,3 @@
     transition-duration: .01ms !important;
   }
 }
-
-.tarif-toni__character,.tarif-toni__character:hover,.tarif-toni__character:active{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
