@@ -82,7 +82,16 @@ Die App ist eine statische HTML/CSS/JavaScript-Web-App ohne ursprüngliche Paket
 
 ### GitHub-Pages-Bereitschaft
 
-Die Web-App selbst ist für GitHub Pages grundsätzlich bereit: Sie ist statisch, lädt lokal ohne Konsolenfehler, nutzt relative Assets und hat einen aktualisierten Service Worker. Blockierend für den Upload ist nicht der App-Zustand, sondern die lokale Git-Situation: Der aktuelle Ordner wird nicht als Git-Repository erkannt.
+Die Web-App selbst ist für GitHub Pages grundsätzlich bereit: Sie ist statisch, lädt lokal ohne Konsolenfehler, nutzt relative Assets und hat einen aktualisierten Service Worker.
+
+### GitHub-Upload
+
+- Repository: `themohamedh/flussdiagramm-spiel`
+- Branch: `codex/stabilisiere-flussdiagramm-spiel`
+- QA-Commit: `e4a2ac2` (`Stabilisiere Flussdiagramm-Spiel QA`)
+- Vergleich: `main...codex/stabilisiere-flussdiagramm-spiel`
+- Status: Branch erfolgreich auf GitHub gepusht und gegenüber `main` verifiziert.
+- Hinweis: `main` wurde nicht direkt überschrieben. Damit ist die veröffentlichte GitHub-Pages-Version erst nach Merge/Übernahme des Branches aktualisiert.
 
 ---
 
