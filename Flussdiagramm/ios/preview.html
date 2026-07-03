@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iOS Vorschau – Flussdiagramm-Spiel</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#dde3ec;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;color:#111827;display:grid;place-items:center;min-height:100vh;padding:24px}
+.phone{width:390px;height:844px;border:10px solid #17191d;border-radius:52px;background:#f2f2f7;box-shadow:0 28px 80px #17203355;overflow:hidden;position:relative}
+.island{position:absolute;z-index:4;top:10px;left:50%;transform:translateX(-50%);width:124px;height:34px;background:#050505;border-radius:18px}
+.bar{height:56px;padding:17px 18px 8px;display:flex;align-items:end;justify-content:center;background:#f2f2f7dd;position:sticky;top:0;z-index:3;font-weight:650}.info{position:absolute;right:18px;color:#087cff;font-size:22px}
+.scroll{height:calc(100% - 56px);overflow:auto;padding:12px 14px 38px;scrollbar-width:none}.scroll::-webkit-scrollbar{display:none}
+.hero{padding:18px;border-radius:22px;color:#fff;background:linear-gradient(145deg,#087cff,#0758c9);box-shadow:0 10px 24px #087cff35}
+.hero h1{font-size:21px;margin:0 0 8px}.hero p{font-size:13px;line-height:1.4;margin:0 0 14px;color:#eaf3ff}
+.segment{display:flex;background:#ffffff35;border-radius:9px;padding:2px;margin-bottom:14px}.segment button{border:0;color:white;background:transparent;padding:7px;flex:1;border-radius:7px;font-weight:600}.segment button.active{background:white;color:#1163c4;box-shadow:0 2px 6px #0002}
+.stats{display:flex;font-size:12px;font-weight:650;justify-content:space-between}.progress{height:5px;background:#c7c7cc;margin:14px 3px;border-radius:4px;overflow:hidden}.progress i{display:block;height:100%;width:7%;background:#087cff}
+.feedback{background:#e8f2ff;color:#0870db;padding:12px;border-radius:15px;font-size:13px;line-height:1.35;margin-bottom:14px}
+.step{display:flex;align-items:center;gap:11px;background:#fff;padding:13px;border-radius:17px;box-shadow:0 1px 2px #0000000d;border:2px solid transparent;cursor:pointer}.step.target{border-color:#087cff}.icon{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#e8f2ff;color:#087cff;font-weight:800}.small{font-size:10px;color:#6b7280;font-weight:650;margin-bottom:3px}.label{font-size:13px;font-weight:650;line-height:1.3}.plus{margin-left:auto;color:#087cff;font-size:19px}.arrow{text-align:center;color:#a0a5ad;height:25px;padding-top:3px}
+h2{font-size:19px;margin:20px 3px 3px}.hint{font-size:12px;color:#6b7280;margin:0 3px 10px}.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{border:0;border-radius:14px;background:#fff;padding:11px 7px;min-height:50px;font-weight:600;font-size:11px;color:#111827;box-shadow:0 1px 2px #0001}.card.selected{background:#087cff;color:#fff}.note{position:fixed;bottom:14px;color:#475569;font-size:12px}
+</style>
+</head>
+<body>
+<div class="phone">
+ <div class="island"></div>
+ <div class="bar">Tarifrunde <span class="info">ⓘ</span></div>
+ <div class="scroll">
+  <section class="hero">
+   <h1>⌁ Flussdiagramm-Spiel</h1>
+   <p>Setze die Wortkarten in der richtigen Reihenfolge in den Ablauf von Tarifrunde und Streik.</p>
+   <div class="segment"><button class="active">Lernen</button><button>Prüfung</button></div>
+   <div class="stats"><span>✓ 0 / 15 richtig</span><span>Schritt 1</span></div>
+  </section>
+  <div class="progress"><i></i></div>
+  <div class="feedback">☝ Wähle eine Wortkarte und danach die passende Station.</div>
+  <div id="flow"></div>
+  <h2>Wortkarten</h2><p class="hint">Wähle eine Karte und tippe danach auf eine Station.</p>
+  <div class="cards" id="cards"></div>
+ </div>
+</div>
+<div class="note">Interaktive Codex-Vorschau der SwiftUI-App</div>
+<script>
+const names=["Kündigung TV","Warnstreiks","1. Verhandlungsrunde","keine Einigung / Ende der Friedenspflicht / Urabstimmung über Streik","Einigung (1)","Streik","evtl. Aussperrung","2. Verhandlungsrunde","Ergebnis","Urabstimmung","Schlichtung","3. Verhandlungsrunde","Einigung (2)","Urabstimmung Ergebnis","neuer TV"];
+const kinds=["Start","Aktion","Verhandlung","Entscheidung","Ergebnis","Aktion","Aktion","Verhandlung","Ergebnis","Ergebnis","Aktion","Verhandlung","Ergebnis","Ergebnis","Ergebnis"];
+const symbols=["⚑","ϟ","◉","⑂","✓","ϟ","ϟ","◉","✓","✓","ϟ","◉","✓","✓","✓"];
+const flow=document.querySelector("#flow"), cards=document.querySelector("#cards");
+names.forEach((n,i)=>{flow.insertAdjacentHTML("beforeend",`<div class="step ${i===0?"target":""}"><span class="icon">${symbols[i]}</span><span><div class="small">Schritt ${i+1} · ${kinds[i]}</div><div class="label">Karte hier einsetzen</div></span><span class="plus">⊕</span></div>${i<14?'<div class="arrow">↓</div>':''}`)});
+names.slice().sort(()=>.5-Math.random()).forEach(n=>cards.insertAdjacentHTML("beforeend",`<button class="card">${n}</button>`));
+document.querySelectorAll(".card").forEach(c=>c.onclick=()=>{document.querySelectorAll(".card").forEach(x=>x.classList.remove("selected"));c.classList.add("selected")});
+document.querySelectorAll(".segment button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".segment button").forEach(x=>x.classList.remove("active"));b.classList.add("active")});
+</script>
+</body>
+</html>

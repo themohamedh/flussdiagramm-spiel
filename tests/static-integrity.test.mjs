@@ -84,7 +84,8 @@ function extractConst(source, name, openChar, closeChar) {
 }
 
 function evaluateExpression(expression, label) {
-  return vm.runInNewContext(`(${expression})`, {}, { filename: label });
+  const value = vm.runInNewContext(`(${expression})`, {}, { filename: label });
+  return JSON.parse(JSON.stringify(value));
 }
 
 function extractFunctionBody(source, name) {

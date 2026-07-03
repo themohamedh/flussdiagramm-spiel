@@ -1,0 +1,20 @@
+{
+  "name": "Flussdiagramm-Spiel: Tarifrunde und Streik",
+  "short_name": "Flussdiagramm",
+  "description": "Interaktives Lernspiel zur Tarifrunde und zum Streik.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eaf2fb",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    {
+      "src": "./app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
