@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --test tests/static-integrity.test.mjs",
-    "test": "node --test tests/static-integrity.test.mjs"
+    "build:app": "node scripts/build-app.mjs",
+    "check": "npm test",
+    "test": "node --test tests/static-integrity.test.mjs && node --test Flussdiagramm/tests/static-integrity.test.mjs"
   },
   "engines": {
     "node": ">=18"

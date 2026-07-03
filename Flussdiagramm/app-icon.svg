@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Flussdiagramm-Spiel">
+  <rect width="512" height="512" rx="96" fill="#eaf2fb"/>
+  <path d="M256 116v70M256 326v70M154 256h64M294 256h64" fill="none" stroke="#1e3a8a" stroke-width="24" stroke-linecap="round"/>
+  <path d="m232 164 24 24 24-24M232 374l24 24 24-24M196 232l24 24-24 24M336 232l24 24-24 24" fill="none" stroke="#1e3a8a" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="150" y="62" width="212" height="100" rx="28" fill="#fff" stroke="#1e3a8a" stroke-width="14"/>
+  <rect x="150" y="350" width="212" height="100" rx="28" fill="#fff" stroke="#1e3a8a" stroke-width="14"/>
+  <path d="M256 190 322 256 256 322 190 256Z" fill="#f59e0b" stroke="#1e3a8a" stroke-width="14" stroke-linejoin="round"/>
+  <circle cx="256" cy="256" r="15" fill="#1e3a8a"/>
+</svg>
