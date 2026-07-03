@@ -1,0 +1,3001 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flussdiagramm-Spiel: Tarifrunde & Streik</title>
+  <link rel="stylesheet" href="tarif-toni.css?v=2026-07-03-stability" />
+  <style>
+    :root {
+      --bg-soft-1: #eaf2fb;
+      --bg-soft-2: #e2ebf8;
+      --bg-soft-3: #f6faff;
+      --panel: rgba(255, 255, 255, 0.62);
+      --panel-border: rgba(189, 211, 234, 0.72);
+      --text: #16243f;
+      --muted: #405d80;
+      --line: #7f9ebf;
+      --line-soft: #cfdff0;
+      --line-active: #1e3a8a;
+      --line-correct: #16a34a;
+      --accent: #1e3a8a;
+      --accent-soft: #e8efff;
+      --accent-warm: #f59e0b;
+      --ok: #16a34a;
+      --ok-bg: #ecfdf3;
+      --bad: #dc2626;
+      --bad-bg: #fef2f2;
+      --hint: #2563eb;
+      --hint-bg: #eff6ff;
+      --slot: #8da7c4;
+      --shadow-panel: 0 20px 44px rgba(29, 56, 95, 0.16), 0 1px 0 rgba(255, 255, 255, 0.55) inset;
+      --shadow-card: 0 14px 30px rgba(36, 74, 124, 0.18), 0 1px 0 rgba(255, 255, 255, 0.64) inset;
+      --shadow-soft: 0 10px 22px rgba(30, 58, 138, 0.1);
+      --radius-lg: 30px;
+      --radius-md: 22px;
+      --radius-sm: 18px;
+      --space-sm: 10px;
+      --space-md: 14px;
+      --space-lg: 20px;
+      --btn-glass-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.7), rgba(232, 243, 255, 0.45));
+      --btn-glass-border: rgba(149, 176, 208, 0.65);
+      --btn-glass-shadow: 0 10px 24px rgba(31, 72, 118, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      --btn-glass-shadow-hover: 0 16px 30px rgba(31, 72, 118, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+      --btn-glass-shadow-press: 0 6px 16px rgba(31, 72, 118, 0.2), inset 0 2px 8px rgba(22, 48, 82, 0.24);
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background-color: var(--bg-soft-1);
+      min-height: 100vh;
+      position: relative;
+      isolation: isolate;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(circle at 14% 8%, rgba(255, 255, 255, 0.6), transparent 35%),
+        radial-gradient(circle at 22% 18%, rgba(56, 127, 224, 0.14), transparent 48%),
+        radial-gradient(circle at 84% 14%, rgba(245, 158, 11, 0.13), transparent 45%),
+        radial-gradient(circle at 86% 72%, rgba(49, 111, 196, 0.11), transparent 46%),
+        linear-gradient(175deg, var(--bg-soft-3) 0%, var(--bg-soft-1) 55%, var(--bg-soft-2) 100%);
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      width: clamp(240px, 36vw, 540px);
+      height: clamp(240px, 36vw, 540px);
+      left: -10%;
+      bottom: -20%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0));
+      filter: blur(12px);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .app {
+      max-width: 1400px;
+      width: min(1400px, calc(100% - 24px));
+      margin: clamp(14px, 3vh, 30px) auto;
+      padding: clamp(16px, 2vw, 26px);
+      display: grid;
+      gap: 16px;
+      background: linear-gradient(152deg, rgba(255, 255, 255, 0.42), rgba(239, 247, 255, 0.3));
+      border: 1px solid rgba(223, 236, 248, 0.92);
+      border-radius: 34px;
+      box-shadow: 0 28px 64px rgba(20, 46, 78, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(16px) saturate(1.08);
+    }
+
+    .panel {
+      min-width: 0;
+      background: var(--panel);
+      backdrop-filter: blur(16px) saturate(1.08);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-panel);
+      padding: clamp(14px, 2.1vw, 22px);
+    }
+
+    .hero-panel {
+      background: linear-gradient(140deg, rgba(30, 58, 138, 0.82) 0%, rgba(45, 84, 166, 0.74) 52%, rgba(65, 104, 190, 0.68) 100%);
+      border-color: rgba(255, 255, 255, 0.42);
+      color: #fff;
+      box-shadow: 0 24px 42px rgba(30, 58, 138, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      padding-block: clamp(18px, 2.8vw, 28px);
+    }
+
+    .hero-panel .subtitle {
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.4rem, 2.8vw, 2rem);
+      letter-spacing: -0.01em;
+      text-shadow: 0 1px 2px rgba(8, 19, 52, 0.24);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1rem, 1.6vw, 1.18rem);
+      letter-spacing: -0.01em;
+      color: var(--accent);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .top-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1.15fr 1fr;
+    }
+
+    .reference-box {
+      min-height: 140px;
+      border: 1px solid rgba(190, 215, 234, 0.8);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.76), rgba(242, 248, 255, 0.56));
+      display: grid;
+      gap: var(--space-sm);
+      align-content: start;
+      box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+    }
+
+    .reference-box p { margin: 0; color: #4d6b87; line-height: 1.45; }
+
+    .quick-guide {
+      margin: 2px 0 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+      color: #355877;
+    }
+
+    .quick-guide li {
+      line-height: 1.4;
+    }
+
+    .more-info {
+      margin-top: 8px;
+      border: 1px dashed #b9cfe4;
+      border-radius: 12px;
+      background: #f7fbff;
+      padding: 10px 12px;
+    }
+
+    .more-info summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #1f4f78;
+    }
+
+    .more-info p {
+      margin-top: 8px;
+    }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .control-groups {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .action-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .meta-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mode-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .mode-option {
+      border-radius: 999px;
+      padding: 14px 16px;
+      color: #2a4f75;
+      min-width: 220px;
+      text-align: left;
+      border: 1px solid rgba(170, 201, 232, 0.78);
+      background: linear-gradient(165deg, rgba(255,255,255,0.7), rgba(239,246,255,0.52));
+      box-shadow: 0 11px 20px rgba(35, 74, 110, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    }
+
+    .mode-option strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 0.94rem;
+    }
+
+    .mode-option span {
+      font-size: 0.8rem;
+      color: #55728f;
+      line-height: 1.35;
+      display: block;
+    }
+
+    .mode-option.active {
+      border-color: rgba(68, 112, 181, 0.82);
+      box-shadow: 0 0 0 3px rgba(79, 128, 204, 0.22), 0 14px 28px rgba(43, 90, 137, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.94);
+      background: linear-gradient(162deg, rgba(236,245,255,0.83), rgba(224,239,255,0.72));
+    }
+
+    button {
+      --btn-bg: var(--btn-glass-bg);
+      --btn-color: #27496d;
+      --btn-border: var(--btn-glass-border);
+      border: 1px solid var(--btn-border);
+      border-radius: 999px;
+      padding: 12px 17px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      color: var(--btn-color);
+      background: var(--btn-bg);
+      backdrop-filter: blur(16px) saturate(1.09);
+      -webkit-backdrop-filter: blur(16px) saturate(1.09);
+      transition: transform .24s cubic-bezier(.2,.7,.2,1), box-shadow .24s cubic-bezier(.2,.7,.2,1), filter .2s ease, border-color .22s ease, background .24s ease;
+      box-shadow: var(--btn-glass-shadow);
+    }
+
+    button:hover {
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: var(--btn-glass-shadow-hover);
+      filter: saturate(1.04);
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.985);
+      box-shadow: var(--btn-glass-shadow-press);
+      filter: saturate(0.98);
+    }
+
+    button:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(92, 140, 217, 0.26), var(--btn-glass-shadow-hover);
+    }
+
+    button:disabled {
+      background: linear-gradient(140deg, #f1f5f9, #e2e8f0);
+      color: #7b8794;
+      border-color: #cbd5e1;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+      filter: none;
+      opacity: 0.95;
+    }
+
+    button:disabled:hover {
+      transform: none;
+      filter: none;
+      box-shadow: none;
+    }
+
+    #checkBtn {
+      --btn-bg: linear-gradient(150deg, rgba(46, 90, 189, 0.96), rgba(30, 58, 138, 0.92));
+      --btn-color: #f7fbff;
+      --btn-border: rgba(28, 62, 140, 0.85);
+    }
+
+    #resetBtn {
+      --btn-bg: linear-gradient(150deg, rgba(255, 255, 255, 0.94), rgba(224, 238, 255, 0.78));
+      --btn-color: #25476f;
+      --btn-border: rgba(169, 196, 228, 0.72);
+    }
+
+    #solveBtn {
+      --btn-bg: linear-gradient(150deg, rgba(255, 219, 142, 0.96), rgba(247, 166, 34, 0.9));
+      --btn-color: #5e3f03;
+      --btn-border: rgba(206, 137, 14, 0.8);
+    }
+
+    #solveBtn:disabled {
+      background: linear-gradient(140deg, #f5f5f5, #e8ebef);
+    }
+
+    #soundToggle {
+      --btn-bg: linear-gradient(150deg, rgba(255, 247, 230, 0.95), rgba(255, 234, 185, 0.82));
+      --btn-color: #6f4a05;
+      --btn-border: rgba(230, 194, 113, 0.75);
+      min-width: 138px;
+    }
+
+    #toniToggle {
+      --btn-bg: linear-gradient(150deg, rgba(238, 250, 255, 0.96), rgba(207, 236, 250, 0.86));
+      --btn-color: #24536f;
+      --btn-border: rgba(122, 180, 210, 0.72);
+      min-width: 150px;
+    }
+
+    .progress {
+      border: 1px solid #b8cbeb;
+      background: linear-gradient(130deg, #edf4ff, #dceaff);
+      border-radius: 999px;
+      padding: 8px 14px 8px 13px;
+      font-weight: 800;
+      color: #1e3a8a;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 4px 10px rgba(30, 58, 138, 0.12);
+      letter-spacing: 0.01em;
+    }
+
+    .progress-track {
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid #cfe3f2;
+      background: linear-gradient(170deg, #edf6ff, #e4f0ff);
+      box-shadow: inset 0 1px 3px rgba(33, 77, 114, 0.08);
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(100deg, #3bd67b, #1eb85f 55%, #15944a);
+      box-shadow: 0 0 18px rgba(40, 196, 101, 0.45);
+      transition: width .45s cubic-bezier(.2,.7,.2,1);
+    }
+
+    .progress-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transform: translateX(-100%);
+      animation: progressShine 1.8s ease-in-out infinite;
+    }
+
+    @keyframes progressShine {
+      to { transform: translateX(120%); }
+    }
+
+    .step-indicator {
+      color: #1e3a8a;
+      font-weight: 800;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-weight: 600;
+      color: var(--hint);
+      min-height: 22px;
+      background: var(--hint-bg);
+      border: 1px solid #cde0ff;
+      border-radius: 14px;
+      padding: 11px 12px;
+      transition: all .28s ease;
+    }
+
+    .status.is-positive {
+      color: #0d6b3d;
+      border-color: #b9ebce;
+      background: #eefcf4;
+    }
+
+    .status.is-negative {
+      color: #8a1f1f;
+      border-color: #f2c6c6;
+      background: #fff4f4;
+    }
+
+    .solve-hint {
+      margin-top: 8px;
+      font-size: 0.86rem;
+      color: #6a7f93;
+      min-height: 20px;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      border-left: 4px solid var(--hint);
+      background: linear-gradient(160deg, #f5f9ff, #ebf2ff);
+      border-radius: 14px;
+      padding: 11px 13px;
+      min-height: 52px;
+      color: #184179;
+      line-height: 1.45;
+      transition: background .25s ease, border-color .25s ease, transform .2s ease, opacity .24s ease;
+      transform-origin: top;
+      animation: fadeLift .3s ease;
+    }
+
+    .feedback.flash {
+      animation: feedbackPulse .34s ease;
+    }
+
+    @keyframes feedbackPulse {
+      from { transform: scale(0.995); }
+      50% { transform: scale(1.01); }
+      to { transform: scale(1); }
+    }
+
+    @keyframes fadeLift {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback.is-positive {
+      border-left-color: var(--ok);
+      background: linear-gradient(160deg, #f2fdf5, #e8f9ef);
+      color: #0c6d3d;
+    }
+
+    .feedback.is-negative {
+      border-left-color: var(--bad);
+      background: linear-gradient(160deg, #fff5f5, #fef0f0);
+      color: #9b1c1c;
+    }
+
+    .board-wrap {
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable both-edges;
+  }
+
+  .board-viewport {
+    position: relative;
+    width: 1240px;
+    height: 1320px;
+    margin: 0 auto;
+    overflow: visible;
+    border-radius: 34px;
+  }
+
+    .board {
+      position: relative;
+      width: 1240px;
+      height: 1320px;
+      margin: 0;
+      border: 1px solid rgba(190, 216, 236, 0.88);
+      border-radius: 34px;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.72), transparent 36%),
+        radial-gradient(circle at 90% 10%, rgba(202, 225, 255, 0.42), transparent 44%),
+        linear-gradient(165deg, rgba(250,253,255,0.88) 0%, rgba(239,246,255,0.76) 64%, rgba(233,242,255,0.8) 100%);
+      transition: filter .32s ease, transform .32s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 24px 44px rgba(33,77,114,.16);
+    }
+
+    .board.is-dragging .slot:not(.is-valid-target):not(.drag-over) {
+      opacity: 0.45;
+      filter: grayscale(0.15);
+    }
+
+    .board.focus-active .slot,
+    .board.focus-active .legend,
+    .board.focus-active .info-btn {
+      opacity: 0.42;
+      transition: opacity .28s ease, filter .28s ease, box-shadow .22s ease;
+    }
+
+    .board.focus-active .slot.is-focus-target,
+    .board.focus-active .legend.is-focus-target,
+    .board.focus-active .info-btn.is-focus-target {
+      opacity: 1;
+      filter: saturate(1.06);
+    }
+
+    .board.focus-active .slot.is-focus-target {
+      box-shadow: 0 0 0 4px rgba(47, 129, 255, 0.24), 0 14px 28px rgba(38, 88, 128, 0.24);
+      animation: breathe .95s ease-in-out infinite alternate;
+    }
+
+    .flow {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      filter: drop-shadow(0 2px 4px rgba(72, 111, 140, 0.18));
+    }
+
+    .flow .connector {
+      stroke: var(--line-soft);
+      stroke-width: 4.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      marker-end: url(#arrow);
+      transition: stroke .22s ease, opacity .22s ease, stroke-width .22s ease;
+      opacity: 0.28;
+    }
+
+    .flow .connector.revealed {
+      stroke: var(--line);
+      opacity: 0.92;
+    }
+
+    .flow .connector.active {
+      stroke: var(--line-active);
+      stroke-width: 4.4;
+      opacity: 1;
+      stroke-dasharray: 8 8;
+      animation: flowPulse .95s linear infinite;
+    }
+
+    .flow .connector.correct {
+      stroke: var(--line-correct);
+      stroke-width: 4.2;
+      opacity: 1;
+      stroke-dasharray: none;
+      animation: none;
+    }
+
+    .flow.focus-active .connector {
+      opacity: 0.12;
+    }
+
+    .flow.focus-active .connector.is-focus-target {
+      opacity: 0.95;
+    }
+
+    @keyframes flowPulse {
+      from { stroke-dashoffset: 0; }
+      to { stroke-dashoffset: -16; }
+    }
+
+    @keyframes breathe {
+      from { box-shadow: 0 0 0 3px rgba(47, 129, 255, 0.18), 0 12px 24px rgba(38, 88, 128, 0.20); }
+      to { box-shadow: 0 0 0 7px rgba(47, 129, 255, 0.30), 0 16px 30px rgba(38, 88, 128, 0.24); }
+    }
+
+    .legend {
+      position: absolute;
+      z-index: 3;
+      border: 1px solid #c8e0eb;
+      background: rgba(235, 243, 255, 0.96);
+      color: #1e3a8a;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      box-shadow: 0 6px 12px rgba(83, 116, 143, 0.12);
+    }
+
+    .slot {
+      position: absolute;
+      z-index: 3;
+      width: 260px;
+      min-height: 64px;
+      border: 1.5px solid color-mix(in srgb, var(--slot) 82%, white 18%);
+      border-radius: 24px;
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.84), rgba(231, 244, 255, 0.62));
+      box-shadow: 0 13px 28px rgba(37, 78, 121, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      padding: 11px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .24s cubic-bezier(.2,.7,.2,1), box-shadow .24s cubic-bezier(.2,.7,.2,1), border-color .2s ease, background .2s ease, filter .24s ease;
+      line-height: 1.35;
+      transform-origin: center;
+      outline: none;
+    }
+
+    .slot:hover,
+    .slot:focus-visible {
+      transform: translateY(-2px) scale(1.007);
+      box-shadow: 0 17px 32px rgba(32, 80, 116, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.96);
+      border-color: #7ea8c7;
+      background: linear-gradient(162deg, rgba(255, 255, 255, 0.92), rgba(232, 246, 255, 0.72));
+      filter: saturate(1.05);
+    }
+
+
+    .slot.is-clickable::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: inherit;
+      border: 1px solid rgba(47, 129, 255, 0);
+      transition: border-color .2s ease;
+      pointer-events: none;
+    }
+
+    .slot.is-clickable:hover::after,
+    .slot.is-clickable:focus-visible::after {
+      border-color: rgba(47, 129, 255, 0.25);
+    }
+
+    .slot.is-decision {
+      border-color: #88b0cc;
+    }
+
+    .slot.group-negotiation {
+      background: linear-gradient(165deg, #ffffff, #e8f1ff);
+      border-color: #90b7dc;
+    }
+
+    .slot.group-action {
+      background: linear-gradient(165deg, #ffffff, #ecfdf3);
+      border-color: #8ebda6;
+    }
+
+    .slot.group-result {
+      background: linear-gradient(165deg, #ffffff, #fff6e8);
+      border-color: #e2bb76;
+    }
+
+    .slot.empty::before {
+      content: "Begriff einsetzen";
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: #7d95ad;
+    }
+
+    .slot.is-valid-target {
+      border-color: #7ea8d2;
+      box-shadow: 0 0 0 3px rgba(75, 142, 219, 0.15), 0 12px 24px rgba(56, 97, 136, 0.15);
+    }
+
+    .slot.drag-over,
+    .slot.is-active {
+      border-color: var(--accent);
+      background: linear-gradient(170deg, rgba(238, 246, 255, 0.97), rgba(228, 242, 255, 0.9));
+      box-shadow: 0 0 0 4px rgba(47, 129, 255, 0.18), 0 14px 28px rgba(56, 97, 136, 0.2);
+      transform: translateY(-2px) scale(1.01);
+    }
+
+    .slot.correct {
+      border-style: solid;
+      border-color: var(--ok);
+      background: linear-gradient(160deg, #f2fff8, var(--ok-bg));
+      color: #0e6842;
+      box-shadow: 0 0 0 4px rgba(42, 155, 109, 0.2), 0 12px 26px rgba(42, 155, 109, 0.2);
+      animation: markIn .25s ease;
+    }
+
+    .slot.wrong {
+      border-style: solid;
+      border-color: var(--bad);
+      background: linear-gradient(160deg, #fff7f7, var(--bad-bg));
+      color: #923535;
+      box-shadow: 0 0 0 4px rgba(212, 87, 87, 0.16), 0 12px 26px rgba(189, 88, 88, 0.16);
+      animation: shake .25s ease;
+    }
+
+    .slot.try-again-shake {
+      animation: tryAgainShake .55s ease;
+    }
+
+    @keyframes markIn {
+      from { transform: translateY(-1px) scale(0.99); }
+      to { transform: translateY(0) scale(1); }
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-2px); }
+      50% { transform: translateX(2px); }
+      75% { transform: translateX(-1px); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes tryAgainShake {
+      0%, 100% { transform: translateX(0) rotate(0); }
+      25% { transform: translateX(-3px) rotate(-0.5deg); }
+      50% { transform: translateX(3px) rotate(0.5deg); }
+      75% { transform: translateX(-2px) rotate(-0.25deg); }
+    }
+
+    .slot.drop-ok {
+      animation: dropOk .35s ease;
+    }
+
+    .slot.drop-bad {
+      animation: dropBad .35s ease;
+    }
+
+    @keyframes dropOk {
+      0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(42, 155, 109, 0.45); }
+      100% { transform: scale(1); box-shadow: 0 0 0 10px rgba(42, 155, 109, 0); }
+    }
+
+    @keyframes dropBad {
+      0% { box-shadow: 0 0 0 0 rgba(212, 87, 87, 0.4); }
+      100% { box-shadow: 0 0 0 10px rgba(212, 87, 87, 0); }
+    }
+
+    .slot[data-key="s1"] { left: 500px; top: 20px; }
+    .slot[data-key="s2"] { left: 880px; top: 20px; }
+    .slot[data-key="s3"] { left: 490px; top: 130px; }
+    .slot[data-key="s4"] { left: 120px; top: 270px; height: 150px; }
+    .slot[data-key="s5"] { left: 900px; top: 270px; }
+    .slot[data-key="s6"] { left: 140px; top: 470px; width: 180px; }
+    .slot[data-key="s7"] { left: 500px; top: 470px; width: 220px; }
+    .slot[data-key="s8"] { left: 130px; top: 640px; width: 300px; }
+    .slot[data-key="s9"] { left: 130px; top: 840px; width: 180px; }
+    .slot[data-key="s10"] { left: 130px; top: 1020px; width: 180px; }
+    .slot[data-key="s11"] { left: 600px; top: 640px; width: 210px; }
+    .slot[data-key="s12"] { left: 620px; top: 820px; width: 260px; }
+    .slot[data-key="s13"] { left: 960px; top: 840px; width: 220px; }
+    .slot[data-key="s14"] { left: 950px; top: 1020px; width: 230px; height: 120px; }
+    .slot[data-key="s15"] { left: 540px; top: 1190px; width: 260px; }
+
+    .info-btn {
+      position: absolute;
+      z-index: 5;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      --btn-bg: linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(226, 242, 255, 0.8));
+      --btn-color: #2a648e;
+      --btn-border: rgba(149, 191, 220, 0.75);
+      font-size: 0.9rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      left: var(--x);
+      top: var(--y);
+      padding: 0;
+    }
+
+    .slot-learning-btn {
+      width: 34px;
+      height: 34px;
+      color: #0b4f85;
+      background: #eef8ff;
+      border: 2px solid #ffffff;
+      box-shadow: 0 6px 16px rgba(20, 74, 112, 0.24);
+    }
+
+    .slot-learning-btn::after {
+      content: "Lerninfo";
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 6px);
+      translate: -50% 4px;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      padding: 5px 8px;
+      border-radius: 8px;
+      color: #fff;
+      background: #173f62;
+      font-size: 0.7rem;
+      font-weight: 700;
+      transition: opacity .18s ease, translate .18s ease;
+    }
+
+    .slot-learning-btn:hover::after,
+    .slot-learning-btn:focus-visible::after {
+      opacity: 1;
+      translate: -50% 0;
+    }
+
+    .teaching-note {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid rgba(142, 176, 207, 0.45);
+      border-radius: 14px;
+      background: rgba(238, 247, 255, 0.76);
+      color: #294b69;
+      line-height: 1.5;
+    }
+
+    .teaching-note strong {
+      color: #173f62;
+    }
+
+    .learning-detail {
+      display: grid;
+      gap: 10px;
+    }
+
+    .learning-detail-section {
+      padding: 11px 12px;
+      border-radius: 14px;
+      background: rgba(245, 250, 255, 0.82);
+      border: 1px solid rgba(151, 185, 213, 0.38);
+    }
+
+    .learning-detail-section strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #153f63;
+    }
+
+    .learning-detail-section p {
+      margin: 0;
+    }
+
+    .source-links {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    .source-links li + li {
+      margin-top: 5px;
+    }
+
+    .source-links a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 3px 2px;
+    }
+
+    .info-popup,
+    .final-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(16, 38, 56, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 40;
+      padding: 16px;
+    }
+
+    .info-popup.open,
+    .final-overlay.open {
+      display: flex;
+    }
+
+    .celebration-layer,
+    .try-again-layer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .celebration-layer {
+      z-index: 50;
+    }
+
+    .try-again-layer {
+      z-index: 35;
+      display: grid;
+      place-items: center;
+    }
+
+    .celebration-layer.active,
+    .try-again-layer.active {
+      visibility: visible;
+    }
+
+    .legacy-tarif-toni {
+      position: fixed;
+      z-index: 55;
+      right: 18px;
+      bottom: 18px;
+      width: min(330px, calc(100vw - 24px));
+      display: flex;
+      align-items: flex-end;
+      gap: 9px;
+      pointer-events: none;
+      transform: translate3d(var(--toni-x, 0px), var(--toni-y, 0px), 0);
+      transition: transform 3.2s cubic-bezier(.22, .72, .22, 1);
+      will-change: transform;
+    }
+
+    .legacy-tarif-toni[hidden] { display: none; }
+
+    .toni-figure {
+      flex: 0 0 auto;
+      width: 112px;
+      height: 224px;
+      display: grid;
+      place-items: center;
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      background: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: none !important;
+      transform-origin: bottom center;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .toni-character {
+      display: block;
+      width: 112px;
+      height: 224px;
+      transform-origin: bottom center;
+      transition: transform .18s ease;
+    }
+
+    .toni-character-frame {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 44px 44px 36px 36px;
+      background:
+        radial-gradient(circle at 45% 35%, rgba(255, 255, 255, .85) 0 10px, transparent 11px),
+        radial-gradient(circle at 65% 35%, rgba(255, 255, 255, .85) 0 10px, transparent 11px),
+        linear-gradient(150deg, #0a385f, #082344 58%, #071629);
+      filter: drop-shadow(0 10px 6px rgba(25, 48, 72, .3));
+      transform-origin: bottom center;
+      will-change: transform;
+    }
+
+    .legacy-tarif-toni.facing-left .toni-character { transform: scaleX(-1); }
+    .legacy-tarif-toni.is-moving .toni-character-frame {
+      animation: toniRealWalk .62s steps(1, end) infinite, toniRealBob .62s ease-in-out infinite;
+    }
+    .legacy-tarif-toni.is-talking:not(.is-moving) .toni-character-frame {
+      animation: toniRealGuide .8s ease-in-out 2;
+    }
+    .toni-figure:hover,
+    .toni-figure:active {
+      background: none !important;
+      box-shadow: none !important;
+      transform: none;
+    }
+
+    .toni-figure:focus-visible {
+      outline: 2px dashed rgba(47, 129, 255, .78);
+      outline-offset: 2px;
+      background: none !important;
+      box-shadow: none !important;
+      filter: drop-shadow(0 10px 6px rgba(25, 48, 72, .3));
+    }
+
+    .toni-bubble {
+      max-width: 196px;
+      padding: 10px 12px;
+      border: 1px solid rgba(129, 174, 203, .68);
+      border-radius: 16px 16px 4px 16px;
+      color: #234b67;
+      background: rgba(250, 253, 255, .96);
+      box-shadow: 0 10px 24px rgba(32, 78, 108, .18);
+      font-size: .82rem;
+      font-weight: 650;
+      line-height: 1.35;
+      opacity: 0;
+      transform: translateY(5px) scale(.97);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .legacy-tarif-toni.is-talking .toni-bubble { opacity: 1; transform: translateY(0) scale(1); }
+
+    .toni-chat {
+      position: absolute;
+      right: 0;
+      bottom: 228px;
+      width: min(290px, calc(100vw - 24px));
+      padding: 12px;
+      border: 1px solid rgba(129, 174, 203, .72);
+      border-radius: 18px;
+      color: #234b67;
+      background: rgba(250, 253, 255, .98);
+      box-shadow: 0 18px 38px rgba(32, 78, 108, .24);
+      pointer-events: auto;
+    }
+
+    .toni-chat[hidden] { display: none; }
+    .toni-chat p { margin: 0 0 9px; font-size: .8rem; line-height: 1.4; }
+    .toni-chat-form { display: flex; gap: 7px; }
+    .toni-chat-form input {
+      min-width: 0;
+      flex: 1 1 auto;
+      border: 1px solid #b6cede;
+      border-radius: 10px;
+      padding: 8px 9px;
+      font: inherit;
+      color: #244f73;
+      background: #fff;
+    }
+    .toni-chat-form button { min-height: 38px; padding: 8px 10px; }
+
+    @keyframes toniRealWalk {
+      0%, 49.9% { background-position: 25% center; }
+      50%, 100% { background-position: 50% center; }
+    }
+
+    @keyframes toniRealBob {
+      0%, 100% { transform: translateY(0) rotate(-.6deg); }
+      50% { transform: translateY(-4px) rotate(.6deg); }
+    }
+
+    @keyframes toniRealGuide {
+      0%, 100% { transform: translateY(0) scale(1); }
+      45% { transform: translateY(-3px) scale(1.015); }
+    }
+
+    .confetti-piece {
+      position: absolute;
+      left: var(--start-x);
+      top: var(--start-y);
+      width: var(--size);
+      height: calc(var(--size) * 0.55);
+      border-radius: 3px;
+      background: var(--color);
+      opacity: 0;
+      animation: confettiBurst var(--duration) cubic-bezier(.18, .7, .25, 1) var(--delay) forwards;
+    }
+
+    @keyframes confettiBurst {
+      0% {
+        opacity: 0;
+        transform: translate(0, 0) rotate(0);
+      }
+      8% { opacity: 1; }
+      100% {
+        opacity: 0;
+        transform: translate(var(--travel-x), var(--travel-y)) rotate(var(--rotation));
+      }
+    }
+
+    .final-card.success-pulse {
+      animation: successPulse .8s ease;
+    }
+
+    @keyframes successPulse {
+      0% { transform: scale(.96); box-shadow: 0 18px 36px rgba(23, 58, 84, .2); }
+      45% { transform: scale(1.025); box-shadow: 0 0 0 8px rgba(42, 155, 109, .14), 0 28px 48px rgba(23, 58, 84, .28); }
+      100% { transform: scale(1); }
+    }
+
+    .try-again-message {
+      position: relative;
+      max-width: min(420px, calc(100vw - 32px));
+      padding: 14px 18px;
+      border: 1px solid rgba(116, 158, 194, .58);
+      border-radius: 18px;
+      color: #244f73;
+      background: rgba(246, 251, 255, .94);
+      box-shadow: 0 18px 40px rgba(31, 72, 105, .2);
+      font-weight: 700;
+      text-align: center;
+      opacity: 0;
+      animation: tryAgainMessage 1.8s ease forwards;
+    }
+
+    .try-again-card {
+      position: absolute;
+      width: 34px;
+      height: 24px;
+      border: 2px solid rgba(82, 137, 180, .42);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, .88);
+      opacity: 0;
+      animation: thoughtCard 1.5s ease var(--delay) forwards;
+    }
+
+    @keyframes tryAgainMessage {
+      0%, 100% { opacity: 0; transform: translateY(8px) scale(.96); }
+      18%, 78% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes thoughtCard {
+      0%, 100% { opacity: 0; transform: translate(0, 8px) scale(.8) rotate(0); }
+      25%, 70% { opacity: .9; transform: translate(var(--x), var(--y)) scale(1) rotate(var(--rotation)); }
+    }
+
+    .info-card,
+    .final-card {
+      width: min(560px, 100%);
+      max-height: min(86vh, 720px);
+      overflow: auto;
+      background: linear-gradient(162deg, rgba(255,255,255,0.84), rgba(240,248,255,0.68));
+      border: 1px solid rgba(190, 217, 236, 0.82);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 24px 42px rgba(23, 58, 84, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(18px);
+      animation: fadeLift .28s ease;
+    }
+
+    .info-card h3,
+    .final-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.08rem;
+    }
+
+    .info-card p,
+    .final-card p {
+      margin: 0;
+      line-height: 1.48;
+      color: #2c4f6e;
+    }
+
+    .popup-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cards {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .card,
+    .slot {
+      font-family: system-ui, -apple-system, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Segoe UI", Arial, sans-serif;
+    }
+
+    .card {
+      border: 1px solid #c8ddee;
+      border-radius: 22px;
+      padding: 14px 13px;
+      background: linear-gradient(168deg, rgba(255,255,255,0.84), rgba(241,246,255,0.66));
+      font-weight: 700;
+      color: #1f3f6e;
+      text-align: center;
+      user-select: none;
+      cursor: grab;
+      transition: transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .24s cubic-bezier(.2,.7,.2,1), border-color .2s ease, background .2s ease, opacity .2s ease, filter .2s ease;
+      box-shadow: 0 12px 24px rgba(30, 58, 138, 0.16), inset 0 1px 0 rgba(255,255,255,0.92);
+    }
+
+    .card.is-focus-card {
+      border-color: #75aef0;
+      box-shadow: 0 0 0 3px rgba(47, 129, 255, 0.16), 0 12px 22px rgba(60, 95, 126, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: #6f95d5;
+      box-shadow: 0 18px 34px rgba(30, 58, 138, 0.24);
+      filter: saturate(1.05);
+    }
+
+    .card:focus-visible {
+      outline: none;
+      border-color: #4f8ed8;
+      box-shadow: 0 0 0 3px rgba(79, 142, 216, 0.25), 0 14px 28px rgba(30, 58, 138, 0.2);
+    }
+
+    .card.dragging {
+      transform: translateY(-6px) scale(1.04);
+      opacity: 0.74;
+      filter: saturate(1.08);
+      box-shadow: 0 24px 40px rgba(30, 58, 138, 0.28), 0 0 0 4px rgba(77, 135, 212, 0.2);
+      cursor: grabbing;
+    }
+
+    .card.selected {
+      border-color: var(--accent);
+      background: linear-gradient(165deg, #f2f6ff, #e7efff);
+      box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.22), 0 12px 22px rgba(42, 91, 137, 0.23);
+    }
+
+    .card.used { opacity: 0.45; cursor: not-allowed; filter: grayscale(.75); text-decoration: line-through; }
+
+    .section-note {
+      margin-top: 8px;
+      margin-bottom: 2px;
+      color: #55708d;
+      font-size: 0.9rem;
+    }
+
+    .final-stats {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    }
+
+    .stat-chip {
+      border: 1px solid #d3e5f4;
+      border-radius: 12px;
+      padding: 10px;
+      background: linear-gradient(160deg, #f8fcff, #eef6ff);
+      text-align: center;
+    }
+
+    .stat-chip .value {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1d4a71;
+    }
+
+    .stat-chip .label {
+      font-size: 0.8rem;
+      color: #56728f;
+      margin-top: 4px;
+    }
+
+    .learning-summary {
+      margin-top: 12px;
+      border: 1px solid #d0e2f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: linear-gradient(160deg, #f7fcff, #edf5ff);
+      color: #2d4f70;
+      line-height: 1.45;
+      font-size: 0.9rem;
+    }
+
+    .stats-visual {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1.3fr 1fr;
+      align-items: center;
+    }
+
+    .bar-chart {
+      display: grid;
+      gap: 8px;
+    }
+
+    .bar-row {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 120px 1fr auto;
+      align-items: center;
+      font-size: 0.84rem;
+      color: #2d4f70;
+    }
+
+    .bar-track {
+      height: 10px;
+      border-radius: 999px;
+      background: #e6eef7;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: var(--value, 0%);
+      border-radius: inherit;
+      transition: width .5s ease;
+    }
+
+    .bar-fill.good { background: linear-gradient(130deg, #36ba82, #229565); }
+    .bar-fill.bad { background: linear-gradient(130deg, #f08d8d, #d65b5b); }
+
+    .pie-chart {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      margin: 0 auto;
+      background: conic-gradient(#36ba82 var(--good, 0%), #f08d8d 0);
+      box-shadow: inset 0 0 0 14px #ffffff, 0 8px 18px rgba(54, 95, 130, 0.16);
+      position: relative;
+    }
+
+    .pie-chart::after {
+      content: attr(data-label);
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 0.8rem;
+      color: #2f5372;
+      font-weight: 700;
+      white-space: pre-line;
+      text-align: center;
+    }
+
+    @media (max-width: 960px) {
+      .top-grid { grid-template-columns: 1fr; }
+      .control-groups { flex-direction: column; align-items: stretch; }
+      .mode-option {
+        min-width: 0;
+        flex: 1 1 260px;
+      }
+      .action-group button,
+      .meta-group button,
+      .meta-group .progress { width: 100%; text-align: center; }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        width: calc(100% - 14px);
+        margin: 8px auto;
+        padding: 10px;
+        border-radius: 18px;
+      }
+      .panel { border-radius: 16px; }
+      .control-groups,
+      .action-group,
+      .meta-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls button { flex: 1 1 100%; }
+      .cards { grid-template-columns: 1fr; }
+      .board-wrap { padding: 10px; }
+      .board-viewport {
+        border-radius: 20px;
+      }
+      .board {
+        border-radius: 20px;
+      }
+      .status,
+      .feedback {
+        font-size: 0.92rem;
+      }
+      .page-footer { font-size: 0.78rem; }
+      .stats-visual { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 1fr; gap: 4px; }
+      .pie-chart { width: 118px; height: 118px; }
+      .legacy-tarif-toni { right: 8px; bottom: 8px; width: min(270px, calc(100vw - 16px)); }
+      .toni-figure,
+      .toni-character { width: 78px; height: 156px; }
+      .toni-bubble { max-width: 164px; font-size: .76rem; }
+      .toni-chat { bottom: 162px; width: min(250px, calc(100vw - 16px)); }
+      .footer-github-link {
+        margin-top: 10px;
+        font-size: 0.92rem;
+        line-height: 1.35;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .mode-option {
+        padding: 12px 13px;
+      }
+
+      button {
+        padding: 11px 13px;
+        font-size: 0.9rem;
+      }
+
+      .section-note,
+      .solve-hint {
+        font-size: 0.84rem;
+      }
+    }
+
+    .page-footer {
+      margin: 10px auto 18px;
+      width: min(1400px, calc(100% - 32px));
+      padding: 12px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(170, 197, 216, 0.55);
+      background: rgba(255, 255, 255, 0.42);
+      backdrop-filter: blur(12px);
+      color: #3a5b78;
+      text-align: center;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      box-shadow: 0 12px 26px rgba(46, 81, 111, 0.14), inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    .page-footer p {
+      margin: 2px 0;
+    }
+
+    .footer-github-link {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 2px 0;
+      color: #2a4f75;
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: color .2s ease, border-color .2s ease;
+      word-break: break-word;
+    }
+
+    .footer-github-link:hover,
+    .footer-github-link:focus-visible {
+      color: #1e3a8a;
+      border-bottom-color: rgba(30, 58, 138, 0.45);
+      outline: none;
+    }
+
+  </style>
+  <meta name="theme-color" content="#1e3a8a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Flussdiagramm" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./app-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./app-icon.svg" />
+  <link rel="stylesheet" href="./liquid-glass.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="panel hero-panel">
+      <h1>Flussdiagramm-Spiel: Tarifrunde und Streik</h1>
+      <p class="subtitle">Ordne die Schritte einer Tarifrunde zu und erkläre anschließend mit den Lerninfos, warum jeder Schritt für Beschäftigte und Arbeitgeber wichtig ist.</p>
+    </section>
+
+    <section class="panel top-grid">
+      <div class="reference-box">
+        <h2>Spielziel auf einen Blick</h2>
+        <ul class="quick-guide">
+          <li>Wortkarte auswählen und in eine Station im Flussdiagramm setzen.</li>
+          <li>Im Lernmodus öffnet das Fragezeichen an einem richtigen Kästchen ein Beispiel und eine Denkfrage.</li>
+          <li>Im Prüfungsmodus gibt es erst nach „Prüfen“ eine Auswertung.</li>
+          <li>„Lösung anzeigen“ dient zum Vergleichen und zählt nicht als selbstständig gelöst.</li>
+        </ul>
+        <details class="more-info">
+          <summary>Unterrichtseinsatz und fachlicher Hinweis</summary>
+          <div class="teaching-note">
+            <strong>Vorschlag für den Unterricht:</strong> Erst allein oder zu zweit zuordnen, danach für drei ausgewählte Kästchen das Praxisbeispiel lesen und die Denkfrage besprechen. Zum Abschluss vergleichen Gruppen ihre Begründungen.
+          </div>
+          <p>Das Diagramm zeigt einen vereinfachten möglichen Ablauf. Reale Tarifrunden können anders verlaufen. Warnstreiks sind erst nach Ablauf der Friedenspflicht zulässig; ein längerer Streik setzt üblicherweise gescheiterte Verhandlungen und eine Urabstimmung nach den Regeln der Gewerkschaft voraus.</p>
+          <ul class="source-links">
+            <li><a href="https://www.bpb.de/kurz-knapp/hintergrund-aktuell/547428/faq-was-ist-ein-streik/" target="_blank" rel="noopener noreferrer">bpb: Was ist ein Streik?</a></li>
+            <li><a href="https://www.bpb.de/themen/arbeit/arbeitsmarktpolitik/316978/grundlagen-der-lohnpolitik/" target="_blank" rel="noopener noreferrer">bpb: Tarifverhandlungen und Arbeitskampf</a></li>
+            <li><a href="https://www.bpb.de/kurz-knapp/lexika/politiklexikon/296518/urabstimmung/" target="_blank" rel="noopener noreferrer">bpb: Urabstimmung</a></li>
+          </ul>
+        </details>
+      </div>
+
+      <div>
+        <div class="mode-selector" role="group" aria-label="Spielmodus auswählen">
+          <button type="button" class="mode-option active" data-mode="learn" id="modeLearnBtn">
+            <strong>Lernmodus</strong>
+            <span>Direktes Feedback mit kurzer Begründung bei Fehlern.</span>
+          </button>
+          <button type="button" class="mode-option" data-mode="exam" id="modeExamBtn">
+            <strong>Prüfungsmodus</strong>
+            <span>Während des Spiels ohne Hilfetexte, Auswertung erst am Ende.</span>
+          </button>
+        </div>
+        <div class="controls">
+          <div class="control-groups">
+            <div class="action-group">
+              <button id="checkBtn">Prüfen</button>
+              <button id="resetBtn">Neu starten</button>
+              <button id="solveBtn" title="Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.">Lösung anzeigen</button>
+            </div>
+            <div class="meta-group">
+              <button id="soundToggle" aria-pressed="true">🔊 Ton an</button>
+              <button id="toniToggle" aria-pressed="true">🧢 Tarif Toni an</button>
+              <span id="progress" class="progress">0 / 15 richtig</span>
+            </div>
+          </div>
+        </div>
+        <p class="section-note">Hinweis: „Prüfen“ markiert nur fehlerhafte Zuordnungen.</p>
+        <div id="solveHint" class="solve-hint" role="status" aria-live="polite">Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.</div>
+        <div class="step-indicator" id="stepIndicator">Schritt 1 von 15</div>
+        <div class="progress-track" aria-hidden="true">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <div id="status" class="status" role="status" aria-live="polite">Wähle eine Karte aus und setze sie in ein Feld.</div>
+        <div id="feedback" class="feedback" role="status" aria-live="polite">Feedback erscheint hier nach dem Einsetzen oder Prüfen.</div>
+      </div>
+    </section>
+
+    <section class="panel board-wrap">
+      <p class="section-note">Tipp für kleine Bildschirme: Das Diagramm lässt sich horizontal und vertikal verschieben. Fragezeichen an richtig gelösten Kästchen öffnen die Lerninfos.</p>
+      <div class="board-viewport" id="boardViewport">
+      <div class="board" id="board">
+        <svg class="flow" id="flowSvg" viewBox="0 0 1240 1320" aria-hidden="true">
+          <defs>
+            <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+              <path d="M1,1 L11,5 L1,9 Q3,5 1,1 z" fill="#7b9cbd"></path>
+            </marker>
+          </defs>
+
+          <line class="connector" data-active-for="s3" x1="620" y1="94" x2="620" y2="130"></line>
+          <path class="connector" data-active-for="s3" d="M930,94 L820,200"></path>
+          <path class="connector" data-active-for="s4" d="M620,194 L620,250 L210,250 L210,270"></path>
+          <path class="connector" data-active-for="s5" d="M620,194 L620,250 L990,250 L990,270"></path>
+          <line class="connector" data-active-for="s15" x1="1010" y1="334" x2="670" y2="1190"></line>
+          <line class="connector" data-active-for="s6" x1="210" y1="420" x2="210" y2="470"></line>
+          <line class="connector" data-active-for="s7" x1="320" y1="530" x2="500" y2="530"></line>
+          <line class="connector" data-active-for="s6" x1="500" y1="530" x2="320" y2="530"></line>
+          <line class="connector" data-active-for="s8" x1="210" y1="570" x2="210" y2="640"></line>
+          <line class="connector" data-active-for="s9,s11" x1="430" y1="700" x2="600" y2="700"></line>
+          <line class="connector" data-active-for="s9" x1="210" y1="740" x2="210" y2="840"></line>
+          <line class="connector" data-active-for="s10" x1="210" y1="900" x2="210" y2="1020"></line>
+          <path class="connector" data-active-for="s15" d="M210,1110 L210,1240 L540,1240"></path>
+          <line class="connector" data-active-for="s12" x1="705" y1="730" x2="705" y2="820"></line>
+          <line class="connector" data-active-for="s13" x1="880" y1="910" x2="960" y2="910"></line>
+          <line class="connector" data-active-for="s14" x1="1065" y1="930" x2="1065" y2="1020"></line>
+          <path class="connector" data-active-for="s15" d="M1065,1140 L1065,1240 L800,1240"></path>
+        </svg>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s1" data-node-type="start" aria-label="Leeres Feld Schritt 1"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s2" data-node-type="action" aria-label="Leeres Feld Schritt 2"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s3" data-node-type="process" aria-label="Leeres Feld Schritt 3"></button>
+        <button type="button" class="slot empty is-clickable is-decision group-negotiation" data-key="s4" data-node-type="decision" aria-label="Leeres Entscheidungsfeld Schritt 4"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s5" data-node-type="outcome" aria-label="Leeres Feld Schritt 5"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s6" data-node-type="action" aria-label="Leeres Feld Schritt 6"></button>
+        <button type="button" class="slot empty is-clickable group-action" data-key="s7" data-node-type="action" aria-label="Leeres Feld Schritt 7"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s8" data-node-type="process" aria-label="Leeres Feld Schritt 8"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s9" data-node-type="outcome" aria-label="Leeres Feld Schritt 9"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s10" data-node-type="outcome" aria-label="Leeres Feld Schritt 10"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s11" data-node-type="action" aria-label="Leeres Feld Schritt 11"></button>
+        <button type="button" class="slot empty is-clickable group-negotiation" data-key="s12" data-node-type="process" aria-label="Leeres Feld Schritt 12"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s13" data-node-type="outcome" aria-label="Leeres Feld Schritt 13"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s14" data-node-type="outcome" aria-label="Leeres Feld Schritt 14"></button>
+        <button type="button" class="slot empty is-clickable group-result" data-key="s15" data-node-type="outcome" aria-label="Leeres Feld Schritt 15"></button>
+
+        <button type="button" class="info-btn" style="--x: 738px; --y: 120px;" data-info-key="tarifverhandlungen" aria-label="Warum ist das wichtig? Tarifverhandlungen">i</button>
+        <button type="button" class="info-btn" style="--x: 738px; --y: 660px;" data-info-key="ergebnis-erzielt" aria-label="Warum ist das wichtig? Ergebnis erzielt">i</button>
+        <button type="button" class="info-btn" style="--x: 738px; --y: 360px;" data-info-key="streik" aria-label="Warum ist das wichtig? Warnstreik oder Streik">i</button>
+        <button type="button" class="info-btn" style="--x: 900px; --y: 980px;" data-info-key="kein-ergebnis" aria-label="Warum ist das wichtig? Kein Ergebnis erzielt">i</button>
+      </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Wortkarten</h2>
+      <p class="section-note">Kartenpool für die Stationen im Flussdiagramm (ziehen oder klicken).</p>
+      <div id="cards" class="cards" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="page-footer" aria-label="Credits">
+    <p>© 2026 Mohamed Hachelaf</p>
+    <p>Konzept und Umsetzung durch Mohamed Hachelaf</p>
+    <p>Erstellt im Auftrag von Christine Schmück</p>
+    <a class="footer-github-link" href="https://github.com/themohamedh" target="_blank" rel="noopener noreferrer">GitHub-Profil: themohamedh</a>
+  </footer>
+
+  <div id="celebrationLayer" class="celebration-layer" aria-hidden="true"></div>
+  <div id="tryAgainLayer" class="try-again-layer" aria-hidden="true"></div>
+  <aside id="tarifToni" class="legacy-tarif-toni" aria-label="Alter Tarif Toni, deaktiviert" aria-live="off" hidden>
+    <button id="toniFigure" class="toni-figure" type="button" aria-expanded="false" aria-controls="toniChat" aria-label="Chat mit Tarif Toni öffnen">
+      <span class="toni-character" role="img" aria-label="Tarif Toni als realistischer futuristischer Guide">
+        <span class="toni-character-frame"></span>
+      </span>
+    </button>
+    <div id="toniBubble" class="toni-bubble"></div>
+    <section id="toniChat" class="toni-chat" aria-label="Chat mit Tarif Toni" hidden>
+      <p id="toniChatResponse">Frag mich nach einem Denkanstoß. Im Prüfungsmodus bleibe ich neutral.</p>
+      <form id="toniChatForm" class="toni-chat-form">
+        <input id="toniChatInput" type="text" maxlength="100" autocomplete="off" aria-label="Nachricht an Tarif Toni" placeholder="Kurze Frage an Toni">
+        <button type="submit">Fragen</button>
+      </form>
+    </section>
+  </aside>
+
+  <div id="infoPopup" class="info-popup" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+    <div class="info-card" tabindex="-1">
+      <h3 id="infoTitle">Warum ist das wichtig?</h3>
+      <div id="infoText" class="learning-detail"></div>
+      <div class="popup-actions">
+        <button id="closeInfoBtn" type="button">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="finalOverlay" class="final-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="finalTitle">
+    <div class="final-card" tabindex="-1">
+      <h3 id="finalTitle">Spiel erfolgreich abgeschlossen</h3>
+      <p id="finalStats">Du hast das Spiel abgeschlossen.</p>
+      <div id="learningSummary" class="learning-summary"></div>
+      <div id="mistakeAnalysis" class="learning-summary"></div>
+      <div class="final-stats">
+        <div class="stat-chip"><div class="value" id="statRight">0</div><div class="label">Richtige Entscheidungen</div></div>
+        <div class="stat-chip"><div class="value" id="statWrong">0</div><div class="label">Fehlversuche</div></div>
+        <div class="stat-chip"><div class="value" id="statClicks">0</div><div class="label">Versuche gesamt</div></div>
+        <div class="stat-chip"><div class="value" id="statTime">0:00</div><div class="label">Benötigte Zeit</div></div>
+      </div>
+      <div class="stats-visual">
+        <div class="bar-chart" aria-label="Balkendiagramm der Entscheidungen">
+          <div class="bar-row"><span>Richtig</span><div class="bar-track"><div id="barRight" class="bar-fill good"></div></div><strong id="barRightLabel">0%</strong></div>
+          <div class="bar-row"><span>Falsch</span><div class="bar-track"><div id="barWrong" class="bar-fill bad"></div></div><strong id="barWrongLabel">0%</strong></div>
+        </div>
+        <div class="pie-chart" id="pieStats" data-label="0%&#10;Trefferquote" aria-hidden="true"></div>
+      </div>
+      <div class="popup-actions">
+        <button id="finalRestartBtn" type="button">Neu starten</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./unterrichtsmaterial.js?v=2026-06-30-mobile-a11y"></script>
+  <script src="tarif-toni.js?v=2026-07-03-stability"></script>
+
+  <script>
+    // Alle Karten für die aktuell sichtbaren Felder im Diagramm
+    const CARD_ITEMS = [
+      { id: "c1", label: "Kündigung TV" }, { id: "c2", label: "Warnstreiks" }, { id: "c3", label: "1. Verhandlungsrunde" },
+      { id: "c4", label: "keine Einigung / Ende der Friedenspflicht / Urabstimmung über Streik" }, { id: "c5", label: "Einigung (1)" },
+      { id: "c6", label: "Streik" }, { id: "c7", label: "evtl. Aussperrung" }, { id: "c8", label: "2. Verhandlungsrunde" },
+      { id: "c9", label: "Ergebnis" }, { id: "c10", label: "Urabstimmung" }, { id: "c11", label: "Schlichtung" },
+      { id: "c12", label: "3. Verhandlungsrunde" }, { id: "c13", label: "Einigung (2)" }, { id: "c14", label: "Urabstimmung Ergebnis" },
+      { id: "c15", label: "neuer TV" }
+    ];
+
+    // Zielbelegung pro Slot
+    const SOLUTION = {
+      s1: "c1", s2: "c2", s3: "c3", s4: "c4", s5: "c5",
+      s6: "c6", s7: "c7", s8: "c8", s9: "c9", s10: "c10",
+      s11: "c11", s12: "c12", s13: "c13", s14: "c14", s15: "c15"
+    };
+
+    const slots = [...document.querySelectorAll(".slot")];
+    const cardsEl = document.getElementById("cards");
+    const statusEl = document.getElementById("status");
+    const feedbackEl = document.getElementById("feedback");
+    const learningSummaryEl = document.getElementById("learningSummary");
+    const mistakeAnalysisEl = document.getElementById("mistakeAnalysis");
+    const progressEl = document.getElementById("progress");
+    const progressFillEl = document.getElementById("progressFill");
+    const stepIndicatorEl = document.getElementById("stepIndicator");
+    const solveBtnEl = document.getElementById("solveBtn");
+    const solveHintEl = document.getElementById("solveHint");
+    const soundToggleEl = document.getElementById("soundToggle");
+    const toniToggleEl = document.getElementById("toniToggle");
+    const tarifToniEl = document.getElementById("tarifToni");
+    const toniFigureEl = document.getElementById("toniFigure");
+    const toniBubbleEl = document.getElementById("toniBubble");
+    const toniChatEl = document.getElementById("toniChat");
+    const toniChatFormEl = document.getElementById("toniChatForm");
+    const toniChatInputEl = document.getElementById("toniChatInput");
+    const toniChatResponseEl = document.getElementById("toniChatResponse");
+    const infoPopupEl = document.getElementById("infoPopup");
+    const infoTitleEl = document.getElementById("infoTitle");
+    const infoTextEl = document.getElementById("infoText");
+    const closeInfoBtnEl = document.getElementById("closeInfoBtn");
+    const finalOverlayEl = document.getElementById("finalOverlay");
+    const finalCardEl = finalOverlayEl.querySelector(".final-card");
+    const finalTitleEl = document.getElementById("finalTitle");
+    const finalRestartBtnEl = document.getElementById("finalRestartBtn");
+    const finalStatsEl = document.getElementById("finalStats");
+    const boardEl = document.getElementById("board");
+    const flowSvgEl = document.getElementById("flowSvg");
+    const statRightEl = document.getElementById("statRight");
+    const statWrongEl = document.getElementById("statWrong");
+    const statClicksEl = document.getElementById("statClicks");
+    const statTimeEl = document.getElementById("statTime");
+    const barRightEl = document.getElementById("barRight");
+    const barWrongEl = document.getElementById("barWrong");
+    const barRightLabelEl = document.getElementById("barRightLabel");
+    const barWrongLabelEl = document.getElementById("barWrongLabel");
+    const pieStatsEl = document.getElementById("pieStats");
+    const celebrationLayerEl = document.getElementById("celebrationLayer");
+    const tryAgainLayerEl = document.getElementById("tryAgainLayer");
+    const modeButtons = [...document.querySelectorAll(".mode-option")];
+    const connectors = [...document.querySelectorAll(".connector")];
+    const infoButtons = [...document.querySelectorAll(".info-btn")];
+    const legends = [...document.querySelectorAll(".legend")];
+    const LEARNING_MATERIAL = window.TARIFF_FLOW_LEARNING || {};
+
+    let selectedCardId = null;
+    let placed = {}; // slotKey -> cardId
+    let rightDecisions = 0;
+    let wrongDecisions = 0;
+    let attempts = 0;
+    let wrongAttempts = 0;
+    let mistakeSlots = new Set();
+    let totalClicks = 0;
+    let gameStartTimestamp = null;
+    let didComplete = false;
+    let solutionWasShown = false;
+    let examEvaluated = false;
+    let soundEnabled = true;
+    let currentMode = "learn";
+    let lastFocusedElement = null;
+    let toniEnabled = true;
+    let toniChatOpen = false;
+    let toniMessageTimer = null;
+    let toniMoveTimer = null;
+    let toniMovingTimer = null;
+    let celebrationActive = false;
+    let tryAgainActive = false;
+    let celebrationTimer = null;
+    let tryAgainTimer = null;
+    const audioToneTimers = new Set();
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const TONI_LEARN_HINTS = [
+      "Denk an die Reihenfolge einer Tarifrunde.",
+      "Was passiert normalerweise, bevor gestreikt wird?",
+      "Schau, welche Schritte eher am Anfang oder Ende liegen."
+    ];
+    const TONI_CORRECT = ["Stark, genau richtig!", "Sauber eingeordnet!", "Das passt zur Tarifrunde."];
+    const TONI_WRONG = [
+      "Fast, aber dieser Schritt gehört wahrscheinlich an eine andere Stelle.",
+      "Nicht schlimm, nochmal überlegen.",
+      "Schau dir die Reihenfolge der Ereignisse nochmal genau an."
+    ];
+    const TONI_EXAM = ["Bleib ruhig und denk Schritt für Schritt.", "Du schaffst das.", "Konzentrier dich auf die Reihenfolge."];
+    const TONI_SUCCESS = [
+      "Tarifrunde abgeschlossen. Stark gemacht!",
+      "Alle Schritte richtig. Das war richtig gut!",
+      "Mission Tarifrunde erfolgreich beendet!"
+    ];
+    const STEP_ORDER = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15"];
+    const SLOT_HINTS = {
+      s1: {
+        right: "Richtig: Die Tarifrunde beginnt mit der Kündigung des bisherigen Tarifvertrags.",
+        wrong: "Hier gehört der Startpunkt „Kündigung TV“ hin."
+      },
+      s2: {
+        right: "Richtig: Warnstreiks bauen nach dem Auftakt zusätzlichen Druck auf.",
+        wrong: "An dieser Position wird „Warnstreiks“ erwartet."
+      },
+      s3: {
+        right: "Richtig: Danach folgt die erste Verhandlungsrunde.",
+        wrong: "Hier passt „1. Verhandlungsrunde“ in den Ablauf."
+      },
+      s4: {
+        right: "Richtig: Ohne Einigung endet die Friedenspflicht; Urabstimmung über Streik wird vorbereitet.",
+        wrong: "Dieses Entscheidungsfeld erwartet „keine Einigung / Ende der Friedenspflicht / Urabstimmung über Streik“."
+      },
+      s5: {
+        right: "Richtig: „Einigung (1)“ ist der direkte positive Ausgang nach der ersten Konfliktphase.",
+        wrong: "Auf dem oberen Ergebnisfeld gehört „Einigung (1)“."
+      },
+      s6: {
+        right: "Richtig: Auf dem linken Ast folgt als Eskalation der Streik.",
+        wrong: "Hier wird „Streik“ erwartet."
+      },
+      s7: {
+        right: "Richtig: Parallel kann es zur Aussperrung kommen.",
+        wrong: "Dieses Feld ist für „evtl. Aussperrung“ vorgesehen."
+      },
+      s8: {
+        right: "Richtig: Im weiteren Verlauf kommt die zweite Verhandlungsrunde.",
+        wrong: "An dieser Stelle gehört „2. Verhandlungsrunde“ hin."
+      },
+      s9: {
+        right: "Richtig: „Ergebnis“ markiert den erfolgreichen Ausgang des linken Pfads.",
+        wrong: "Hier wird die Karte „Ergebnis“ benötigt."
+      },
+      s10: {
+        right: "Richtig: Die Urabstimmung ist ein eigener Schritt vor dem Abschluss.",
+        wrong: "Dieses Feld erwartet „Urabstimmung“."
+      },
+      s11: {
+        right: "Richtig: Schlichtung ist der strukturierte Vermittlungsschritt im mittleren Pfad.",
+        wrong: "Hier gehört „Schlichtung“ hin."
+      },
+      s12: {
+        right: "Richtig: Danach folgt die dritte Verhandlungsrunde.",
+        wrong: "An dieser Position wird „3. Verhandlungsrunde“ erwartet."
+      },
+      s13: {
+        right: "Richtig: „Einigung (2)“ ist ein möglicher Abschluss nach der dritten Runde.",
+        wrong: "Hier passt die Karte „Einigung (2)“."
+      },
+      s14: {
+        right: "Richtig: Das Urabstimmungsergebnis führt in den finalen Abschlusszweig.",
+        wrong: "Dieses Feld ist für „Urabstimmung Ergebnis“ reserviert."
+      },
+      s15: {
+        right: "Richtig: Der neue Tarifvertrag ist das gemeinsame Ziel der Pfade.",
+        wrong: "Als Endfeld gehört hier „neuer TV“ hin."
+      }
+    };
+
+    const GAME_MAP = {
+      nodes: slots.map((slot) => ({
+        key: slot.dataset.key,
+        type: slot.dataset.nodeType || "process"
+      })),
+      edges: connectors.map((connector) => ({
+        from: null,
+        to: (connector.dataset.activeFor || "")
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean)
+      })),
+      // Platzhalter für spätere Lernspiel-Logik: richtige/falsche Entscheidungen je Knoten.
+      branches: {}
+    };
+
+    window.flowGameMap = GAME_MAP;
+
+    const WHY_IMPORTANT_TEXT = {
+      tarifverhandlungen: "Tarifverhandlungen sind wichtig, weil damit bessere Löhne und Arbeitsbedingungen erreicht werden können als nur durch die gesetzlichen Mindeststandards.",
+      "kein-ergebnis": "Das ist wichtig, weil ohne Einigung der Konflikt offen bleibt und weitere Schritte nötig werden, damit die Forderungen der Beschäftigten nicht einfach ins Leere laufen.",
+      streik: "Das ist wichtig, weil ein Streik das letzte und legitime Mittel ist, um bei festgefahrenen Verhandlungen Druck aufzubauen und auf Augenhöhe weiterzuverhandeln.",
+      "ergebnis-erzielt": "Das ist wichtig, weil ein Tarifergebnis konkrete Verbesserungen bei Entgelt, Arbeitszeit oder anderen Arbeitsbedingungen festschreiben kann."
+    };
+
+    const SOLVE_LOCK_HINT = "Lösung erst verfügbar, wenn alle Felder ausgefüllt sind.";
+    const learningButtons = slots.map((slot) => {
+      const button = document.createElement("button");
+      const key = slot.dataset.key;
+      button.type = "button";
+      button.className = "info-btn slot-learning-btn";
+      button.dataset.slotKey = key;
+      button.textContent = "?";
+      button.hidden = true;
+      button.setAttribute("aria-label", `Lerninfo zu Schritt ${STEP_ORDER.indexOf(key) + 1} öffnen`);
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        registerInteraction();
+        playClickSound();
+        openLearningPopup(key);
+      });
+      boardEl.appendChild(button);
+      return button;
+    });
+
+    function positionLearningButtons() {
+      learningButtons.forEach((button) => {
+        const slot = slots.find((element) => element.dataset.key === button.dataset.slotKey);
+        if (!slot) return;
+        button.style.setProperty("--x", `${slot.offsetLeft + slot.offsetWidth - 17}px`);
+        button.style.setProperty("--y", `${slot.offsetTop - 17}px`);
+      });
+    }
+
+    function updateLearningButtons() {
+      positionLearningButtons();
+      infoButtons.forEach((button) => {
+        button.hidden = currentMode === "exam" && !didComplete && !solutionWasShown;
+      });
+      learningButtons.forEach((button) => {
+        const key = button.dataset.slotKey;
+        const canShow = Boolean(LEARNING_MATERIAL[key])
+          && placed[key] === SOLUTION[key]
+          && (currentMode === "learn" || didComplete || solutionWasShown);
+        button.hidden = !canShow;
+      });
+    }
+
+    function addLearningSection(label, text) {
+      if (!text) return;
+      const section = document.createElement("section");
+      section.className = "learning-detail-section";
+      const heading = document.createElement("strong");
+      const paragraph = document.createElement("p");
+      heading.textContent = label;
+      paragraph.textContent = text;
+      section.append(heading, paragraph);
+      infoTextEl.appendChild(section);
+    }
+
+    function showInfoDialog(title) {
+      lastFocusedElement = document.activeElement;
+      infoTitleEl.textContent = title;
+      infoPopupEl.classList.add("open");
+      infoPopupEl.setAttribute("aria-hidden", "false");
+      closeInfoBtnEl.focus();
+    }
+
+    function openLearningPopup(key) {
+      const entry = LEARNING_MATERIAL[key];
+      if (!entry) return;
+      infoTextEl.replaceChildren();
+      addLearningSection("Warum ist dieser Schritt wichtig?", entry.why);
+      addLearningSection("Beispiel aus der Praxis", entry.example);
+      addLearningSection("Denkfrage für die Klasse", entry.question);
+      addLearningSection("Wichtig zur Einordnung", entry.caveat);
+      showInfoDialog(entry.title || `Lerninfo zu Schritt ${STEP_ORDER.indexOf(key) + 1}`);
+    }
+
+    function getAudioContext() {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return null;
+      if (playTone.context && playTone.context.state !== "closed") return playTone.context;
+      try {
+        playTone.context = new AudioCtx();
+        return playTone.context;
+      } catch {
+        playTone.context = null;
+        return null;
+      }
+    }
+
+    function resumeAudioContext(context) {
+      if (!context || context.state !== "suspended" || typeof context.resume !== "function") return;
+      try {
+        const resumeAttempt = context.resume();
+        if (resumeAttempt && typeof resumeAttempt.catch === "function") resumeAttempt.catch(() => {});
+      } catch {
+        // Audio bleibt optional, wenn der Browser den Kontext blockiert.
+      }
+    }
+
+    function playTone({ frequency = 440, duration = 0.08, type = "sine", volume = 0.04 }) {
+      if (!soundEnabled) return;
+      const context = getAudioContext();
+      if (!context) return;
+      try {
+        resumeAudioContext(context);
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = type;
+        oscillator.frequency.value = frequency;
+        gain.gain.value = volume;
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start();
+        gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + duration);
+        oscillator.stop(context.currentTime + duration);
+      } catch {
+        // Ton darf das Spiel nie unterbrechen.
+      }
+    }
+
+    function scheduleTone(callback, delay) {
+      if (!soundEnabled) return;
+      const timer = setTimeout(() => {
+        audioToneTimers.delete(timer);
+        callback();
+      }, delay);
+      audioToneTimers.add(timer);
+    }
+
+    function playClickSound() {
+      playTone({ frequency: 520, duration: 0.05, type: "triangle", volume: 0.03 });
+    }
+
+    function playCorrectSound() {
+      playTone({ frequency: 680, duration: 0.08, type: "triangle", volume: 0.045 });
+      scheduleTone(() => playTone({ frequency: 860, duration: 0.09, type: "triangle", volume: 0.04 }), 60);
+    }
+
+    function playWrongSound() {
+      playTone({ frequency: 260, duration: 0.12, type: "sawtooth", volume: 0.035 });
+    }
+
+    function chooseToniMessage(messages) {
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    function showToniMessage(message, duration = 4200) {
+      if (!toniEnabled) return;
+      clearTimeout(toniMessageTimer);
+      toniBubbleEl.textContent = message;
+      tarifToniEl.classList.remove("is-talking");
+      void tarifToniEl.offsetWidth;
+      tarifToniEl.classList.add("is-talking");
+      toniMessageTimer = setTimeout(() => tarifToniEl.classList.remove("is-talking"), duration);
+    }
+
+    function stopLegacyToniActivity() {
+      clearTimeout(toniMessageTimer);
+      clearTimeout(toniMoveTimer);
+      clearTimeout(toniMovingTimer);
+      toniMessageTimer = null;
+      toniMoveTimer = null;
+      toniMovingTimer = null;
+      tarifToniEl.classList.remove("is-talking", "is-moving");
+    }
+
+    function notifyTarifToni(type, message) {
+      window.dispatchEvent(new CustomEvent("tarif-toni:react", { detail: { type, message } }));
+    }
+
+    function isToniMovementPaused() {
+      return !toniEnabled || reducedMotion.matches || toniChatOpen;
+    }
+
+    function overlapsImportantArea(candidate) {
+      const importantElements = document.querySelectorAll(".controls, .card, .slot, .info-card, .final-card, input");
+      return [...importantElements].some((element) => {
+        const rect = element.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return false;
+        const padding = 12;
+        return candidate.left < rect.right + padding
+          && candidate.right > rect.left - padding
+          && candidate.top < rect.bottom + padding
+          && candidate.bottom > rect.top - padding;
+      });
+    }
+
+    function getSafeToniTarget() {
+      const margin = window.matchMedia("(max-width: 640px)").matches ? 8 : 18;
+      const width = tarifToniEl.offsetWidth;
+      const height = tarifToniEl.offsetHeight;
+      const maxLeft = Math.max(margin, window.innerWidth - width - margin);
+      const maxTop = Math.max(margin, window.innerHeight - height - margin);
+      const isMobile = window.matchMedia("(max-width: 640px)").matches;
+
+      for (let attempt = 0; attempt < 24; attempt += 1) {
+        const left = isMobile
+          ? (attempt % 2 === 0 ? margin : maxLeft)
+          : margin + Math.random() * Math.max(0, maxLeft - margin);
+        const top = isMobile
+          ? Math.max(margin, maxTop - (attempt % 3) * Math.min(120, maxTop / 3))
+          : margin + Math.random() * Math.max(0, maxTop - margin);
+        const candidate = { left, top, right: left + width, bottom: top + height };
+        if (!overlapsImportantArea(candidate)) return candidate;
+      }
+
+      return { left: maxLeft, top: maxTop, right: maxLeft + width, bottom: maxTop + height };
+    }
+
+    function moveTarifToni() {
+      if (isToniMovementPaused()) return;
+      const margin = window.matchMedia("(max-width: 640px)").matches ? 8 : 18;
+      const baseLeft = window.innerWidth - tarifToniEl.offsetWidth - margin;
+      const baseTop = window.innerHeight - tarifToniEl.offsetHeight - margin;
+      const target = getSafeToniTarget();
+      const currentLeft = tarifToniEl.getBoundingClientRect().left;
+      tarifToniEl.classList.toggle("facing-left", target.left < currentLeft);
+      tarifToniEl.classList.add("is-moving");
+      clearTimeout(toniMovingTimer);
+      requestAnimationFrame(() => {
+        tarifToniEl.style.setProperty("--toni-x", `${Math.round(target.left - baseLeft)}px`);
+        tarifToniEl.style.setProperty("--toni-y", `${Math.round(target.top - baseTop)}px`);
+      });
+      toniMovingTimer = setTimeout(() => tarifToniEl.classList.remove("is-moving"), 3400);
+    }
+
+    function scheduleToniMovement(delay = 30000) {
+      clearTimeout(toniMoveTimer);
+      toniMoveTimer = null;
+      if (isToniMovementPaused()) return;
+      toniMoveTimer = setTimeout(() => {
+        moveTarifToni();
+        scheduleToniMovement();
+      }, delay);
+    }
+
+    function setToniChatOpen(open) {
+      toniChatOpen = open && toniEnabled;
+      toniChatEl.hidden = !toniChatOpen;
+      toniFigureEl.setAttribute("aria-expanded", String(toniChatOpen));
+      toniFigureEl.setAttribute("aria-label", toniChatOpen ? "Chat mit Tarif Toni schließen" : "Chat mit Tarif Toni öffnen");
+      if (toniChatOpen) {
+        clearTimeout(toniMoveTimer);
+        toniChatInputEl.focus();
+      } else {
+        scheduleToniMovement(30000);
+        if (toniEnabled) toniFigureEl.focus();
+      }
+    }
+
+    function answerToniChat() {
+      const question = toniChatInputEl.value.trim();
+      if (!question) return;
+      const answer = currentMode === "exam"
+        ? chooseToniMessage(TONI_EXAM)
+        : chooseToniMessage(TONI_LEARN_HINTS);
+      toniChatResponseEl.textContent = answer;
+      toniChatInputEl.value = "";
+      showToniMessage(answer);
+    }
+
+    function updateToniToggleButton(enabled) {
+      toniEnabled = enabled;
+      toniToggleEl.textContent = enabled ? "🧢 Tarif Toni an" : "🧢 Tarif Toni aus";
+      toniToggleEl.setAttribute("aria-pressed", String(enabled));
+      toniToggleEl.hidden = false;
+      toniToggleEl.style.display = "";
+    }
+
+    function setToniEnabled(enabled, notifyModernToni = true) {
+      updateToniToggleButton(enabled);
+      tarifToniEl.hidden = true;
+      stopLegacyToniActivity();
+      setToniChatOpen(false);
+      if (notifyModernToni) {
+        window.dispatchEvent(new CustomEvent("tarif-toni:set-enabled", {
+          detail: { enabled }
+        }));
+      }
+    }
+
+    function playCelebrationSound() {
+      [660, 790, 990].forEach((frequency, index) => {
+        scheduleTone(() => playTone({ frequency, duration: 0.12, type: "triangle", volume: 0.035 }), index * 85);
+      });
+    }
+
+    function clearCelebration() {
+      clearTimeout(celebrationTimer);
+      celebrationTimer = null;
+      celebrationActive = false;
+      celebrationLayerEl.classList.remove("active");
+      celebrationLayerEl.replaceChildren();
+      finalCardEl.classList.remove("success-pulse");
+    }
+
+    function clearTryAgainAnimation() {
+      clearTimeout(tryAgainTimer);
+      tryAgainTimer = null;
+      tryAgainActive = false;
+      tryAgainLayerEl.classList.remove("active");
+      tryAgainLayerEl.replaceChildren();
+      slots.forEach((slot) => slot.classList.remove("try-again-shake"));
+    }
+
+    function triggerSuccessCelebration() {
+      if (celebrationActive) return;
+      clearTryAgainAnimation();
+      celebrationActive = true;
+      celebrationLayerEl.classList.add("active");
+      finalCardEl.classList.add("success-pulse");
+      playCelebrationSound();
+
+      if (!reducedMotion.matches) {
+        const colors = ["#2f81ff", "#2a9b6d", "#f2b84b", "#e76f8a", "#7b61ff"];
+        const fragment = document.createDocumentFragment();
+        const particleCount = Math.max(28, Math.min(48, slots.length * 3));
+        for (let index = 0; index < particleCount; index += 1) {
+          const fromLeft = index % 2 === 0;
+          const particle = document.createElement("span");
+          const startY = 18 + Math.random() * 56;
+          const travelX = 38 + Math.random() * 48;
+          particle.className = "confetti-piece";
+          particle.style.setProperty("--start-x", fromLeft ? "-3vw" : "103vw");
+          particle.style.setProperty("--start-y", `${startY}vh`);
+          particle.style.setProperty("--travel-x", `${fromLeft ? travelX : -travelX}vw`);
+          particle.style.setProperty("--travel-y", `${18 + Math.random() * 54}vh`);
+          particle.style.setProperty("--rotation", `${(Math.random() * 900) - 450}deg`);
+          particle.style.setProperty("--duration", `${2.2 + Math.random() * 1.2}s`);
+          particle.style.setProperty("--delay", `${Math.random() * .45}s`);
+          particle.style.setProperty("--size", `${7 + Math.random() * 7}px`);
+          particle.style.setProperty("--color", colors[index % colors.length]);
+          fragment.appendChild(particle);
+        }
+        celebrationLayerEl.appendChild(fragment);
+      }
+
+      celebrationTimer = setTimeout(clearCelebration, reducedMotion.matches ? 900 : 3800);
+    }
+
+    function triggerTryAgainAnimation() {
+      if (tryAgainActive || celebrationActive) return;
+      tryAgainActive = true;
+      tryAgainLayerEl.classList.add("active");
+
+      const message = document.createElement("div");
+      message.className = "try-again-message";
+      message.textContent = "Fast geschafft. Schau dir die Reihenfolge nochmal genau an.";
+      tryAgainLayerEl.appendChild(message);
+
+      slots
+        .filter((slot) => placed[slot.dataset.key] !== SOLUTION[slot.dataset.key])
+        .forEach((slot) => slot.classList.add("try-again-shake"));
+
+      if (!reducedMotion.matches) {
+        for (let index = 0; index < 5; index += 1) {
+          const thoughtCard = document.createElement("span");
+          thoughtCard.className = "try-again-card";
+          thoughtCard.style.setProperty("--delay", `${index * .08}s`);
+          thoughtCard.style.setProperty("--x", `${(index - 2) * 42}px`);
+          thoughtCard.style.setProperty("--y", `${index % 2 ? -58 : 54}px`);
+          thoughtCard.style.setProperty("--rotation", `${(index - 2) * 5}deg`);
+          message.appendChild(thoughtCard);
+        }
+      }
+
+      tryAgainTimer = setTimeout(clearTryAgainAnimation, reducedMotion.matches ? 900 : 1900);
+    }
+
+    function formatDuration(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = String(totalSeconds % 60).padStart(2, "0");
+      return `${minutes}:${seconds}`;
+    }
+
+    function registerInteraction() {
+      if (!gameStartTimestamp) gameStartTimestamp = Date.now();
+      totalClicks += 1;
+    }
+
+    function pulseFeedback() {
+      feedbackEl.classList.remove("flash");
+      void feedbackEl.offsetWidth;
+      feedbackEl.classList.add("flash");
+    }
+
+    function handleNodeClick(slot) {
+      const nodeType = slot.dataset.nodeType || "process";
+      const nodeLabel = slot.textContent?.trim() || `Schritt ${slot.dataset.key}`;
+      const typeLabel = nodeType === "decision" ? "Entscheidung" : "Station";
+
+      setStatusState(null, `Gewählt: ${typeLabel} „${nodeLabel}“ (${slot.dataset.key}).`);
+    }
+
+    function shuffle(list) {
+      const copy = [...list];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    let deck = shuffle(CARD_ITEMS);
+
+    function getCardById(id) {
+      return CARD_ITEMS.find((item) => item.id === id);
+    }
+
+    function cardUsed(cardId) {
+      return Object.values(placed).includes(cardId);
+    }
+
+    function setSlotText(slot, text = "") {
+      if (!text) {
+        slot.textContent = "";
+        slot.classList.add("empty");
+      } else {
+        slot.textContent = text;
+        slot.classList.remove("empty");
+      }
+    }
+
+    function renderCards() {
+      cardsEl.innerHTML = "";
+      const focusKey = currentMode === "learn" ? getCurrentFocusKey() : null;
+      const expectedCardId = focusKey ? SOLUTION[focusKey] : null;
+      deck.forEach((card) => {
+        const used = cardUsed(card.id);
+        const isFocusCard = !used && expectedCardId === card.id;
+        const el = document.createElement("div");
+        el.className = `card${used ? " used" : ""}${selectedCardId === card.id ? " selected" : ""}${isFocusCard ? " is-focus-card" : ""}`;
+        el.draggable = !used;
+        el.dataset.cardId = card.id;
+        el.textContent = card.label;
+        el.tabIndex = used ? -1 : 0;
+        el.setAttribute("role", "button");
+        el.setAttribute("aria-pressed", String(selectedCardId === card.id));
+
+        el.addEventListener("click", () => {
+          if (used) return;
+          registerInteraction();
+          selectedCardId = card.id;
+          renderCards();
+          setStatusState(null, `Ausgewählt: „${card.label}“. Jetzt ein Feld anklicken oder ziehen.`);
+        });
+
+        el.addEventListener("keydown", (event) => {
+          if (used) return;
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            el.click();
+          }
+        });
+
+        el.addEventListener("dragstart", (event) => {
+          if (used) return event.preventDefault();
+          selectedCardId = card.id;
+          event.dataTransfer.setData("text/plain", card.id);
+          event.dataTransfer.effectAllowed = "move";
+          el.classList.add("dragging");
+          boardEl.classList.add("is-dragging");
+          slots.forEach((slot) => {
+            if (!placed[slot.dataset.key]) slot.classList.add("is-valid-target");
+          });
+        });
+
+        el.addEventListener("dragend", () => {
+          el.classList.remove("dragging");
+          boardEl.classList.remove("is-dragging");
+          slots.forEach((slot) => {
+            slot.classList.remove("is-valid-target", "drag-over");
+          });
+        });
+
+        cardsEl.appendChild(el);
+      });
+      updateSlotHighlight();
+      updateFocusMode();
+      updateLearningButtons();
+    }
+
+    function updateSlotHighlight() {
+      slots.forEach((slot) => {
+        if (selectedCardId && !placed[slot.dataset.key]) {
+          slot.classList.add("is-active");
+        } else {
+          slot.classList.remove("is-active");
+        }
+      });
+    }
+
+    function updateConnectors() {
+      connectors.forEach((connector) => {
+        const relatedKeys = (connector.dataset.activeFor || "")
+          .split(",")
+          .map((key) => key.trim())
+          .filter(Boolean);
+
+        const hasPlaced = relatedKeys.some((key) => placed[key]);
+        const isCorrect = relatedKeys.some((key) => placed[key] && placed[key] === SOLUTION[key]);
+        const showCorrectness = currentMode === "learn" || didComplete || solutionWasShown;
+        const isRevealed = showCorrectness ? isCorrect : hasPlaced;
+
+        connector.classList.toggle("revealed", isRevealed);
+        connector.classList.toggle("active", hasPlaced && (!showCorrectness || !isCorrect));
+        connector.classList.toggle("correct", showCorrectness && isCorrect);
+      });
+    }
+
+    function setFeedbackState(type, message) {
+      feedbackEl.classList.remove("is-positive", "is-negative");
+      if (type === "positive") feedbackEl.classList.add("is-positive");
+      if (type === "negative") feedbackEl.classList.add("is-negative");
+      feedbackEl.textContent = message;
+      pulseFeedback();
+    }
+
+    function setStatusState(type, message) {
+      statusEl.classList.remove("is-positive", "is-negative");
+      if (type === "positive") statusEl.classList.add("is-positive");
+      if (type === "negative") statusEl.classList.add("is-negative");
+      statusEl.textContent = message;
+    }
+
+    function getCurrentFocusKey() {
+      if (currentMode !== "learn") return null;
+      const nextKey = STEP_ORDER.find((key) => placed[key] !== SOLUTION[key]);
+      return nextKey || null;
+    }
+
+    function updateFocusMode() {
+      const focusKey = getCurrentFocusKey();
+      const isComplete = !focusKey || currentMode !== "learn";
+      boardEl.classList.toggle("focus-active", !isComplete);
+      flowSvgEl.classList.toggle("focus-active", !isComplete);
+
+      slots.forEach((slot) => {
+        slot.classList.toggle("is-focus-target", !isComplete && slot.dataset.key === focusKey);
+      });
+
+      connectors.forEach((connector) => {
+        const relatedKeys = (connector.dataset.activeFor || "").split(",").map((key) => key.trim());
+        connector.classList.toggle("is-focus-target", !isComplete && relatedKeys.includes(focusKey));
+      });
+
+      legends.forEach((legend) => legend.classList.remove("is-focus-target"));
+      infoButtons.forEach((button) => button.classList.remove("is-focus-target"));
+    }
+
+    function openInfoPopup(infoKey) {
+      const text = WHY_IMPORTANT_TEXT[infoKey];
+      if (!text) return;
+      infoTextEl.replaceChildren();
+      addLearningSection("Warum ist das wichtig?", text);
+      showInfoDialog("Warum ist das wichtig?");
+    }
+
+    function closeInfoPopup() {
+      infoPopupEl.classList.remove("open");
+      infoPopupEl.setAttribute("aria-hidden", "true");
+      if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
+      lastFocusedElement = null;
+    }
+
+    function closeFinalOverlay() {
+      finalOverlayEl.classList.remove("open");
+      finalOverlayEl.setAttribute("aria-hidden", "true");
+      clearCelebration();
+    }
+
+    function markGameEdited() {
+      if (currentMode === "exam") {
+        examEvaluated = false;
+        rightDecisions = 0;
+        wrongDecisions = 0;
+        wrongAttempts = 0;
+        mistakeSlots = new Set();
+        slots.forEach((slot) => slot.classList.remove("correct", "wrong"));
+      }
+      if (!didComplete) return;
+      didComplete = false;
+      finalTitleEl.textContent = "Spiel erfolgreich abgeschlossen";
+      closeFinalOverlay();
+      lastFocusedElement = null;
+    }
+
+    function getRating() {
+      if (wrongDecisions <= 2) return "Sehr gut";
+      if (wrongDecisions <= 5) return "Gut";
+      return "Nochmal versuchen";
+    }
+
+    function rememberMistakeForKey(key) {
+      if (!STEP_ORDER.includes(key)) return;
+      mistakeSlots.add(key);
+    }
+
+    function getMistakeSlotsInStepOrder() {
+      return STEP_ORDER.filter((key) => mistakeSlots.has(key));
+    }
+
+    function renderMistakeAnalysis() {
+      const orderedMistakes = getMistakeSlotsInStepOrder();
+      if (!orderedMistakes.length) {
+        mistakeAnalysisEl.textContent = "Fehleranalyse: Keine fehlerhaften Stationen gespeichert.";
+        return;
+      }
+
+      const labels = orderedMistakes.map((key) => {
+        const cardId = SOLUTION[key];
+        const card = getCardById(cardId);
+        return card ? card.label : key;
+      });
+
+      mistakeAnalysisEl.textContent = `Fehleranalyse (${orderedMistakes.length}): ${labels.join(" → ")}`;
+    }
+
+    function buildLearningSummary() {
+      const wrongPlacedSlots = getMistakeSlotsInStepOrder();
+      if (wrongDecisions === 0) {
+        return "Stark! Du hast alle Zuordnungen korrekt gelöst. Der Ablauf der Tarifrunde sitzt sicher.";
+      }
+      const focusText = wrongPlacedSlots.length
+        ? `Übe besonders diese Schritte erneut: ${wrongPlacedSlots.join(", ")}.`
+        : "Wiederhole vor allem die Reihenfolge zwischen Verhandlung, Arbeitskampf und Ergebnis.";
+      return `Du hattest ${wrongDecisions} fehlerhafte Zuordnungen bei ${rightDecisions} richtigen Zuordnungen. ${focusText} Beim nächsten Durchgang klappt es noch sicherer.`;
+    }
+
+    function showCompletionOverlay() {
+      if (didComplete || solutionWasShown) return;
+      const allCorrect = STEP_ORDER.every((key) => placed[key] === SOLUTION[key]);
+      if (!allCorrect || (currentMode === "exam" && !examEvaluated)) return;
+      didComplete = true;
+      finalTitleEl.textContent = "Spiel selbstständig abgeschlossen";
+      updateFinalStats();
+      const ratingText = currentMode === "learn" ? getRating() : "Prüfungsmodus abgeschlossen";
+      finalStatsEl.innerHTML = `Bewertung: <strong>${ratingText}</strong> · Trefferquote: <strong>${Math.round((rightDecisions / Math.max(1, rightDecisions + wrongDecisions)) * 100)}%</strong> · Versuche: <strong>${attempts}</strong>`;
+      learningSummaryEl.textContent = buildLearningSummary();
+      renderMistakeAnalysis();
+      finalOverlayEl.classList.add("open");
+      finalOverlayEl.setAttribute("aria-hidden", "false");
+      triggerSuccessCelebration();
+      showToniMessage(chooseToniMessage(TONI_SUCCESS), 6500);
+      notifyTarifToni("complete", chooseToniMessage(TONI_SUCCESS));
+      updateLearningButtons();
+      lastFocusedElement = document.activeElement;
+      finalRestartBtnEl.focus();
+    }
+
+    function updateFinalStats() {
+      const totalDecisions = rightDecisions + wrongDecisions;
+      const rightPercent = Math.round((rightDecisions / Math.max(1, totalDecisions)) * 100);
+      const wrongPercent = 100 - rightPercent;
+      const elapsed = gameStartTimestamp ? (Date.now() - gameStartTimestamp) : 0;
+
+      statRightEl.textContent = String(rightDecisions);
+      statWrongEl.textContent = String(wrongAttempts);
+      statClicksEl.textContent = String(attempts);
+      statTimeEl.textContent = formatDuration(elapsed);
+      barRightEl.style.setProperty("--value", `${rightPercent}%`);
+      barWrongEl.style.setProperty("--value", `${wrongPercent}%`);
+      barRightLabelEl.textContent = `${rightPercent}%`;
+      barWrongLabelEl.textContent = `${wrongPercent}%`;
+      pieStatsEl.style.setProperty("--good", `${rightPercent}%`);
+      pieStatsEl.dataset.label = `${rightPercent}%\nTrefferquote`;
+    }
+
+    function applyModePresentation() {
+      slots.forEach((slot) => {
+        const key = slot.dataset.key;
+        slot.classList.remove("correct", "wrong");
+        if (currentMode === "learn" && placed[key]) {
+          slot.classList.add(placed[key] === SOLUTION[key] ? "correct" : "wrong");
+        }
+      });
+      renderCards();
+      updateProgress();
+      updateConnectors();
+      updateLearningButtons();
+    }
+
+    function setGameMode(mode) {
+      currentMode = mode === "exam" ? "exam" : "learn";
+      modeButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.mode === currentMode);
+      });
+      if (currentMode === "learn") {
+        setStatusState(null, "Lernmodus aktiv: Du erhältst direktes Feedback mit kurzer Erklärung.");
+        setFeedbackState(null, "Ordne die Karten zu. Bei Fehlern erhältst du eine kurze Begründung.");
+        showToniMessage(chooseToniMessage(TONI_LEARN_HINTS));
+      } else {
+        setStatusState(null, "Prüfungsmodus aktiv: Arbeite möglichst selbstständig ohne Hilfetexte.");
+        setFeedbackState(null, "Zuordnungen werden gesammelt. Die komplette Auswertung erscheint am Ende.");
+        showToniMessage(chooseToniMessage(TONI_EXAM));
+      }
+      applyModePresentation();
+    }
+
+    function removeFromSlot(slot) {
+      const key = slot.dataset.key;
+      if (!placed[key]) return;
+      const removed = getCardById(placed[key]);
+      markGameEdited();
+      playClickSound();
+      delete placed[key];
+      slot.classList.remove("correct", "wrong");
+      setSlotText(slot);
+      selectedCardId = null;
+      renderCards();
+      updateProgress();
+      updateConnectors();
+      updateFocusMode();
+      setStatusState(null, `„${removed.label}“ wurde entfernt.`);
+      setFeedbackState(null, "Karte entfernt. Du kannst sie neu einsetzen.");
+      updateLearningButtons();
+    }
+
+    function moveCardToSlot(slot, cardId) {
+      if (!cardId) return;
+      const key = slot.dataset.key;
+      const card = getCardById(cardId);
+      if (!card) return;
+      markGameEdited();
+      playClickSound();
+
+      // Karte ggf. aus altem Slot holen
+      const oldKey = Object.keys(placed).find((slotKey) => placed[slotKey] === cardId);
+      if (oldKey) {
+        const oldSlot = slots.find((element) => element.dataset.key === oldKey);
+        delete placed[oldKey];
+        oldSlot.classList.remove("correct", "wrong");
+        setSlotText(oldSlot);
+      }
+
+      // Zielslot überschreiben
+      if (placed[key]) {
+        const replaced = getCardById(placed[key]);
+        setStatusState(null, `„${replaced.label}“ wurde im Feld ersetzt.`);
+      }
+
+      placed[key] = cardId;
+      setSlotText(slot, card.label);
+      slot.classList.remove("correct", "wrong");
+
+      const isCorrectPlacement = SOLUTION[key] === card.id;
+      attempts += 1;
+
+      if (isCorrectPlacement) {
+        if (currentMode === "learn") {
+          rightDecisions += 1;
+          slot.classList.add("correct");
+          playCorrectSound();
+          setStatusState("positive", "Richtige Zuordnung gesetzt.");
+          setFeedbackState("positive", `✅ Richtig: „${card.label}“. ${SLOT_HINTS[key].right} Öffne jetzt das Fragezeichen am Kästchen.`);
+          showToniMessage(chooseToniMessage(TONI_CORRECT));
+          notifyTarifToni("correct");
+        } else {
+          setStatusState(null, "Zuordnung gespeichert.");
+          setFeedbackState(null, "Zuordnung gespeichert.");
+          showToniMessage(chooseToniMessage(TONI_EXAM));
+        }
+      } else {
+        if (currentMode === "learn") {
+          wrongDecisions += 1;
+          wrongAttempts += 1;
+          rememberMistakeForKey(key);
+          slot.classList.add("wrong");
+          playWrongSound();
+          setStatusState("negative", "Diese Zuordnung ist noch nicht korrekt.");
+          setFeedbackState("negative", `❌ Nicht korrekt: ${SLOT_HINTS[key].wrong}`);
+          showToniMessage(chooseToniMessage(TONI_WRONG), 5200);
+          notifyTarifToni("wrong");
+        } else {
+          setStatusState(null, "Zuordnung gespeichert.");
+          setFeedbackState(null, "Zuordnung gespeichert.");
+          showToniMessage(chooseToniMessage(TONI_EXAM));
+        }
+      }
+
+      selectedCardId = null;
+      renderCards();
+      updateProgress();
+      updateConnectors();
+      updateFocusMode();
+      updateLearningButtons();
+      showCompletionOverlay();
+    }
+
+    function updateProgress() {
+      let correct = 0;
+      let filled = 0;
+      slots.forEach((slot) => {
+        const key = slot.dataset.key;
+        if (placed[key]) filled += 1;
+        if (placed[key] && placed[key] === SOLUTION[key]) correct += 1;
+      });
+      const visibleProgress = currentMode === "learn" ? correct : filled;
+      const percent = Math.round((visibleProgress / slots.length) * 100);
+      progressEl.textContent = currentMode === "learn"
+        ? `${correct} / ${slots.length} richtig`
+        : `${filled} / ${slots.length} belegt`;
+      progressFillEl.style.width = `${percent}%`;
+
+      if (currentMode === "learn") {
+        const solvedStepsInOrder = STEP_ORDER.findIndex((key) => placed[key] !== SOLUTION[key]);
+        const currentStep = solvedStepsInOrder === -1 ? STEP_ORDER.length : solvedStepsInOrder + 1;
+        stepIndicatorEl.textContent = `Schritt ${currentStep} von ${STEP_ORDER.length}`;
+      } else {
+        stepIndicatorEl.textContent = `${filled} von ${STEP_ORDER.length} Feldern belegt`;
+      }
+      updateFocusMode();
+      updateSolveButtonState();
+      updateLearningButtons();
+      showCompletionOverlay();
+    }
+
+    function allSlotsFilled() {
+      return slots.every((slot) => Boolean(placed[slot.dataset.key]));
+    }
+
+    function updateSolveButtonState() {
+      const isComplete = allSlotsFilled();
+      solveBtnEl.disabled = !isComplete;
+      solveBtnEl.setAttribute("aria-disabled", String(!isComplete));
+      solveBtnEl.title = isComplete ? "Lösung anzeigen" : SOLVE_LOCK_HINT;
+      solveHintEl.hidden = isComplete;
+      if (!isComplete) solveHintEl.textContent = SOLVE_LOCK_HINT;
+    }
+
+    function checkAll() {
+      let correct = 0;
+      let wrong = 0;
+      let empty = 0;
+      const wrongKeys = [];
+
+      slots.forEach((slot) => {
+        const key = slot.dataset.key;
+        const cardId = placed[key];
+        slot.classList.remove("correct", "wrong");
+
+        if (!cardId) {
+          empty += 1;
+          setSlotText(slot);
+          return;
+        }
+
+        if (cardId === SOLUTION[key]) {
+          correct += 1;
+        } else {
+          wrong += 1;
+          wrongKeys.push(key);
+          if (currentMode === "learn") rememberMistakeForKey(key);
+        }
+      });
+
+      const revealCorrectness = currentMode === "learn" || (currentMode === "exam" && empty === 0);
+      if (revealCorrectness) {
+        slots.forEach((slot) => {
+          const key = slot.dataset.key;
+          const cardId = placed[key];
+          if (!cardId) return;
+          slot.classList.add(cardId === SOLUTION[key] ? "correct" : "wrong");
+        });
+      }
+
+      if (currentMode === "exam") {
+        examEvaluated = empty === 0;
+        if (examEvaluated) {
+          rightDecisions = correct;
+          wrongDecisions = wrong;
+          wrongAttempts = wrong;
+          mistakeSlots = new Set(wrongKeys);
+        }
+      }
+
+      if (currentMode === "exam" && empty > 0) {
+        setStatusState(null, `Prüfung noch nicht abgeschlossen: ${empty} Felder sind leer.`);
+      } else if (currentMode === "exam" && wrong > 0) {
+        setStatusState("negative", `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`);
+      } else if (currentMode === "exam") {
+        setStatusState("positive", `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`);
+      } else if (wrong > 0) {
+        setStatusState("negative", `Zwischenstand: ${correct} von ${slots.length} korrekt.`);
+      } else if (empty > 0) {
+        setStatusState(null, "Zwischenstand: noch Felder offen.");
+      } else {
+        setStatusState("positive", `Alles richtig: ${correct} von ${slots.length} korrekt.`);
+      }
+      if (currentMode === "learn") {
+        if (wrong > 0) {
+          setFeedbackState("negative", `Es wurden ${wrong} Fehler markiert${empty ? ` und ${empty} leere Felder gefunden` : ""}. Korrigiere nur die markierten Stationen.`);
+        } else if (empty > 0) {
+          setFeedbackState(null, `Noch ${empty} Felder offen. Belege sie, bevor du den Ablauf abschließt.`);
+        } else {
+          setFeedbackState("positive", "Sehr gut! Keine Fehler markiert. Wenn du vergleichen willst, nutze „Lösung anzeigen“.");
+        }
+      } else {
+        if (empty > 0) {
+          setFeedbackState(null, "Belege zuerst alle Felder, damit die Prüfungsleistung vollständig ausgewertet werden kann.");
+        } else {
+          setFeedbackState(
+            wrong > 0 ? "negative" : "positive",
+            `Endauswertung: ${correct} richtige und ${wrong} falsche Zuordnungen.`
+          );
+        }
+      }
+      if (currentMode === "exam" && empty === 0 && wrong === 0) showCompletionOverlay();
+      if (currentMode === "learn" ? (wrong > 0 || empty > 0) : (empty === 0 && wrong > 0)) triggerTryAgainAnimation();
+      updateProgress();
+      renderCards();
+      updateConnectors();
+      updateFocusMode();
+      updateLearningButtons();
+    }
+
+    function resetAll() {
+      placed = {};
+      selectedCardId = null;
+      rightDecisions = 0;
+      wrongDecisions = 0;
+      attempts = 0;
+      wrongAttempts = 0;
+      mistakeSlots = new Set();
+      totalClicks = 0;
+      gameStartTimestamp = null;
+      didComplete = false;
+      solutionWasShown = false;
+      examEvaluated = false;
+      deck = shuffle(CARD_ITEMS);
+      slots.forEach((slot) => {
+        slot.classList.remove("correct", "wrong", "drag-over");
+        setSlotText(slot);
+      });
+      setStatusState(null, "Zurückgesetzt. Alle Karten wurden neu gemischt.");
+      if (currentMode === "learn") {
+        setFeedbackState(null, "Starte neu und ordne die Begriffe im Diagramm.");
+      } else {
+        setFeedbackState(null, "Neues Spiel gestartet. Arbeite ohne Hilfetexte bis zur Endauswertung.");
+      }
+      mistakeAnalysisEl.textContent = "";
+      closeFinalOverlay();
+      finalTitleEl.textContent = "Spiel erfolgreich abgeschlossen";
+      clearTryAgainAnimation();
+      scheduleToniMovement();
+      if (toniEnabled) showToniMessage(currentMode === "learn" ? chooseToniMessage(TONI_LEARN_HINTS) : chooseToniMessage(TONI_EXAM));
+      renderCards();
+      updateProgress();
+      updateConnectors();
+      updateFocusMode();
+      updateSolveButtonState();
+      updateLearningButtons();
+    }
+
+    function solveAll() {
+      if (!allSlotsFilled()) return;
+      solutionWasShown = true;
+      placed = {};
+      slots.forEach((slot) => {
+        const key = slot.dataset.key;
+        const card = getCardById(SOLUTION[key]);
+        placed[key] = card.id;
+        setSlotText(slot, card.label);
+        slot.classList.remove("wrong");
+        slot.classList.add("correct");
+      });
+      selectedCardId = null;
+      didComplete = false;
+      finalTitleEl.textContent = "Lösung zum Vergleichen";
+      setStatusState("positive", "Lösung wird angezeigt.");
+      setFeedbackState(null, "Die Musterlösung ist eingeblendet. Nutze die Fragezeichen, um die Bedeutung der Schritte zu besprechen.");
+      renderCards();
+      updateProgress();
+      updateConnectors();
+      updateFocusMode();
+      updateSolveButtonState();
+      updateLearningButtons();
+    }
+
+    slots.forEach((slot) => {
+      slot.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        slot.classList.add("drag-over");
+      });
+
+      slot.addEventListener("dragleave", () => slot.classList.remove("drag-over"));
+
+      slot.addEventListener("drop", (event) => {
+        event.preventDefault();
+        slot.classList.remove("drag-over");
+        registerInteraction();
+        const droppedCardId = event.dataTransfer.getData("text/plain");
+        const key = slot.dataset.key;
+        moveCardToSlot(slot, droppedCardId);
+        const isCorrectDrop = droppedCardId && SOLUTION[key] === droppedCardId;
+        slot.classList.remove("drop-ok", "drop-bad");
+        if (currentMode === "learn") {
+          void slot.offsetWidth;
+          slot.classList.add(isCorrectDrop ? "drop-ok" : "drop-bad");
+          setTimeout(() => slot.classList.remove("drop-ok", "drop-bad"), 380);
+        }
+        boardEl.classList.remove("is-dragging");
+        slots.forEach((target) => target.classList.remove("is-valid-target"));
+      });
+
+      function activateSlot() {
+        registerInteraction();
+        handleNodeClick(slot);
+
+        if (selectedCardId) {
+          moveCardToSlot(slot, selectedCardId);
+          return;
+        }
+        if (placed[slot.dataset.key]) {
+          removeFromSlot(slot);
+          return;
+        }
+        playClickSound();
+        setStatusState(null, "Bitte zuerst eine Karte auswählen.");
+      }
+
+      slot.addEventListener("click", activateSlot);
+
+      slot.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        activateSlot();
+      });
+    });
+
+    infoButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        registerInteraction();
+        playClickSound();
+        openInfoPopup(button.dataset.infoKey);
+      });
+    });
+
+    closeInfoBtnEl.addEventListener("click", () => {
+      registerInteraction();
+      playClickSound();
+      closeInfoPopup();
+    });
+
+    infoPopupEl.addEventListener("click", (event) => {
+      if (event.target === infoPopupEl) closeInfoPopup();
+    });
+
+    document.getElementById("checkBtn").addEventListener("click", () => {
+      registerInteraction();
+      playClickSound();
+      checkAll();
+    });
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      registerInteraction();
+      playClickSound();
+      resetAll();
+    });
+    document.getElementById("solveBtn").addEventListener("click", () => {
+      if (solveBtnEl.disabled) return;
+      registerInteraction();
+      playClickSound();
+      solveAll();
+    });
+    finalRestartBtnEl.addEventListener("click", () => {
+      registerInteraction();
+      playClickSound();
+      resetAll();
+    });
+
+    soundToggleEl.addEventListener("click", () => {
+      registerInteraction();
+      soundEnabled = !soundEnabled;
+      soundToggleEl.textContent = soundEnabled ? "🔊 Ton an" : "🔇 Ton aus";
+      soundToggleEl.setAttribute("aria-pressed", String(soundEnabled));
+      if (soundEnabled) {
+        playClickSound();
+      } else {
+        audioToneTimers.forEach((timer) => clearTimeout(timer));
+        audioToneTimers.clear();
+      }
+    });
+
+    toniToggleEl.addEventListener("click", () => {
+      registerInteraction();
+      playClickSound();
+      setToniEnabled(!toniEnabled);
+    });
+
+    window.addEventListener("tarif-toni:state", (event) => {
+      updateToniToggleButton(Boolean(event.detail?.enabled));
+    });
+
+    toniFigureEl.addEventListener("click", () => {
+      registerInteraction();
+      playClickSound();
+      setToniChatOpen(!toniChatOpen);
+    });
+
+    toniChatFormEl.addEventListener("submit", (event) => {
+      event.preventDefault();
+      registerInteraction();
+      answerToniChat();
+    });
+
+    modeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        registerInteraction();
+        playClickSound();
+        setGameMode(button.dataset.mode);
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if (toniChatOpen) {
+        setToniChatOpen(false);
+        return;
+      }
+      if (infoPopupEl.classList.contains("open")) {
+        closeInfoPopup();
+        return;
+      }
+      if (finalOverlayEl.classList.contains("open")) {
+        closeFinalOverlay();
+        if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
+        lastFocusedElement = null;
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      positionLearningButtons();
+      tarifToniEl.style.setProperty("--toni-x", "0px");
+      tarifToniEl.style.setProperty("--toni-y", "0px");
+      scheduleToniMovement(2500);
+    });
+    reducedMotion.addEventListener?.("change", () => scheduleToniMovement());
+    window.addEventListener("beforeunload", () => {
+      stopLegacyToniActivity();
+      audioToneTimers.forEach((timer) => clearTimeout(timer));
+      audioToneTimers.clear();
+    });
+
+    // Initialzustand
+    slots.forEach((slot) => setSlotText(slot));
+    renderCards();
+    updateProgress();
+    updateConnectors();
+    updateFocusMode();
+    updateSolveButtonState();
+    setGameMode("learn");
+    setToniEnabled(true);
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>

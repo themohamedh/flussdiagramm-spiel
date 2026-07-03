@@ -1,0 +1,19 @@
+name: FlussdiagrammSpiel
+options:
+  bundleIdPrefix: de.mohamedhachelaf
+targets:
+  FlussdiagrammSpiel:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - FlussdiagrammSpiel
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.mohamedhachelaf.flussdiagrammspiel
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Flussdiagramm-Spiel
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        SWIFT_VERSION: "5.0"
