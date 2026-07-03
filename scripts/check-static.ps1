@@ -202,10 +202,16 @@ function Get-UniqueCount {
 $html = Read-Utf8 "index.html"
 $learningSource = Read-Utf8 "unterrichtsmaterial.js"
 $nodeTestSource = Read-Utf8 "tests/static-integrity.test.mjs"
+$serviceWorkerSource = Read-Utf8 "service-worker.js"
 $packageJson = Read-Utf8 "package.json" | ConvertFrom-Json
 Assert-Condition ($null -ne $packageJson.scripts.check) "package.json must expose a check script"
 Assert-Condition ($null -ne $packageJson.scripts.test) "package.json must expose a test script"
 Assert-Condition ($nodeTestSource.Trim().Length -gt 0) "Node test file must be readable"
+Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'const isNavigation = event\.request\.mode === "navigate";')) "Service worker should identify navigations"
+Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'const isStaticAsset = isAppShellRequest\(event\.request\);')) "Service worker should identify app-shell assets"
+Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'if \(!isNavigation && !isStaticAsset\) return;')) "Service worker should skip non-shell non-navigation GETs"
+Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'response\.ok && \(isStaticAsset \|\| isNavigation\)')) "Service worker should cache handled navigations and shell assets"
+Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'key\.startsWith\(CACHE_PREFIX\) && key !== CACHE_NAME')) "Service worker should delete only own old caches"
 
 $scriptMatches = [regex]::Matches($html, '<script\b(?<attrs>[^>]*)>(?<code>[\s\S]*?)</script>', "IgnoreCase")
 $inlineIndex = 0
@@ -216,7 +222,8 @@ foreach ($scriptMatch in $scriptMatches) {
 }
 
 foreach ($file in @("unterrichtsmaterial.js", "tarif-toni.js", "service-worker.js")) {
-  Assert-CodeDelimiters (Read-Utf8 $file) $file
+  $source = if ($file -eq "service-worker.js") { $serviceWorkerSource } else { Read-Utf8 $file }
+  Assert-CodeDelimiters $source $file
 }
 
 $cardExpression = Get-BalancedExpression $html "const CARD_ITEMS =" "[" "]"

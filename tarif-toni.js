@@ -5,6 +5,8 @@
   window.__tarifToniLoaded = true;
 
   const STORAGE_KEY = "tarif-toni-preferences";
+  const DEFAULT_SOURCE_URL = "https://www.bpb.de/";
+  const ALLOWED_SOURCE_HOSTS = new Set(["www.bpb.de", "bpb.de"]);
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const protectedSelector = [
     "button", ".card", ".slot", ".info-btn", ".status", ".feedback",
@@ -44,7 +46,7 @@
         <input class="tarif-toni__input" type="text" maxlength="120" autocomplete="off" placeholder="Kurze Frage an Toni" aria-label="Kurze Frage an Tarif Toni">
         <button class="tarif-toni__send" type="submit">Tipp</button>
       </form>
-      <a class="tarif-toni__source" href="https://www.bpb.de/" target="_blank" rel="noopener noreferrer">Quelle: bpb</a>
+      <a class="tarif-toni__source" href="${DEFAULT_SOURCE_URL}" target="_blank" rel="noopener noreferrer">Quelle: bpb</a>
     </section>
     <div class="tarif-toni__tools" aria-label="Tarif Toni steuern">
       <button class="tarif-toni__tool" data-toni-action="pause" type="button" title="Animation pausieren" aria-label="Animation pausieren">Ⅱ</button>
@@ -244,6 +246,19 @@
     return Array.isArray(window.TARIFF_TONI_KNOWLEDGE) ? window.TARIFF_TONI_KNOWLEDGE : [];
   }
 
+  function getSafeSource(source) {
+    if (!source || typeof source.url !== "string") return { label: "bpb-Quellen im Spiel", url: DEFAULT_SOURCE_URL };
+    try {
+      const url = new URL(source.url, window.location.href);
+      if (url.protocol === "https:" && ALLOWED_SOURCE_HOSTS.has(url.hostname)) {
+        return { label: source.label || "bpb-Quellen im Spiel", url: url.href };
+      }
+    } catch {
+      // Fallback below keeps Toni usable if source data is malformed.
+    }
+    return { label: "bpb-Quellen im Spiel", url: DEFAULT_SOURCE_URL };
+  }
+
   function normalizeText(text) {
     return String(text || "")
       .toLowerCase()
@@ -297,11 +312,12 @@
     const result = findSourceTip(trimmedQuestion);
     answerEl.textContent = result.text;
     if (result.source) {
-      sourceEl.textContent = `Quelle: ${result.source.label}`;
-      sourceEl.href = result.source.url;
+      const safeSource = getSafeSource(result.source);
+      sourceEl.textContent = `Quelle: ${safeSource.label}`;
+      sourceEl.href = safeSource.url;
     } else {
       sourceEl.textContent = "Quelle: bpb-Quellen im Spiel";
-      sourceEl.href = "https://www.bpb.de/";
+      sourceEl.href = DEFAULT_SOURCE_URL;
     }
     showMessage("Ich gebe dir einen kleinen Tipp, keine fertige Lösung.");
   }

@@ -1,4 +1,5 @@
-const CACHE_NAME = "flussdiagramm-spiel-v14";
+const CACHE_PREFIX = "flussdiagramm-spiel-";
+const CACHE_NAME = `${CACHE_PREFIX}v15`;
 const CONTENT_VERSION = "2026-06-30-mobile-a11y";
 const TONI_VERSION = "2026-06-30-mobile-a11y";
 const APP_SHELL = [
@@ -12,6 +13,11 @@ const APP_SHELL = [
   "./app-icon.svg",
   "./C9BD4168-EDB7-44C9-8257-97976AA34FB8.png"
 ];
+const APP_SHELL_URLS = new Set(APP_SHELL.map((path) => new URL(path, self.location.href).href));
+
+function isAppShellRequest(request) {
+  return APP_SHELL_URLS.has(request.url);
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
@@ -21,18 +27,26 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(
+        keys
+          .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      ))
       .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET" || new URL(event.request.url).origin !== self.location.origin) return;
+  const isNavigation = event.request.mode === "navigate";
+  const isStaticAsset = isAppShellRequest(event.request);
+
+  if (!isNavigation && !isStaticAsset) return;
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (response.ok) {
+        if (response.ok && (isStaticAsset || isNavigation)) {
           const copy = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
         }

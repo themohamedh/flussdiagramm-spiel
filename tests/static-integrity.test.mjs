@@ -111,6 +111,7 @@ function buttonSlotKeys(html) {
 
 const html = readUtf8("index.html");
 const learningSource = readUtf8("unterrichtsmaterial.js");
+const serviceWorkerSource = readUtf8("service-worker.js");
 
 test("JavaScript sources have no obvious syntax errors", () => {
   for (const file of ["unterrichtsmaterial.js", "tarif-toni.js", "service-worker.js"]) {
@@ -124,6 +125,14 @@ test("JavaScript sources have no obvious syntax errors", () => {
   inlineScripts.forEach((match, index) => {
     new vm.Script(match.groups.code, { filename: `index.html inline script ${index + 1}` });
   });
+});
+
+test("service worker caches handled navigations without broad runtime caching", () => {
+  assert.match(serviceWorkerSource, /const isNavigation = event\.request\.mode === "navigate";/);
+  assert.match(serviceWorkerSource, /const isStaticAsset = isAppShellRequest\(event\.request\);/);
+  assert.match(serviceWorkerSource, /if \(!isNavigation && !isStaticAsset\) return;/);
+  assert.match(serviceWorkerSource, /response\.ok && \(isStaticAsset \|\| isNavigation\)/);
+  assert.match(serviceWorkerSource, /key\.startsWith\(CACHE_PREFIX\) && key !== CACHE_NAME/);
 });
 
 test("cards, slots, step order, and solution mapping stay aligned", () => {
