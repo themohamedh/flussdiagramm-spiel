@@ -1,6 +1,13 @@
 exclude:
+  - APPLE_WEB_DESIGN_SYSTEM.md
   - DEBUG_REPORT.md
+  - README.md
+  - index-modern-vor-toni-integration.html
+  - index-vor-wiederherstellung-2026-06-15.html
+  - ios/
   - package.json
+  - playwright.config.mjs
   - scripts/
+  - service-worker-vor-toni-integration.js
   - tests/
   - qa-screenshots-mobile-a11y-2026-06-30/

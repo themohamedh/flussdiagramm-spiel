@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flussdiagramm-Spiel: Tarifrunde & Streik</title>
-  <link rel="stylesheet" href="tarif-toni.css?v=2026-06-30-mobile-a11y" />
+  <link rel="stylesheet" href="tarif-toni.css?v=2026-07-03-stability" />
   <style>
     :root {
       --bg-soft-1: #eaf2fb;
@@ -955,10 +955,14 @@
       display: block;
       width: 100%;
       height: 100%;
-      background: url("./tarif-toni-character-sheet.png") no-repeat 0 center / 500% 100%;
+      border-radius: 44px 44px 36px 36px;
+      background:
+        radial-gradient(circle at 45% 35%, rgba(255, 255, 255, .85) 0 10px, transparent 11px),
+        radial-gradient(circle at 65% 35%, rgba(255, 255, 255, .85) 0 10px, transparent 11px),
+        linear-gradient(150deg, #0a385f, #082344 58%, #071629);
       filter: drop-shadow(0 10px 6px rgba(25, 48, 72, .3));
       transform-origin: bottom center;
-      will-change: transform, background-position;
+      will-change: transform;
     }
 
     .legacy-tarif-toni.facing-left .toni-character { transform: scaleX(-1); }
@@ -967,7 +971,6 @@
     }
     .legacy-tarif-toni.is-talking:not(.is-moving) .toni-character-frame {
       animation: toniRealGuide .8s ease-in-out 2;
-      background-position: 100% center;
     }
     .toni-figure:hover,
     .toni-figure:active {
@@ -1446,17 +1449,39 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./app-icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./app-icon.svg" />
-  <link rel="stylesheet" href="./liquid-glass.css" />
+  <link rel="stylesheet" href="./liquid-glass.css?v=2026-07-04-premium-ui" />
 </head>
 <body>
   <main class="app">
-    <section class="panel hero-panel">
-      <h1>Flussdiagramm-Spiel: Tarifrunde und Streik</h1>
-      <p class="subtitle">Ordne die Schritte einer Tarifrunde zu und erkläre anschließend mit den Lerninfos, warum jeder Schritt für Beschäftigte und Arbeitgeber wichtig ist.</p>
+    <section class="panel hero-panel" aria-labelledby="appTitle">
+      <div class="hero-copy">
+        <span class="eyebrow">Premium Learning App</span>
+        <h1 id="appTitle">Tarifrunde verstehen</h1>
+        <p class="subtitle">Ordne die Schritte einer Tarifrunde zu, prüfe deine Entscheidungen und verstehe mit den Lerninfos, warum jeder Schritt für Beschäftigte und Arbeitgeber wichtig ist.</p>
+        <div class="hero-actions" aria-label="Lernstatus">
+          <a class="hero-pill hero-pill-primary" href="#boardViewport">Zum Flussdiagramm</a>
+          <span class="hero-pill">15 Stationen</span>
+          <span class="hero-pill">Feedback in Echtzeit</span>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-map">
+          <span class="hero-node is-active">Start</span>
+          <span class="hero-link"></span>
+          <span class="hero-node">Verhandlung</span>
+          <span class="hero-link"></span>
+          <span class="hero-node is-success">Abschluss</span>
+        </div>
+        <div class="hero-metric">
+          <strong>2026</strong>
+          <span>Training für Tarifrunde, Streik und Arbeitsrecht</span>
+        </div>
+      </div>
     </section>
 
     <section class="panel top-grid">
       <div class="reference-box">
+        <span class="eyebrow">Aufgabe</span>
         <h2>Spielziel auf einen Blick</h2>
         <ul class="quick-guide">
           <li>Wortkarte auswählen und in eine Station im Flussdiagramm setzen.</li>
@@ -1478,7 +1503,11 @@
         </details>
       </div>
 
-      <div>
+      <div class="play-panel">
+        <div class="section-heading">
+          <span class="eyebrow">Training</span>
+          <h2>Modus und Auswertung</h2>
+        </div>
         <div class="mode-selector" role="group" aria-label="Spielmodus auswählen">
           <button type="button" class="mode-option active" data-mode="learn" id="modeLearnBtn">
             <strong>Lernmodus</strong>
@@ -1511,11 +1540,26 @@
         </div>
         <div id="status" class="status" role="status" aria-live="polite">Wähle eine Karte aus und setze sie in ein Feld.</div>
         <div id="feedback" class="feedback" role="status" aria-live="polite">Feedback erscheint hier nach dem Einsetzen oder Prüfen.</div>
+        <section class="assistant-card" aria-labelledby="toniCardTitle">
+          <div class="assistant-avatar" aria-hidden="true">T</div>
+          <div>
+            <span class="eyebrow">Assistant</span>
+            <h3 id="toniCardTitle">Tarif Toni</h3>
+            <p>Dein Lernbegleiter gibt Denkanstöße, bleibt im Prüfungsmodus neutral und nutzt die Quellen aus dem Spiel.</p>
+          </div>
+          <button id="toniOpenBtn" type="button">Toni fragen</button>
+        </section>
       </div>
     </section>
 
-    <section class="panel board-wrap">
-      <p class="section-note">Tipp für kleine Bildschirme: Das Diagramm lässt sich horizontal und vertikal verschieben. Fragezeichen an richtig gelösten Kästchen öffnen die Lerninfos.</p>
+    <section class="panel board-wrap" aria-labelledby="boardTitle">
+      <div class="section-header">
+        <div>
+          <span class="eyebrow">Flow Map</span>
+          <h2 id="boardTitle">Flussdiagramm</h2>
+        </div>
+        <p class="section-note">Tipp für kleine Bildschirme: Das Diagramm lässt sich horizontal und vertikal verschieben. Fragezeichen an richtig gelösten Kästchen öffnen die Lerninfos.</p>
+      </div>
       <div class="board-viewport" id="boardViewport">
       <div class="board" id="board">
         <svg class="flow" id="flowSvg" viewBox="0 0 1240 1320" aria-hidden="true">
@@ -1567,9 +1611,14 @@
       </div>
     </section>
 
-    <section class="panel">
-      <h2>Wortkarten</h2>
-      <p class="section-note">Kartenpool für die Stationen im Flussdiagramm (ziehen oder klicken).</p>
+    <section class="panel cards-panel" aria-labelledby="cardsTitle">
+      <div class="section-header">
+        <div>
+          <span class="eyebrow">Kartenpool</span>
+          <h2 id="cardsTitle">Wortkarten</h2>
+        </div>
+        <p class="section-note">Kartenpool für die Stationen im Flussdiagramm (ziehen oder klicken).</p>
+      </div>
       <div id="cards" class="cards" aria-live="polite"></div>
     </section>
   </main>
@@ -1635,7 +1684,7 @@
   </div>
 
   <script src="./unterrichtsmaterial.js?v=2026-06-30-mobile-a11y"></script>
-  <script src="tarif-toni.js?v=2026-06-30-mobile-a11y"></script>
+  <script src="tarif-toni.js?v=2026-07-03-stability"></script>
 
   <script>
     // Alle Karten für die aktuell sichtbaren Felder im Diagramm
@@ -1675,6 +1724,7 @@
     const toniChatFormEl = document.getElementById("toniChatForm");
     const toniChatInputEl = document.getElementById("toniChatInput");
     const toniChatResponseEl = document.getElementById("toniChatResponse");
+    const toniOpenBtnEl = document.getElementById("toniOpenBtn");
     const infoPopupEl = document.getElementById("infoPopup");
     const infoTitleEl = document.getElementById("infoTitle");
     const infoTextEl = document.getElementById("infoText");
@@ -2412,6 +2462,7 @@
         wrongDecisions = 0;
         wrongAttempts = 0;
         mistakeSlots = new Set();
+        slots.forEach((slot) => slot.classList.remove("correct", "wrong"));
       }
       if (!didComplete) return;
       didComplete = false;
@@ -2683,12 +2734,22 @@
         if (cardId === SOLUTION[key]) {
           correct += 1;
         } else {
-          slot.classList.add("wrong");
           wrong += 1;
           wrongKeys.push(key);
           if (currentMode === "learn") rememberMistakeForKey(key);
         }
       });
+
+      const revealCorrectness = currentMode === "learn" || (currentMode === "exam" && empty === 0);
+      if (revealCorrectness) {
+        slots.forEach((slot) => {
+          const key = slot.dataset.key;
+          const cardId = placed[key];
+          if (!cardId) return;
+          slot.classList.add(cardId === SOLUTION[key] ? "correct" : "wrong");
+        });
+      }
+
       if (currentMode === "exam") {
         examEvaluated = empty === 0;
         if (examEvaluated) {
@@ -2699,31 +2760,39 @@
         }
       }
 
-      if (empty > 0 && currentMode === "exam") {
+      if (currentMode === "exam" && empty > 0) {
         setStatusState(null, `Prüfung noch nicht abgeschlossen: ${empty} Felder sind leer.`);
-      } else if (wrong > 0) {
+      } else if (currentMode === "exam" && wrong > 0) {
         setStatusState("negative", `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`);
-      } else if (empty > 0) {
-        setStatusState(null, "Zwischenstand: noch Felder offen");
-      } else {
+      } else if (currentMode === "exam") {
         setStatusState("positive", `Prüfung abgeschlossen: ${correct} von ${slots.length} korrekt.`);
+      } else if (wrong > 0) {
+        setStatusState("negative", `Zwischenstand: ${correct} von ${slots.length} korrekt.`);
+      } else if (empty > 0) {
+        setStatusState(null, "Zwischenstand: noch Felder offen.");
+      } else {
+        setStatusState("positive", `Alles richtig: ${correct} von ${slots.length} korrekt.`);
       }
       if (currentMode === "learn") {
-        if (wrong > 0 || empty > 0) {
+        if (wrong > 0) {
           setFeedbackState("negative", `Es wurden ${wrong} Fehler markiert${empty ? ` und ${empty} leere Felder gefunden` : ""}. Korrigiere nur die markierten Stationen.`);
+        } else if (empty > 0) {
+          setFeedbackState(null, `Noch ${empty} Felder offen. Belege sie, bevor du den Ablauf abschließt.`);
         } else {
           setFeedbackState("positive", "Sehr gut! Keine Fehler markiert. Wenn du vergleichen willst, nutze „Lösung anzeigen“.");
         }
       } else {
-        setFeedbackState(
-          wrong > 0 ? "negative" : "positive",
-          empty > 0
-            ? "Belege zuerst alle Felder, damit die Prüfungsleistung vollständig ausgewertet werden kann."
-            : `Endauswertung: ${correct} richtige und ${wrong} falsche Zuordnungen.`
-        );
+        if (empty > 0) {
+          setFeedbackState(null, "Belege zuerst alle Felder, damit die Prüfungsleistung vollständig ausgewertet werden kann.");
+        } else {
+          setFeedbackState(
+            wrong > 0 ? "negative" : "positive",
+            `Endauswertung: ${correct} richtige und ${wrong} falsche Zuordnungen.`
+          );
+        }
       }
       if (currentMode === "exam" && empty === 0 && wrong === 0) showCompletionOverlay();
-      if (wrong > 0 || empty > 0) triggerTryAgainAnimation();
+      if (currentMode === "learn" ? (wrong > 0 || empty > 0) : (empty === 0 && wrong > 0)) triggerTryAgainAnimation();
       updateProgress();
       renderCards();
       updateConnectors();
@@ -2903,6 +2972,18 @@
       registerInteraction();
       playClickSound();
       setToniEnabled(!toniEnabled);
+    });
+
+    toniOpenBtnEl.addEventListener("click", () => {
+      registerInteraction();
+      playClickSound();
+      if (!toniEnabled) setToniEnabled(true);
+      const modernToniButton = document.querySelector(".tarif-toni__character");
+      if (modernToniButton) {
+        modernToniButton.click();
+      } else {
+        setToniChatOpen(true);
+      }
     });
 
     window.addEventListener("tarif-toni:state", (event) => {

@@ -216,26 +216,88 @@
       { x: maxX, y: midY }, { x: margin, y: midY },
       { x: midX, y: maxY }
     ];
-    return window.innerWidth <= 720 ? candidates.slice(0, 4) : candidates;
+    return window.innerWidth <= 720 ? candidates.slice(0, 2) : candidates;
   }
 
-  function scoreCandidate(candidate) {
-    const size = getSize();
-    const rect = { left: candidate.x, top: candidate.y, right: candidate.x + size.width, bottom: candidate.y + size.height };
-    const protectedRects = [...document.querySelectorAll(protectedSelector)]
+  function getProtectedRects() {
+    return [...document.querySelectorAll(protectedSelector)]
       .filter((element) => element.offsetParent !== null && !root.contains(element))
       .map((element) => element.getBoundingClientRect());
-    const collisions = protectedRects.filter((protectedRect) => rectsOverlap(rect, protectedRect)).length;
-    const distance = Math.hypot(candidate.x - position.x, candidate.y - position.y);
-    return collisions * 10000 + distance * .05 + Math.random() * 80;
   }
 
-  function findFreePosition() {
-    return getCandidates().sort((a, b) => scoreCandidate(a) - scoreCandidate(b))[0];
+  function getBubbleRectForCandidate(candidate) {
+    const { width, height } = getSize();
+    const isMobile = window.innerWidth <= 720;
+    const side = candidate.x < window.innerWidth / 2 ? "left" : "right";
+    const offsetX = isMobile ? 66 : 114;
+    const offsetBottom = isMobile ? 82 : 142;
+    const bubbleWidth = bubble.offsetWidth || (isMobile ? Math.min(205, window.innerWidth - 24) : Math.min(270, window.innerWidth - 34));
+    const bubbleHeight = bubble.offsetHeight || (isMobile ? 96 : 82);
+    const left = side === "left"
+      ? candidate.x + offsetX
+      : candidate.x + width - offsetX - bubbleWidth;
+    const top = candidate.y + height - offsetBottom - bubbleHeight;
+
+    return {
+      left,
+      top,
+      right: left + bubbleWidth,
+      bottom: top + bubbleHeight
+    };
+  }
+
+  function getCandidateRects(candidate, options = {}) {
+    const { width, height } = getSize();
+    const rects = [{
+      left: candidate.x,
+      top: candidate.y,
+      right: candidate.x + width,
+      bottom: candidate.y + height
+    }];
+
+    if (options.includeBubble) rects.push(getBubbleRectForCandidate(candidate));
+    return rects;
+  }
+
+  function viewportPenalty(rect) {
+    const margin = window.innerWidth <= 720 ? 8 : 12;
+    let penalty = 0;
+    if (rect.left < margin) penalty += margin - rect.left;
+    if (rect.top < margin) penalty += margin - rect.top;
+    if (rect.right > window.innerWidth - margin) penalty += rect.right - (window.innerWidth - margin);
+    if (rect.bottom > window.innerHeight - margin) penalty += rect.bottom - (window.innerHeight - margin);
+    return penalty;
+  }
+
+  function getCollisionCount(candidate, options = {}) {
+    const protectedRects = options.protectedRects || getProtectedRects();
+    return getCandidateRects(candidate, options).reduce((count, rect) => {
+      return count + protectedRects.filter((protectedRect) => rectsOverlap(rect, protectedRect)).length;
+    }, 0);
+  }
+
+  function scoreCandidate(candidate, protectedRects, options = {}) {
+    const rects = getCandidateRects(candidate, options);
+    const collisions = getCollisionCount(candidate, { ...options, protectedRects });
+    const offscreen = rects.reduce((sum, rect) => sum + viewportPenalty(rect), 0);
+    const distance = Math.hypot(candidate.x - position.x, candidate.y - position.y);
+    return collisions * 10000 + offscreen * 120 + distance * .05 + Math.random() * 80;
+  }
+
+  function findFreePosition(options = {}) {
+    const protectedRects = getProtectedRects();
+    return getCandidates()
+      .map((candidate) => ({ candidate, score: scoreCandidate(candidate, protectedRects, options) }))
+      .sort((a, b) => a.score - b.score)[0]?.candidate || getStartPosition();
   }
 
   function showMessage(text, duration = 4300) {
     if (preferences.hidden || preferences.minimized || !askPanel.hidden) return;
+    const nextPosition = findFreePosition({ includeBubble: true });
+    const bubbleWouldCollide = getCollisionCount(nextPosition, { includeBubble: true }) > 0;
+    position = nextPosition;
+    applyPosition();
+    if (bubbleWouldCollide) return;
     clearBubbleTimer();
     messageEl.textContent = text;
     bubble.classList.add("open");
@@ -503,7 +565,7 @@
   });
 
   document.addEventListener("pointermove", (event) => {
-    if (preferences.hidden || preferences.paused) return;
+    if (preferences.hidden || preferences.paused || preferences.minimized) return;
     const rect = character.getBoundingClientRect();
     const x = Math.max(-3, Math.min(3, (event.clientX - (rect.left + rect.width / 2)) / 45));
     const y = Math.max(-2, Math.min(2, (event.clientY - (rect.top + rect.height / 2)) / 55));
@@ -575,7 +637,20 @@
     applyPosition();
   }, { passive: true });
 
-  reduceMotion.addEventListener?.("change", () => scheduleBehavior());
+  function handleReducedMotionChange() {
+    if (reduceMotion.matches) {
+      stopTravel();
+      clearMotionTimer();
+      root.dataset.motion = "idle";
+    }
+    scheduleBehavior();
+  }
+
+  if (typeof reduceMotion.addEventListener === "function") {
+    reduceMotion.addEventListener("change", handleReducedMotionChange);
+  } else if (typeof reduceMotion.addListener === "function") {
+    reduceMotion.addListener(handleReducedMotionChange);
+  }
 
   window.addEventListener("beforeunload", () => {
     clearBehaviorTimer();
@@ -586,6 +661,11 @@
     stopTravel();
     observers.forEach((observer) => observer.disconnect());
     observers.length = 0;
+    if (typeof reduceMotion.removeEventListener === "function") {
+      reduceMotion.removeEventListener("change", handleReducedMotionChange);
+    } else if (typeof reduceMotion.removeListener === "function") {
+      reduceMotion.removeListener(handleReducedMotionChange);
+    }
   }, { once: true });
 
   position = findFreePosition();

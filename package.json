@@ -4,11 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build:app": "node scripts/build-app.mjs",
-    "check": "npm test",
-    "test": "node --test tests/static-integrity.test.mjs && node --test Flussdiagramm/tests/static-integrity.test.mjs"
+    "check": "npm run test:static",
+    "test": "npm run test:static",
+    "test:all": "npm run test:static && npm run test:e2e",
+    "test:e2e": "playwright test",
+    "test:static": "node --test tests/static-integrity.test.mjs"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0"
   }
 }

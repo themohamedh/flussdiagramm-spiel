@@ -199,19 +199,209 @@ function Get-UniqueCount {
   return @($Values | Sort-Object -Unique).Count
 }
 
+function Test-ExternalReference {
+  param([string] $Value)
+
+  return $Value -match '^(?:[a-z][a-z\d+.-]*:|//)'
+}
+
+function Normalize-LocalReference {
+  param([string] $Value)
+
+  if ($null -eq $Value) { return $null }
+
+  $trimmed = $Value.Trim()
+  if (-not $trimmed -or $trimmed.StartsWith("#") -or (Test-ExternalReference $trimmed)) {
+    return $null
+  }
+
+  $withoutQuery = ($trimmed -split '[?#]', 2)[0]
+  if (-not $withoutQuery -or $withoutQuery -eq "." -or $withoutQuery -eq "./") {
+    return "index.html"
+  }
+  if ($withoutQuery.EndsWith("/")) {
+    return ((Join-Path $withoutQuery "index.html") -replace "\\", "/")
+  }
+
+  return (($withoutQuery -replace '^[.][\\/]', '') -replace "\\", "/").TrimStart("/")
+}
+
+function New-Reference {
+  param(
+    [string] $Label,
+    [string] $Path
+  )
+
+  return [pscustomobject] @{
+    Label = $Label
+    Path = $Path
+  }
+}
+
+function Get-HtmlAttributeReferences {
+  param([string] $Source)
+
+  $references = @()
+  $matches = [regex]::Matches($Source, '\b(?:href|src)\s*=\s*(["''])(?<value>.*?)\1', "IgnoreCase")
+  foreach ($match in $matches) {
+    $path = Normalize-LocalReference $match.Groups["value"].Value
+    if ($path) { $references += New-Reference "index.html attribute" $path }
+  }
+  return $references
+}
+
+function Get-CssUrlReferences {
+  param(
+    [string] $Source,
+    [string] $Label
+  )
+
+  $references = @()
+  $matches = [regex]::Matches($Source, 'url\(\s*(?:"(?<double>[^"]*)"|''(?<single>[^'']*)''|(?<bare>[^)"'']+))\s*\)', "IgnoreCase")
+  foreach ($match in $matches) {
+    $rawValue = if ($match.Groups["double"].Success) {
+      $match.Groups["double"].Value
+    } elseif ($match.Groups["single"].Success) {
+      $match.Groups["single"].Value
+    } else {
+      $match.Groups["bare"].Value
+    }
+
+    $path = Normalize-LocalReference $rawValue
+    if ($path) { $references += New-Reference $Label $path }
+  }
+  return $references
+}
+
+function Get-ServiceWorkerAppShell {
+  param([string] $Source)
+
+  $constants = @{}
+  [regex]::Matches($Source, 'const\s+(?<name>[A-Z_]+)\s*=\s*"(?<value>[^"]*)";') | ForEach-Object {
+    $constants[$_.Groups["name"].Value] = $_.Groups["value"].Value
+  }
+
+  function Get-ArrayStringEntries {
+    param([string] $Name)
+
+    $marker = "const $Name ="
+    if ($Source.IndexOf($marker, [StringComparison]::Ordinal) -lt 0) { return @() }
+
+    $arrayExpression = Get-BalancedExpression $Source $marker "[" "]"
+    return @(
+      [regex]::Matches($arrayExpression, '(?:"(?<plain>[^"]+)"|`(?<template>[^`]+)`)') |
+      ForEach-Object {
+        $value = if ($_.Groups["plain"].Success) { $_.Groups["plain"].Value } else { $_.Groups["template"].Value }
+        foreach ($key in $constants.Keys) {
+          $value = $value.Replace('${' + $key + '}', $constants[$key])
+        }
+        $value
+      }
+    )
+  }
+
+  $entries = @()
+  $entries += Get-ArrayStringEntries "APP_SHELL"
+  if ($entries.Count -eq 0) {
+    $entries += Get-ArrayStringEntries "REQUIRED_APP_SHELL"
+    $entries += Get-ArrayStringEntries "OPTIONAL_APP_SHELL"
+  }
+
+  return @($entries | Where-Object { $_ } | Select-Object -Unique)
+}
+
+function Assert-ReferencesExist {
+  param([object[]] $References)
+
+  $missing = @()
+  foreach ($reference in $References) {
+    $key = "$($reference.Label) -> $($reference.Path)"
+    $fullPath = Join-Path $root $reference.Path
+    if (-not (Test-Path -LiteralPath $fullPath)) {
+      $missing += $key
+    }
+  }
+
+  Assert-Condition ($missing.Count -eq 0) ("Local static references must point to existing files: " + ($missing -join ", "))
+}
+
+function Get-AssetVersion {
+  param(
+    [string] $Source,
+    [string] $Filename
+  )
+
+  $pattern = [regex]::Escape($Filename) + '\?v=([^"''<>]+)'
+  $match = [regex]::Match($Source, $pattern)
+  Assert-Condition $match.Success "Missing versioned reference for $Filename"
+  return $match.Groups[1].Value
+}
+
+function Get-ServiceWorkerStringConst {
+  param(
+    [string] $Source,
+    [string] $Name
+  )
+
+  $pattern = 'const\s+' + [regex]::Escape($Name) + '\s+=\s+"([^"]+)";'
+  $match = [regex]::Match($Source, $pattern)
+  Assert-Condition $match.Success "Missing service worker constant $Name"
+  return $match.Groups[1].Value
+}
+
 $html = Read-Utf8 "index.html"
 $learningSource = Read-Utf8 "unterrichtsmaterial.js"
+$toniSource = Read-Utf8 "tarif-toni.js"
 $nodeTestSource = Read-Utf8 "tests/static-integrity.test.mjs"
+$manifest = Read-Utf8 "manifest.webmanifest" | ConvertFrom-Json
 $serviceWorkerSource = Read-Utf8 "service-worker.js"
 $packageJson = Read-Utf8 "package.json" | ConvertFrom-Json
 Assert-Condition ($null -ne $packageJson.scripts.check) "package.json must expose a check script"
 Assert-Condition ($null -ne $packageJson.scripts.test) "package.json must expose a test script"
+Assert-Condition ($packageJson.scripts.check -eq "npm run test:static") "package.json check script should run static tests"
+Assert-Condition ($packageJson.scripts.test -eq "npm run test:static") "package.json test script should run static tests"
+Assert-Condition ($packageJson.scripts.'test:all' -eq "npm run test:static && npm run test:e2e") "package.json must expose test:all"
+Assert-Condition ($packageJson.scripts.'test:static' -eq "node --test tests/static-integrity.test.mjs") "package.json must expose test:static"
+Assert-Condition ($packageJson.scripts.'test:e2e' -eq "playwright test") "package.json must expose test:e2e"
+Assert-Condition ($packageJson.devDependencies.'@playwright/test' -match '^\^1\.') "package.json must include @playwright/test dev dependency"
 Assert-Condition ($nodeTestSource.Trim().Length -gt 0) "Node test file must be readable"
-Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'const isNavigation = event\.request\.mode === "navigate";')) "Service worker should identify navigations"
-Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'const isStaticAsset = isAppShellRequest\(event\.request\);')) "Service worker should identify app-shell assets"
-Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'if \(!isNavigation && !isStaticAsset\) return;')) "Service worker should skip non-shell non-navigation GETs"
-Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'response\.ok && \(isStaticAsset \|\| isNavigation\)')) "Service worker should cache handled navigations and shell assets"
-Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'key\.startsWith\(CACHE_PREFIX\) && key !== CACHE_NAME')) "Service worker should delete only own old caches"
+foreach ($file in @("playwright.config.mjs", "scripts/serve-static.mjs", "tests/e2e/flussdiagramm.spec.mjs")) {
+  Assert-Condition (Test-Path -LiteralPath (Join-Path $root $file)) "$file must exist"
+}
+Assert-Condition ($manifest.lang -eq "de") "Manifest language should stay German"
+Assert-Condition ($manifest.display -eq "standalone") "Manifest should stay installable"
+Assert-Condition ($manifest.icons.Count -gt 0) "Manifest needs at least one icon"
+
+$appShell = Get-ServiceWorkerAppShell $serviceWorkerSource
+Assert-Condition ($appShell.Count -gt 0) "Service worker needs a non-empty APP_SHELL"
+
+$references = @()
+$references += Get-HtmlAttributeReferences $html
+$references += Get-CssUrlReferences $html "index.html css url"
+foreach ($icon in $manifest.icons) {
+  $iconPath = Normalize-LocalReference $icon.src
+  if ($iconPath) { $references += New-Reference "manifest icon" $iconPath }
+}
+foreach ($entry in $appShell) {
+  $entryPath = Normalize-LocalReference $entry
+  if ($entryPath) { $references += New-Reference "service-worker APP_SHELL" $entryPath }
+}
+foreach ($file in @("liquid-glass.css", "tarif-toni.css")) {
+  $references += Get-CssUrlReferences (Read-Utf8 $file) "$file css url"
+}
+Assert-ReferencesExist $references
+
+$appShellPaths = @($appShell | ForEach-Object { Normalize-LocalReference $_ } | Where-Object { $_ } | Sort-Object -Unique)
+foreach ($expected in @("index.html", "liquid-glass.css", "tarif-toni.css", "unterrichtsmaterial.js", "tarif-toni.js", "manifest.webmanifest", "app-icon.svg")) {
+  Assert-Condition ($appShellPaths -contains $expected) "Service worker APP_SHELL should include $expected"
+}
+
+$designVersion = Get-ServiceWorkerStringConst $serviceWorkerSource "DESIGN_VERSION"
+$toniVersion = Get-ServiceWorkerStringConst $serviceWorkerSource "TONI_VERSION"
+Assert-Condition ((Get-AssetVersion $html "liquid-glass.css") -eq $designVersion) "HTML design CSS version must match service worker"
+Assert-Condition ((Get-AssetVersion $html "tarif-toni.css") -eq $toniVersion) "HTML Toni CSS version must match service worker"
+Assert-Condition ((Get-AssetVersion $html "tarif-toni.js") -eq $toniVersion) "HTML Toni JS version must match service worker"
+Assert-Condition ([regex]::IsMatch($serviceWorkerSource, 'const CACHE_NAME = `\$\{CACHE_PREFIX\}v\d+`;')) "Service worker cache name must be versioned"
 
 $scriptMatches = [regex]::Matches($html, '<script\b(?<attrs>[^>]*)>(?<code>[\s\S]*?)</script>', "IgnoreCase")
 $inlineIndex = 0
@@ -221,7 +411,7 @@ foreach ($scriptMatch in $scriptMatches) {
   Assert-CodeDelimiters $scriptMatch.Groups["code"].Value "index.html inline script $inlineIndex"
 }
 
-foreach ($file in @("unterrichtsmaterial.js", "tarif-toni.js", "service-worker.js")) {
+foreach ($file in @("unterrichtsmaterial.js", "tarif-toni.js", "service-worker.js", "scripts/serve-static.mjs", "playwright.config.mjs", "tests/e2e/flussdiagramm.spec.mjs")) {
   $source = if ($file -eq "service-worker.js") { $serviceWorkerSource } else { Read-Utf8 $file }
   Assert-CodeDelimiters $source $file
 }
@@ -274,6 +464,9 @@ foreach ($key in $stepKeys) {
 
 $solveAllBody = Get-BalancedExpression $html "function solveAll(" "{" "}"
 $updateSolveButtonStateBody = Get-BalancedExpression $html "function updateSolveButtonState(" "{" "}"
+$checkAllBody = Get-BalancedExpression $html "function checkAll(" "{" "}"
+$markGameEditedBody = Get-BalancedExpression $html "function markGameEdited(" "{" "}"
+$showToniMessageBody = Get-BalancedExpression $toniSource "function showMessage(" "{" "}"
 
 Assert-Condition ([regex]::IsMatch($solveAllBody, 'if\s*\(\s*!allSlotsFilled\(\)\s*\)\s*return;')) "solveAll must require filled slots"
 Assert-Condition ([regex]::IsMatch($solveAllBody, 'solutionWasShown\s*=\s*true;')) "solveAll must mark the solution as shown"
@@ -287,10 +480,37 @@ Assert-Condition ([regex]::IsMatch($updateSolveButtonStateBody, 'solveBtnEl\.dis
 Assert-Condition ([regex]::IsMatch($updateSolveButtonStateBody, 'solveHintEl\.hidden\s*=\s*isComplete;')) "Solve hint must mirror completeness"
 Assert-Condition ([regex]::IsMatch($html, 'document\.getElementById\("solveBtn"\)\.addEventListener\("click"(?s:.*?)if\s*\(\s*solveBtnEl\.disabled\s*\)\s*return;(?s:.*?)solveAll\(\);')) "Solve button click handler must guard before reveal"
 
+Assert-Condition ([regex]::IsMatch($checkAllBody, 'const revealCorrectness\s*=\s*currentMode\s*===\s*"learn"\s*\|\|\s*\(\s*currentMode\s*===\s*"exam"\s*&&\s*empty\s*===\s*0\s*\);')) "Exam mode must reveal correctness only after every field is filled"
+Assert-Condition ([regex]::IsMatch($checkAllBody, 'slot\.classList\.add\(cardId\s*===\s*SOLUTION\[key\]\s*\?\s*"correct"\s*:\s*"wrong"\);')) "Completed checks must mark both correct and wrong slots"
+Assert-Condition ([regex]::IsMatch($checkAllBody, 'currentMode\s*===\s*"learn"\s*\?\s*\(wrong\s*>\s*0\s*\|\|\s*empty\s*>\s*0\)\s*:\s*\(empty\s*===\s*0\s*&&\s*wrong\s*>\s*0\)')) "Exam try-again animation must wait for a complete failed check"
+Assert-Condition ([regex]::IsMatch($markGameEditedBody, 'slots\.forEach\(\(slot\)\s*=>\s*slot\.classList\.remove\("correct",\s*"wrong"\)\);')) "Editing an evaluated exam attempt must clear stale correctness classes"
+
+Assert-Condition ([regex]::IsMatch($toniSource, 'function getBubbleRectForCandidate\(')) "Toni needs a speech-bubble footprint"
+Assert-Condition ([regex]::IsMatch($toniSource, 'function getCandidateRects\(')) "Toni candidate scoring must support multiple occupied rects"
+Assert-Condition ([regex]::IsMatch($showToniMessageBody, 'findFreePosition\(\{\s*includeBubble:\s*true\s*\}\)')) "Toni must position for the bubble before speaking"
+Assert-Condition ([regex]::IsMatch($showToniMessageBody, 'getCollisionCount\(nextPosition,\s*\{\s*includeBubble:\s*true\s*\}\)')) "Toni must detect speech-bubble collisions"
+Assert-Condition ([regex]::IsMatch($showToniMessageBody, 'if\s*\(\s*bubbleWouldCollide\s*\)\s*return;')) "Toni must skip obstructive speech bubbles"
+
+$playwrightConfig = Read-Utf8 "playwright.config.mjs"
+$e2eSource = Read-Utf8 "tests/e2e/flussdiagramm.spec.mjs"
+Assert-Condition ([regex]::IsMatch($playwrightConfig, 'testDir:\s*"\./tests/e2e"')) "Playwright config must point at tests/e2e"
+Assert-Condition ([regex]::IsMatch($playwrightConfig, 'serviceWorkers:\s*"block"')) "E2E tests should block service workers for deterministic runs"
+Assert-Condition ([regex]::IsMatch($playwrightConfig, 'webServer:\s*\{(?s:.*?)scripts/serve-static\.mjs')) "E2E tests should start the local static server"
+Assert-Condition ([regex]::IsMatch($e2eSource, 'learn-correct-wrong')) "E2E suite should cover learn-mode correction"
+Assert-Condition ([regex]::IsMatch($e2eSource, 'exam-success')) "E2E suite should cover successful exam evaluation"
+Assert-Condition ([regex]::IsMatch($e2eSource, 'exam-failure')) "E2E suite should cover failed exam evaluation"
+Assert-Condition ([regex]::IsMatch($e2eSource, 'solve-all')) "E2E suite should cover solution reveal"
+Assert-Condition ([regex]::IsMatch($e2eSource, 'mobile-layout')) "E2E suite should cover mobile layout"
+
 Write-Host "Static checks passed:"
 Write-Host "- 15 cards, 15 slots, 15 step-order entries, and 15 solution entries."
 Write-Host "- Solution mapping is unique and covers every card exactly once."
 Write-Host "- Learning material is complete for every step."
 Write-Host "- Solution reveal is gated and refreshes solved-board state."
+Write-Host "- Exam-mode reveal timing and stale-mark clearing are checked."
+Write-Host "- Tarif Toni message-bubble placement safeguards are checked."
 Write-Host "- Delimiter checks found no obvious syntax breakage."
+Write-Host "- Local static references, manifest icons, and Service Worker cache entries are checked."
+Write-Host "- Versioned design and Toni assets match the Service Worker."
+Write-Host "- Playwright E2E setup and core browser-flow coverage are checked."
 Write-Host "- package.json and Node test file are readable."

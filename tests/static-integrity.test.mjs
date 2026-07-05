@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -109,9 +109,83 @@ function buttonSlotKeys(html) {
   return [...html.matchAll(slotButtonPattern)].map((match) => match.groups.key);
 }
 
+function isExternalReference(value) {
+  return /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value);
+}
+
+function normalizeLocalReference(value) {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.startsWith("#") || isExternalReference(trimmed)) return null;
+
+  const withoutQuery = trimmed.split(/[?#]/, 1)[0];
+  if (!withoutQuery || withoutQuery === "." || withoutQuery === "./") return "index.html";
+  if (withoutQuery.endsWith("/")) return path.join(withoutQuery, "index.html").replace(/\\/g, "/");
+  return path.normalize(withoutQuery).replace(/\\/g, "/").replace(/^\.\//, "");
+}
+
+function extractHtmlAttributeReferences(source) {
+  const references = [];
+  const pattern = /\b(?:href|src)\s*=\s*(["'])(?<value>.*?)\1/gi;
+  for (const match of source.matchAll(pattern)) {
+    const normalized = normalizeLocalReference(match.groups.value);
+    if (normalized) references.push({ label: "index.html attribute", path: normalized });
+  }
+  return references;
+}
+
+function extractCssUrlReferences(source, label) {
+  const references = [];
+  const pattern = /url\(\s*(?:"(?<double>[^"]*)"|'(?<single>[^']*)'|(?<bare>[^)"']+))\s*\)/gi;
+  for (const match of source.matchAll(pattern)) {
+    const rawValue = match.groups.double ?? match.groups.single ?? match.groups.bare ?? "";
+    const normalized = normalizeLocalReference(rawValue);
+    if (normalized) references.push({ label, path: normalized });
+  }
+  return references;
+}
+
+function evaluateServiceWorkerAppShell(serviceWorkerSource) {
+  const appShellUrlsIndex = serviceWorkerSource.indexOf("const APP_SHELL_URLS");
+  assert.notEqual(appShellUrlsIndex, -1, "service-worker.js must define APP_SHELL_URLS after APP_SHELL");
+
+  return vm.runInNewContext(
+    `${serviceWorkerSource.slice(0, appShellUrlsIndex)}\nAPP_SHELL`,
+    {},
+    { filename: "service-worker.js APP_SHELL" },
+  );
+}
+
+function assertReferencesExist(references) {
+  const missing = references
+    .map((reference) => ({ ...reference, key: `${reference.label} -> ${reference.path}` }))
+    .filter((reference) => !existsSync(path.join(root, reference.path)));
+
+  assert.deepEqual(
+    missing.map((reference) => reference.key),
+    [],
+    "Local static references must point to existing files",
+  );
+}
+
+function assetVersion(source, filename) {
+  const escaped = filename.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = source.match(new RegExp(`${escaped}\\?v=([^"'<>]+)`));
+  assert.ok(match, `Missing versioned reference for ${filename}`);
+  return match[1];
+}
+
+function serviceWorkerStringConst(source, name) {
+  const match = source.match(new RegExp(`const\\s+${name}\\s+=\\s+"([^"]+)";`));
+  assert.ok(match, `Missing service worker constant ${name}`);
+  return match[1];
+}
+
 const html = readUtf8("index.html");
 const learningSource = readUtf8("unterrichtsmaterial.js");
+const manifestSource = readUtf8("manifest.webmanifest");
+const packageSource = readUtf8("package.json");
 const serviceWorkerSource = readUtf8("service-worker.js");
+const toniSource = readUtf8("tarif-toni.js");
 
 test("JavaScript sources have no obvious syntax errors", () => {
   for (const file of ["unterrichtsmaterial.js", "tarif-toni.js", "service-worker.js"]) {
@@ -127,12 +201,76 @@ test("JavaScript sources have no obvious syntax errors", () => {
   });
 });
 
-test("service worker caches handled navigations without broad runtime caching", () => {
-  assert.match(serviceWorkerSource, /const isNavigation = event\.request\.mode === "navigate";/);
-  assert.match(serviceWorkerSource, /const isStaticAsset = isAppShellRequest\(event\.request\);/);
-  assert.match(serviceWorkerSource, /if \(!isNavigation && !isStaticAsset\) return;/);
-  assert.match(serviceWorkerSource, /response\.ok && \(isStaticAsset \|\| isNavigation\)/);
-  assert.match(serviceWorkerSource, /key\.startsWith\(CACHE_PREFIX\) && key !== CACHE_NAME/);
+test("package scripts expose static and browser e2e suites", () => {
+  const packageJson = JSON.parse(packageSource);
+
+  assert.equal(packageJson.scripts.check, "npm run test:static");
+  assert.equal(packageJson.scripts.test, "npm run test:static");
+  assert.equal(packageJson.scripts["test:all"], "npm run test:static && npm run test:e2e");
+  assert.equal(packageJson.scripts["test:static"], "node --test tests/static-integrity.test.mjs");
+  assert.equal(packageJson.scripts["test:e2e"], "playwright test");
+  assert.match(packageJson.devDependencies["@playwright/test"], /^\^1\./, "Playwright test runner should be a dev dependency");
+
+  for (const file of ["playwright.config.mjs", "scripts/serve-static.mjs", "tests/e2e/flussdiagramm.spec.mjs"]) {
+    assert.ok(existsSync(path.join(root, file)), `${file} must exist`);
+  }
+});
+
+test("Playwright e2e suite covers the core game flows", () => {
+  const config = readUtf8("playwright.config.mjs");
+  const e2e = readUtf8("tests/e2e/flussdiagramm.spec.mjs");
+
+  assert.match(config, /testDir:\s*"\.\/tests\/e2e"/, "Playwright config must point at tests/e2e");
+  assert.match(config, /serviceWorkers:\s*"block"/, "E2E tests should block service workers for deterministic runs");
+  assert.match(config, /webServer:\s*\{[\s\S]*scripts\/serve-static\.mjs/, "E2E tests should start the local static server");
+  assert.match(e2e, /learn-correct-wrong/, "E2E suite should cover learn-mode correction");
+  assert.match(e2e, /exam-success/, "E2E suite should cover successful exam evaluation");
+  assert.match(e2e, /exam-failure/, "E2E suite should cover failed exam evaluation");
+  assert.match(e2e, /solve-all/, "E2E suite should cover solution reveal");
+  assert.match(e2e, /mobile-layout/, "E2E suite should cover mobile layout");
+});
+
+test("local static references, manifest icons, and service worker cache entries stay valid", () => {
+  const cssFiles = ["liquid-glass.css", "tarif-toni.css"];
+  const manifest = JSON.parse(manifestSource);
+  const appShell = evaluateServiceWorkerAppShell(serviceWorkerSource);
+
+  assert.equal(manifest.lang, "de", "Manifest language should stay German");
+  assert.equal(manifest.display, "standalone", "Manifest should stay installable");
+  assert.ok(Array.isArray(manifest.icons) && manifest.icons.length > 0, "Manifest needs at least one icon");
+  assert.ok(Array.isArray(appShell) && appShell.length > 0, "Service worker needs a non-empty APP_SHELL");
+
+  const references = [
+    ...extractHtmlAttributeReferences(html),
+    ...extractCssUrlReferences(html, "index.html css url"),
+    ...manifest.icons
+      .map((icon) => ({ label: "manifest icon", path: normalizeLocalReference(icon.src) }))
+      .filter((item) => item.path),
+    ...appShell
+      .map((entry) => ({ label: "service-worker APP_SHELL", path: normalizeLocalReference(entry) }))
+      .filter((item) => item.path),
+  ];
+
+  for (const file of cssFiles) {
+    references.push(...extractCssUrlReferences(readUtf8(file), `${file} css url`));
+  }
+
+  assertReferencesExist(references);
+
+  const appShellPaths = new Set(appShell.map((entry) => normalizeLocalReference(entry)).filter(Boolean));
+  for (const expected of ["index.html", "liquid-glass.css", "tarif-toni.css", "unterrichtsmaterial.js", "tarif-toni.js", "manifest.webmanifest", "app-icon.svg"]) {
+    assert.ok(appShellPaths.has(expected), `Service worker APP_SHELL should include ${expected}`);
+  }
+});
+
+test("versioned design and Toni assets stay aligned with the service worker", () => {
+  const designVersion = serviceWorkerStringConst(serviceWorkerSource, "DESIGN_VERSION");
+  const toniVersion = serviceWorkerStringConst(serviceWorkerSource, "TONI_VERSION");
+
+  assert.equal(assetVersion(html, "liquid-glass.css"), designVersion, "HTML design CSS version must match service worker");
+  assert.equal(assetVersion(html, "tarif-toni.css"), toniVersion, "HTML Toni CSS version must match service worker");
+  assert.equal(assetVersion(html, "tarif-toni.js"), toniVersion, "HTML Toni JS version must match service worker");
+  assert.match(serviceWorkerSource, /const CACHE_NAME = `\$\{CACHE_PREFIX\}v\d+`;/, "Service worker cache name must be versioned");
 });
 
 test("cards, slots, step order, and solution mapping stay aligned", () => {
@@ -208,4 +346,40 @@ test("solution reveal remains gated and statically updates the solved board", ()
     /document\.getElementById\("solveBtn"\)\.addEventListener\("click"[\s\S]*?if\s*\(\s*solveBtnEl\.disabled\s*\)\s*return;[\s\S]*?solveAll\(\);/,
     "Solve button click handler must respect the disabled guard before revealing",
   );
+});
+
+test("exam evaluation reveals and clears correctness at the right times", () => {
+  const checkAllBody = extractFunctionBody(html, "checkAll");
+  const markGameEditedBody = extractFunctionBody(html, "markGameEdited");
+
+  assert.match(
+    checkAllBody,
+    /const revealCorrectness\s*=\s*currentMode\s*===\s*"learn"\s*\|\|\s*\(\s*currentMode\s*===\s*"exam"\s*&&\s*empty\s*===\s*0\s*\);/,
+    "Exam mode must reveal correctness only after every field is filled",
+  );
+  assert.match(
+    checkAllBody,
+    /slot\.classList\.add\(cardId\s*===\s*SOLUTION\[key\]\s*\?\s*"correct"\s*:\s*"wrong"\);/,
+    "Completed checks must mark both correct and wrong slots",
+  );
+  assert.match(
+    checkAllBody,
+    /currentMode\s*===\s*"learn"\s*\?\s*\(wrong\s*>\s*0\s*\|\|\s*empty\s*>\s*0\)\s*:\s*\(empty\s*===\s*0\s*&&\s*wrong\s*>\s*0\)/,
+    "Exam try-again animation must wait for a complete failed check",
+  );
+  assert.match(
+    markGameEditedBody,
+    /slots\.forEach\(\(slot\)\s*=>\s*slot\.classList\.remove\("correct",\s*"wrong"\)\);/,
+    "Editing an evaluated exam attempt must clear stale correctness classes",
+  );
+});
+
+test("Tarif Toni accounts for the speech bubble before showing messages", () => {
+  const showMessageBody = extractFunctionBody(toniSource, "showMessage");
+
+  assert.match(toniSource, /function getBubbleRectForCandidate\(/, "Toni needs a speech-bubble footprint");
+  assert.match(toniSource, /function getCandidateRects\(/, "Toni candidate scoring must support multiple occupied rects");
+  assert.match(showMessageBody, /findFreePosition\(\{\s*includeBubble:\s*true\s*\}\)/, "Toni must position for the bubble before speaking");
+  assert.match(showMessageBody, /getCollisionCount\(nextPosition,\s*\{\s*includeBubble:\s*true\s*\}\)/, "Toni must detect speech-bubble collisions");
+  assert.match(showMessageBody, /if\s*\(\s*bubbleWouldCollide\s*\)\s*return;/, "Toni must skip obstructive speech bubbles");
 });

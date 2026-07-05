@@ -1,18 +1,22 @@
 const CACHE_PREFIX = "flussdiagramm-spiel-";
-const CACHE_NAME = `${CACHE_PREFIX}v15`;
+const CACHE_NAME = `${CACHE_PREFIX}v18`;
 const CONTENT_VERSION = "2026-06-30-mobile-a11y";
-const TONI_VERSION = "2026-06-30-mobile-a11y";
-const APP_SHELL = [
+const TONI_VERSION = "2026-07-03-stability";
+const DESIGN_VERSION = "2026-07-04-premium-ui";
+const REQUIRED_APP_SHELL = [
   "./",
   "./index.html",
-  "./liquid-glass.css",
+  `./liquid-glass.css?v=${DESIGN_VERSION}`,
   `./unterrichtsmaterial.js?v=${CONTENT_VERSION}`,
   `./tarif-toni.css?v=${TONI_VERSION}`,
   `./tarif-toni.js?v=${TONI_VERSION}`,
   "./manifest.webmanifest",
-  "./app-icon.svg",
+  "./app-icon.svg"
+];
+const OPTIONAL_APP_SHELL = [
   "./C9BD4168-EDB7-44C9-8257-97976AA34FB8.png"
 ];
+const APP_SHELL = [...REQUIRED_APP_SHELL, ...OPTIONAL_APP_SHELL];
 const APP_SHELL_URLS = new Set(APP_SHELL.map((path) => new URL(path, self.location.href).href));
 
 function isAppShellRequest(request) {
@@ -20,7 +24,12 @@ function isAppShellRequest(request) {
 }
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await cache.addAll(REQUIRED_APP_SHELL);
+      await Promise.all(OPTIONAL_APP_SHELL.map((path) => cache.add(path).catch(() => null)));
+    })
+  );
   self.skipWaiting();
 });
 
@@ -46,16 +55,18 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (response.ok && (isStaticAsset || isNavigation)) {
+        if (response.ok && isStaticAsset) {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          caches.open(CACHE_NAME)
+            .then((cache) => cache.put(event.request, copy))
+            .catch(() => {});
         }
         return response;
       })
       .catch(async () => {
         const cached = await caches.match(event.request) || await caches.match(event.request, { ignoreSearch: true });
         if (cached) return cached;
-        if (event.request.mode === "navigate") return caches.match("./index.html");
+        if (event.request.mode === "navigate") return await caches.match("./index.html") || Response.error();
         return Response.error();
       })
   );

@@ -1,47 +1,57 @@
 # flussdiagramm-spiel
-Interaktives Lernspiel mit Flussdiagramm und Einsetz-Puzzle
 
-## Unterrichtseinsatz
+Interaktives webbasiertes Lernspiel mit Flussdiagramm und Einsetz-Puzzle zum Thema Tarifrunde, Streik und Arbeitsrecht.
 
-- Die 15 Stationen bilden einen vereinfachten möglichen Ablauf einer Tarifrunde ab.
-- Im Lernmodus erscheint an korrekt zugeordneten Kästchen ein Fragezeichen mit Bedeutung, Praxisbeispiel und Denkfrage.
-- Im Prüfungsmodus werden Lösungen erst nach der abschließenden Prüfung sichtbar.
-- Ein möglicher Ablauf: Einzelarbeit, Austausch zu drei Lerninfos, gemeinsame Reflexion der Vereinfachungen.
+## Web-App
 
-Fachliche Quellen und Hinweise sind direkt im Spiel und in `unterrichtsmaterial.js` dokumentiert.
+- `index.html` enthält die statische Hauptanwendung und die Spiellogik.
+- `unterrichtsmaterial.js` enthält Lerntexte und Quellenwissen.
+- `tarif-toni.js` und `tarif-toni.css` enthalten den interaktiven Lernbegleiter.
+- `manifest.webmanifest` und `service-worker.js` stellen die PWA-Basis bereit.
+- `liquid-glass.css` enthält das visuelle Grunddesign.
 
-## Abschluss-Effekte
+## Tests
 
-- Eine vollständig richtige Lösung startet einmalig Konfetti von links und rechts sowie einen kurzen Erfolgsimpuls im Abschlussfenster.
-- Eine noch nicht vollständig richtige Prüfung markiert offene oder falsche Stationen mit einer sanften Animation und einem motivierenden Hinweis.
-- Die Effekte blockieren keine Eingaben, berücksichtigen `prefers-reduced-motion` und verwenden keine externen Bibliotheken.
-
-## Tarif Toni
-
-- Der optionale Bildschirm-Begleiter reagiert im Lernmodus auf richtige und falsche Zuordnungen, ohne Lösungen vorwegzunehmen.
-- Im Prüfungsmodus zeigt Toni ausschließlich neutrale Motivation.
-- Der Schalter „Tarif Toni an/aus“ blendet Figur, Nachrichten, Chat und Bewegung vollständig ein oder aus. Einen separaten Bewegungsschalter gibt es nicht.
-- Toni ist eine realistische, am Referenzfoto orientierte Sci-Fi-Business-Figur mit konsistenten Steh-, Lauf-, Tablet- und Guide-Posen.
-- Während Toni über den Bildschirm gleitet, wechseln zwei realistische Laufphasen flüssig miteinander.
-- Die klickbare Figur bleibt vollständig transparent und wird ohne Button-Fläche oder weißen Hintergrund dargestellt.
-- Toni gleitet kurz nach dem Laden erstmals los und danach etwa alle 30 Sekunden per `transform` zu einer zufälligen, kollisionsgeprüften Position im sichtbaren Bereich.
-- Ein Klick auf Toni öffnet einen kleinen lokalen Denkanstoß-Chat. Nur während der Chat geöffnet ist, pausiert die Bewegung.
-- Auf Smartphones nutzt Toni wenige sichere Ziele; bei `prefers-reduced-motion` bleibt er statisch.
-
-## Prüfung
+Einmalig nach dem Klonen oder wenn Abhängigkeiten fehlen:
 
 ```powershell
-npm test
-npm run build:app
+npm install
+npx playwright install chromium
 ```
 
-Für einen manuellen Test beide Spielmodi prüfen: einmal vollständig richtig lösen und einmal mit offenen oder falschen Stationen auf „Prüfen“ klicken.
+Statische Prüfung ohne Browser:
 
-## Design Reference
-- See `APPLE_WEB_DESIGN_SYSTEM.md` for the Apple-inspired UI system specification.
+```powershell
+npm run test:static
+```
 
-## Native iOS/iPadOS App
+Browser-E2E-Smokes für Desktop und Handy:
 
-Das Repository enthält ein vorbereitetes Capacitor-Projekt für die
-Veröffentlichung im Apple App Store. Die Schritte für den späteren Build auf
-einem Mac stehen in `APP_STORE_RELEASE.md`.
+```powershell
+npm run test:e2e
+```
+
+Kompletter Testlauf:
+
+```powershell
+npm run test:all
+```
+
+Dependency-freier PowerShell-Fallback, falls Node.js oder npm in der aktuellen Shell nicht verfügbar sind:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\check-static.ps1
+```
+
+Die Prüfungen validieren unter anderem Karten, Slots, Lösungszuordnung, Lernmaterial, Lösungssperre, Prüfungsmodus-Markierungen, Toni-Positionierung, lokale Asset-Referenzen, Manifest-Icons und Service-Worker-Cacheeinträge. Die E2E-Smokes decken Startzustand, Lernmodus, richtige und falsche Prüfungsabgabe, Lösung anzeigen und mobile Layout-Stabilität ab.
+
+Der alte versteckte Toni-Fallback bleibt ohne externes Sprite-Bild lauffähig; der sichtbare Begleiter wird über `tarif-toni.js` und `tarif-toni.css` gesteuert.
+
+## iOS-App
+
+Eine native SwiftUI-Version liegt im Ordner [`ios`](ios/README.md).
+
+
+## Designreferenz
+
+Siehe [`APPLE_WEB_DESIGN_SYSTEM.md`](APPLE_WEB_DESIGN_SYSTEM.md) für die Apple-inspirierte UI-Spezifikation.
