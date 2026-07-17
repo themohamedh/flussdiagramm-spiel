@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const repositoryDirectoryName = path.basename(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.."));
 
 const slotSelector = (key) => `.slot[data-key="${key}"]`;
 const cardSelector = (id) => `#cards .card[data-card-id="${id}"]:not(.used)`;
@@ -151,6 +155,59 @@ test("Lösung anzeigen ersetzt vollständig mit Musterlösung und öffnet kein E
   await expect.poll(() => visibleLearningButtons(page)).toBe(15);
 
   await expectCleanRuntime(runtime);
+});
+
+test("mode-isolation: Moduswechsel beginnt mit einem vollständig frischen Versuch", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "Gameplay-Smokes laufen im Desktop-Projekt; Mobile Layout hat einen eigenen Test.");
+  const runtime = await gotoFresh(page, "mode-isolation");
+
+  await page.locator('[data-mode="exam"]').click();
+  await fillCorrectSolution(page);
+  await expect(page.locator("#progress")).toHaveText("15 / 15 belegt");
+
+  await page.locator('[data-mode="learn"]').click();
+  await expect(page.locator("#progress")).toHaveText("0 / 15 richtig");
+  await expect(page.locator(".slot.empty")).toHaveCount(15);
+  await expect(page.locator(".card.used")).toHaveCount(0);
+  await expect(page.locator("#finalOverlay")).not.toHaveClass(/open/);
+
+  await page.locator('[data-mode="exam"]').click();
+  await expect(page.locator("#progress")).toHaveText("0 / 15 belegt");
+  await expect(page.locator(".slot.empty")).toHaveCount(15);
+
+  await expectCleanRuntime(runtime);
+});
+
+test("toni-preferences: Ausblenden und Minimieren bleiben nach Neuladen erhalten", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "Persistenz wird einmal im Desktop-Projekt geprüft.");
+  const runtime = await gotoFresh(page, "toni-preferences");
+  const toni = page.locator(".tarif-toni");
+  const restore = page.locator(".tarif-toni__restore");
+
+  await page.getByRole("button", { name: "Tarif Toni ausblenden" }).click();
+  await expect(toni).toBeHidden();
+  await page.reload();
+  await expect(toni).toBeHidden();
+  await expect(restore).toBeVisible();
+  await expect(page.locator("#toniToggle")).toHaveAttribute("aria-pressed", "false");
+
+  await restore.click();
+  await page.getByRole("button", { name: "Tarif Toni minimieren" }).click();
+  await expect(toni).toHaveClass(/is-minimized/);
+  await page.reload();
+  await expect(toni).toHaveClass(/is-minimized/);
+  await expect(toni).toBeVisible();
+  await expect(restore).toBeHidden();
+  await expect(page.locator("#toniToggle")).toHaveAttribute("aria-pressed", "true");
+
+  await expectCleanRuntime(runtime);
+});
+
+test("path-boundary: Lokaler Testserver blockiert dekodierte Pfade in gleichnamige Nachbarordner", async ({ request }) => {
+  const siblingName = `${repositoryDirectoryName}-escape`;
+  const response = await request.get(`/%2e%2e%2f${encodeURIComponent(siblingName)}%2fpackage.json`);
+
+  expect(response.status()).toBe(403);
 });
 
 test("Mobile Startansicht bleibt ohne horizontales Overflow und Toni verdeckt den Hero nicht", async ({ page }, testInfo) => {

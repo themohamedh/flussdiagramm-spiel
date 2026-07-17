@@ -381,6 +381,7 @@ Assert-Condition ($iosGameStoreSource -match 'mode == \.exam && placements\.coun
 Assert-Condition ($iosGameStoreSource -match 'private func evaluateExamAttempt\(\)') "iOS exam mode should evaluate final placement state"
 Assert-Condition ($iosGameStoreSource -match 'wrongAttempts = wrongSteps\.count') "iOS exam wrong count should come from final wrong steps"
 Assert-Condition ($iosContentSource -match 'game\.shouldShowAnswerState \? game\.correctCount : game\.placements\.count') "iOS exam progress should not reveal correctness before evaluation"
+Assert-Condition ($iosContentSource -match 'if game\.shouldShowAnswerState \{[\s\S]*?\} else \{\s*Text\("[^\"]+"\)\s*\}') "iOS exam step label should not reveal the first incorrect placement before evaluation"
 Assert-Condition ($iosContentSource -match 'guard game\.shouldShowAnswerState else \{ return "circle\.fill" \}') "iOS exam status icon should stay neutral before evaluation"
 Assert-Condition ($iosContentSource -match 'guard game\.shouldShowAnswerState else \{ return \.blue \}') "iOS exam status color should stay neutral before evaluation"
 Assert-Condition ($manifest.lang -eq "de") "Manifest language should stay German"

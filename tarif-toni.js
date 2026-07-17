@@ -524,6 +524,10 @@
       else scheduleBehavior();
     }
     savePreferences();
+    emitState();
+  }
+
+  function emitState() {
     window.dispatchEvent(new CustomEvent("tarif-toni:state", {
       detail: { enabled: !preferences.hidden }
     }));
@@ -630,6 +634,8 @@
     syncPreferences();
     if (enabled) showMessage("Tarif Toni ist wieder da.");
   });
+
+  window.addEventListener("tarif-toni:request-state", emitState);
 
   window.addEventListener("resize", () => {
     stopTravel();
