@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:app": "node scripts/build-app.mjs",
     "check": "npm test",
     "test": "node --test tests/static-integrity.test.mjs && node --test Flussdiagramm/tests/static-integrity.test.mjs",
     "test:all": "npm test && npm run test:e2e",

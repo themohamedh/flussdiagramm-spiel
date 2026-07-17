@@ -205,6 +205,7 @@ test("JavaScript sources have no obvious syntax errors", () => {
 test("package scripts expose static and browser e2e suites", () => {
   const packageJson = JSON.parse(packageSource);
 
+  assert.equal(packageJson.scripts["build:app"], "node scripts/build-app.mjs");
   assert.equal(packageJson.scripts.check, "npm test");
   assert.equal(packageJson.scripts.test, "node --test tests/static-integrity.test.mjs && node --test Flussdiagramm/tests/static-integrity.test.mjs");
   assert.equal(packageJson.scripts["test:all"], "npm test && npm run test:e2e");
@@ -212,7 +213,7 @@ test("package scripts expose static and browser e2e suites", () => {
   assert.equal(packageJson.scripts["test:e2e"], "playwright test");
   assert.match(packageJson.devDependencies["@playwright/test"], /^\^1\./, "Playwright test runner should be a dev dependency");
 
-  for (const file of ["playwright.config.mjs", "scripts/serve-static.mjs", "tests/e2e/flussdiagramm.spec.mjs"]) {
+  for (const file of ["playwright.config.mjs", "scripts/build-app.mjs", "scripts/serve-static.mjs", "tests/e2e/flussdiagramm.spec.mjs"]) {
     assert.ok(existsSync(path.join(root, file)), `${file} must exist`);
   }
 });

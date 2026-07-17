@@ -357,6 +357,7 @@ $staticServerSource = Read-Utf8 "scripts/serve-static.mjs"
 $manifest = Read-Utf8 "manifest.webmanifest" | ConvertFrom-Json
 $serviceWorkerSource = Read-Utf8 "service-worker.js"
 $packageJson = Read-Utf8 "package.json" | ConvertFrom-Json
+Assert-Condition ($packageJson.scripts.'build:app' -eq "node scripts/build-app.mjs") "package.json must expose the app build script"
 Assert-Condition ($null -ne $packageJson.scripts.check) "package.json must expose a check script"
 Assert-Condition ($null -ne $packageJson.scripts.test) "package.json must expose a test script"
 Assert-Condition ($packageJson.scripts.check -eq "npm test") "package.json check script should run the combined test suite"
@@ -366,7 +367,7 @@ Assert-Condition ($packageJson.scripts.'test:static' -eq "node --test tests/stat
 Assert-Condition ($packageJson.scripts.'test:e2e' -eq "playwright test") "package.json must expose test:e2e"
 Assert-Condition ($packageJson.devDependencies.'@playwright/test' -match '^\^1\.') "package.json must include @playwright/test dev dependency"
 Assert-Condition ($nodeTestSource.Trim().Length -gt 0) "Node test file must be readable"
-foreach ($file in @("playwright.config.mjs", "scripts/serve-static.mjs", "tests/e2e/flussdiagramm.spec.mjs")) {
+foreach ($file in @("playwright.config.mjs", "scripts/build-app.mjs", "scripts/serve-static.mjs", "tests/e2e/flussdiagramm.spec.mjs")) {
   Assert-Condition (Test-Path -LiteralPath (Join-Path $root $file)) "$file must exist"
 }
 Assert-Condition ($manifest.lang -eq "de") "Manifest language should stay German"
