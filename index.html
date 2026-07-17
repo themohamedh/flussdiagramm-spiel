@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flussdiagramm-Spiel: Tarifrunde & Streik</title>
-  <link rel="stylesheet" href="tarif-toni.css?v=2026-07-03-stability" />
+  <link rel="stylesheet" href="tarif-toni.css?v=2026-07-17-state-fixes" />
   <style>
     :root {
       --bg-soft-1: #eaf2fb;
@@ -1684,7 +1684,7 @@
   </div>
 
   <script src="./unterrichtsmaterial.js?v=2026-06-30-mobile-a11y"></script>
-  <script src="tarif-toni.js?v=2026-07-03-stability"></script>
+  <script src="tarif-toni.js?v=2026-07-17-state-fixes"></script>
 
   <script>
     // Alle Karten für die aktuell sichtbaren Felder im Diagramm
@@ -2567,10 +2567,13 @@
     }
 
     function setGameMode(mode) {
-      currentMode = mode === "exam" ? "exam" : "learn";
+      const nextMode = mode === "exam" ? "exam" : "learn";
+      const modeChanged = nextMode !== currentMode;
+      currentMode = nextMode;
       modeButtons.forEach((button) => {
         button.classList.toggle("active", button.dataset.mode === currentMode);
       });
+      if (modeChanged) resetAll();
       if (currentMode === "learn") {
         setStatusState(null, "Lernmodus aktiv: Du erhältst direktes Feedback mit kurzer Erklärung.");
         setFeedbackState(null, "Ordne die Karten zu. Bei Fehlern erhältst du eine kurze Begründung.");
@@ -3048,7 +3051,7 @@
     updateFocusMode();
     updateSolveButtonState();
     setGameMode("learn");
-    setToniEnabled(true);
+    window.dispatchEvent(new CustomEvent("tarif-toni:request-state"));
   </script>
 
   <script>

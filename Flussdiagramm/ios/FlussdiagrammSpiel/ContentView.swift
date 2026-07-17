@@ -76,7 +76,11 @@ private struct HeroView: View {
             HStack {
                 Label(progressText, systemImage: progressIcon)
                 Spacer()
-                Text("Schritt \(game.currentStep)")
+                if game.shouldShowAnswerState {
+                    Text("Schritt \(game.currentStep)")
+                } else {
+                    Text("Prüfung läuft")
+                }
             }
             .font(.subheadline.weight(.semibold))
         }

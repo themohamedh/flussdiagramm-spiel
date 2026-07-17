@@ -184,6 +184,7 @@ const html = readUtf8("index.html");
 const learningSource = readUtf8("unterrichtsmaterial.js");
 const manifestSource = readUtf8("manifest.webmanifest");
 const packageSource = readUtf8("package.json");
+const staticServerSource = readUtf8("scripts/serve-static.mjs");
 const serviceWorkerSource = readUtf8("service-worker.js");
 const toniSource = readUtf8("tarif-toni.js");
 
@@ -204,14 +205,15 @@ test("JavaScript sources have no obvious syntax errors", () => {
 test("package scripts expose static and browser e2e suites", () => {
   const packageJson = JSON.parse(packageSource);
 
-  assert.equal(packageJson.scripts.check, "npm run test:static");
-  assert.equal(packageJson.scripts.test, "npm run test:static");
-  assert.equal(packageJson.scripts["test:all"], "npm run test:static && npm run test:e2e");
+  assert.equal(packageJson.scripts["build:app"], "node scripts/build-app.mjs");
+  assert.equal(packageJson.scripts.check, "npm test");
+  assert.equal(packageJson.scripts.test, "node --test tests/static-integrity.test.mjs && node --test Flussdiagramm/tests/static-integrity.test.mjs");
+  assert.equal(packageJson.scripts["test:all"], "npm test && npm run test:e2e");
   assert.equal(packageJson.scripts["test:static"], "node --test tests/static-integrity.test.mjs");
   assert.equal(packageJson.scripts["test:e2e"], "playwright test");
   assert.match(packageJson.devDependencies["@playwright/test"], /^\^1\./, "Playwright test runner should be a dev dependency");
 
-  for (const file of ["playwright.config.mjs", "scripts/serve-static.mjs", "tests/e2e/flussdiagramm.spec.mjs"]) {
+  for (const file of ["playwright.config.mjs", "scripts/build-app.mjs", "scripts/serve-static.mjs", "tests/e2e/flussdiagramm.spec.mjs"]) {
     assert.ok(existsSync(path.join(root, file)), `${file} must exist`);
   }
 });
@@ -227,7 +229,26 @@ test("Playwright e2e suite covers the core game flows", () => {
   assert.match(e2e, /exam-success/, "E2E suite should cover successful exam evaluation");
   assert.match(e2e, /exam-failure/, "E2E suite should cover failed exam evaluation");
   assert.match(e2e, /solve-all/, "E2E suite should cover solution reveal");
+  assert.match(e2e, /mode-isolation/, "E2E suite should cover mode-state isolation");
+  assert.match(e2e, /toni-preferences/, "E2E suite should cover persisted Toni preferences");
+  assert.match(e2e, /path-boundary/, "E2E suite should cover the local server path boundary");
   assert.match(e2e, /mobile-layout/, "E2E suite should cover mobile layout");
+});
+
+test("service worker caches handled navigations without broad runtime caching", () => {
+  assert.match(serviceWorkerSource, /const isNavigation = event\.request\.mode === "navigate";/);
+  assert.match(serviceWorkerSource, /const isStaticAsset = isAppShellRequest\(event\.request\);/);
+  assert.match(serviceWorkerSource, /if \(!isNavigation && !isStaticAsset\) return;/);
+  assert.match(serviceWorkerSource, /response\.ok && \(isStaticAsset \|\| isNavigation\)/);
+  assert.match(serviceWorkerSource, /key\.startsWith\(CACHE_PREFIX\) && key !== CACHE_NAME/);
+});
+
+test("local static server contains decoded request paths with path.relative", () => {
+  assert.match(staticServerSource, /const relative = path\.relative\(root, target\);/);
+  assert.match(staticServerSource, /relative === "\.\."/);
+  assert.match(staticServerSource, /relative\.startsWith\(`\.\.\$\{path\.sep\}`\)/);
+  assert.match(staticServerSource, /path\.isAbsolute\(relative\)/);
+  assert.doesNotMatch(staticServerSource, /target\.startsWith\(root\)/);
 });
 
 test("local static references, manifest icons, and service worker cache entries stay valid", () => {
@@ -372,6 +393,19 @@ test("exam evaluation reveals and clears correctness at the right times", () => 
     /slots\.forEach\(\(slot\)\s*=>\s*slot\.classList\.remove\("correct",\s*"wrong"\)\);/,
     "Editing an evaluated exam attempt must clear stale correctness classes",
   );
+});
+
+test("mode changes start an isolated attempt", () => {
+  const setGameModeBody = extractFunctionBody(html, "setGameMode");
+
+  assert.match(setGameModeBody, /const modeChanged = nextMode !== currentMode;/);
+  assert.match(setGameModeBody, /if \(modeChanged\) resetAll\(\);/);
+});
+
+test("Tarif Toni restores persisted visibility state instead of forcing enabled", () => {
+  assert.match(toniSource, /window\.addEventListener\("tarif-toni:request-state", emitState\);/);
+  assert.match(html, /setGameMode\("learn"\);\s*window\.dispatchEvent\(new CustomEvent\("tarif-toni:request-state"\)\);/);
+  assert.doesNotMatch(html, /setGameMode\("learn"\);\s*setToniEnabled\(true\);/);
 });
 
 test("Tarif Toni accounts for the speech bubble before showing messages", () => {

@@ -21,8 +21,9 @@ function requestPath(requestUrl = "/") {
   const url = new URL(requestUrl, `http://${host}:${port}`);
   const pathname = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
   const target = path.resolve(root, `.${pathname.replace(/\\/g, "/")}`);
+  const relative = path.relative(root, target);
 
-  if (!target.startsWith(root)) return null;
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) return null;
   return target;
 }
 

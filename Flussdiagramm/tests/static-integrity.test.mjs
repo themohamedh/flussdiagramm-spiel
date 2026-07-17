@@ -249,6 +249,11 @@ test("iOS exam mode waits for final evaluation before revealing correctness", ()
   assert.match(iosGameStoreSource, /solutionWasShown = true[\s\S]*showResult = false/, "Solution reveal should not open scored results");
 
   assert.match(iosContentSource, /game\.shouldShowAnswerState \? game\.correctCount : game\.placements\.count/, "Exam progress should not reveal correctness before evaluation");
+  assert.match(
+    iosContentSource,
+    /if game\.shouldShowAnswerState \{[\s\S]*?\} else \{\s*Text\("Prüfung läuft"\)\s*\}/,
+    "Exam step label should not reveal the first incorrect placement before evaluation",
+  );
   assert.match(iosContentSource, /guard game\.shouldShowAnswerState else \{ return "circle\.fill" \}/, "Exam status icon should stay neutral before evaluation");
   assert.match(iosContentSource, /guard game\.shouldShowAnswerState else \{ return \.blue \}/, "Exam status color should stay neutral before evaluation");
 });
