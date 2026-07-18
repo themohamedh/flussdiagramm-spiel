@@ -434,6 +434,16 @@ test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () =
     "The exam guard must run before any AI request",
   );
   assert.match(requestAiAnswerBody, /body: JSON\.stringify\(\{ message: question, mode: "learn" \}\)/, "Only learning mode may reach the AI route");
+  assert.match(
+    requestAiAnswerBody,
+    /catch\s*\{\s*showLocalTip\(localResult,\s*"Die kostenlose KI ist gerade nicht erreichbar\."\);\s*\}/,
+    "AI timeouts must fall back to the local source tip",
+  );
+  assert.doesNotMatch(
+    requestAiAnswerBody,
+    /if\s*\(\s*!controller\.signal\.aborted\s*\)/,
+    "An aborted request must not suppress the local fallback",
+  );
   assert.doesNotMatch(toniSource, /OPENROUTER_API_KEY|Authorization:\s*`Bearer/, "The browser code must not contain provider credentials");
 
   assert.match(toniApiSource, /const DEFAULT_MODEL = "openrouter\/free";/, "The backend must default to the free router");

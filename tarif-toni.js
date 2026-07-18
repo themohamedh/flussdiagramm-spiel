@@ -414,7 +414,7 @@
       answerEl.textContent = data.reply.trim().slice(0, 900);
       setSource(data.source, data.kind === "ai" ? "KI-Antwort auf Basis von" : "Lokaler Quellentipp");
     } catch {
-      if (!controller.signal.aborted) showLocalTip(localResult, "Die kostenlose KI ist gerade nicht erreichbar.");
+      showLocalTip(localResult, "Die kostenlose KI ist gerade nicht erreichbar.");
     } finally {
       window.clearTimeout(timeout);
       if (activeAiController === controller) cancelAiRequest();
