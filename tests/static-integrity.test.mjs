@@ -187,6 +187,7 @@ const packageSource = readUtf8("package.json");
 const staticServerSource = readUtf8("scripts/serve-static.mjs");
 const serviceWorkerSource = readUtf8("service-worker.js");
 const toniSource = readUtf8("tarif-toni.js");
+const toniApiSource = readUtf8("api/tarif-toni-chat.js");
 
 test("JavaScript sources have no obvious syntax errors", () => {
   for (const file of ["unterrichtsmaterial.js", "tarif-toni.js", "service-worker.js"]) {
@@ -207,8 +208,9 @@ test("package scripts expose static and browser e2e suites", () => {
 
   assert.equal(packageJson.scripts["build:app"], "node scripts/build-app.mjs");
   assert.equal(packageJson.scripts.check, "npm test");
-  assert.equal(packageJson.scripts.test, "node --test tests/static-integrity.test.mjs && node --test Flussdiagramm/tests/static-integrity.test.mjs");
+  assert.equal(packageJson.scripts.test, "node --test tests/static-integrity.test.mjs tests/tarif-toni-api.test.mjs && node --test Flussdiagramm/tests/static-integrity.test.mjs");
   assert.equal(packageJson.scripts["test:all"], "npm test && npm run test:e2e");
+  assert.equal(packageJson.scripts["test:api"], "node --test tests/tarif-toni-api.test.mjs");
   assert.equal(packageJson.scripts["test:static"], "node --test tests/static-integrity.test.mjs");
   assert.equal(packageJson.scripts["test:e2e"], "playwright test");
   assert.match(packageJson.devDependencies["@playwright/test"], /^\^1\./, "Playwright test runner should be a dev dependency");
@@ -231,6 +233,7 @@ test("Playwright e2e suite covers the core game flows", () => {
   assert.match(e2e, /solve-all/, "E2E suite should cover solution reveal");
   assert.match(e2e, /mode-isolation/, "E2E suite should cover mode-state isolation");
   assert.match(e2e, /toni-preferences/, "E2E suite should cover persisted Toni preferences");
+  assert.match(e2e, /toni-ai-mode/, "E2E suite should cover the Toni AI mode boundary");
   assert.match(e2e, /path-boundary/, "E2E suite should cover the local server path boundary");
   assert.match(e2e, /mobile-layout/, "E2E suite should cover mobile layout");
 });
@@ -416,4 +419,26 @@ test("Tarif Toni accounts for the speech bubble before showing messages", () => 
   assert.match(showMessageBody, /findFreePosition\(\{\s*includeBubble:\s*true\s*\}\)/, "Toni must position for the bubble before speaking");
   assert.match(showMessageBody, /getCollisionCount\(nextPosition,\s*\{\s*includeBubble:\s*true\s*\}\)/, "Toni must detect speech-bubble collisions");
   assert.match(showMessageBody, /if\s*\(\s*bubbleWouldCollide\s*\)\s*return;/, "Toni must skip obstructive speech bubbles");
+});
+
+test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () => {
+  const answerQuestionBody = extractFunctionBody(toniSource, "answerQuestion");
+  const requestAiAnswerBody = extractFunctionBody(toniSource, "requestAiAnswer");
+
+  assert.match(toniSource, /maxlength="240"/, "Toni questions need the server-aligned input limit");
+  assert.match(toniSource, /Sie kann Fehler machen\. Gib keine persönlichen Daten ein\./, "The AI disclosure must be visible in the chat");
+  assert.match(answerQuestionBody, /if \(getMode\(\) === "exam"\)/, "Exam mode needs a client-side guard");
+  assert.match(answerQuestionBody, /Prüfungsmodus: keine KI-Anfrage/, "Exam mode must disclose that no AI request is made");
+  assert.ok(
+    answerQuestionBody.indexOf('getMode() === "exam"') < answerQuestionBody.indexOf("requestAiAnswer"),
+    "The exam guard must run before any AI request",
+  );
+  assert.match(requestAiAnswerBody, /body: JSON\.stringify\(\{ message: question, mode: "learn" \}\)/, "Only learning mode may reach the AI route");
+  assert.doesNotMatch(toniSource, /OPENROUTER_API_KEY|Authorization:\s*`Bearer/, "The browser code must not contain provider credentials");
+
+  assert.match(toniApiSource, /const DEFAULT_MODEL = "openrouter\/free";/, "The backend must default to the free router");
+  assert.match(toniApiSource, /model === "openrouter\/free" \|\| model\.endsWith\(":free"\)/, "The backend must reject paid model identifiers");
+  assert.match(toniApiSource, /data_collection: "deny"/, "Provider data collection must be denied");
+  assert.match(toniApiSource, /zdr: true/, "Only zero-data-retention providers should be used");
+  assert.match(toniApiSource, /if \(mode === "exam"\)/, "The backend needs its own exam guard");
 });

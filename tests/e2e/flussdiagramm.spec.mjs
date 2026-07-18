@@ -203,6 +203,43 @@ test("toni-preferences: Ausblenden und Minimieren bleiben nach Neuladen erhalten
   await expectCleanRuntime(runtime);
 });
 
+test("toni-ai-mode: Prüfungsmodus bleibt lokal, Lernmodus darf die KI-Route nutzen", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "Die Toni KI-Modusgrenze wird einmal im Desktop-Projekt geprüft.");
+  let apiRequests = 0;
+  await page.route("**/api/tarif-toni-chat", async (route) => {
+    apiRequests += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        reply: "Ein Warnstreik ist ein kurzes Drucksignal im Tarifkonflikt.",
+        kind: "ai",
+        source: {
+          label: "bpb: FAQ Was ist ein Streik?",
+          url: "https://www.bpb.de/kurz-knapp/hintergrund-aktuell/547428/faq-was-ist-ein-streik/"
+        }
+      })
+    });
+  });
+
+  const runtime = await gotoFresh(page, "toni-ai-mode");
+  await page.locator('[data-mode="exam"]').click();
+  await page.locator(".tarif-toni__character").click();
+  await page.locator(".tarif-toni__input").fill("Welche Karte kommt zuerst?");
+  await page.locator(".tarif-toni__send").click();
+  await expect(page.locator(".tarif-toni__answer")).toContainText("Im Prüfungsmodus bleibt die KI aus");
+  expect(apiRequests).toBe(0);
+
+  await page.locator('[data-mode="learn"]').click();
+  await page.locator(".tarif-toni__input").fill("Was ist ein Warnstreik?");
+  await page.locator(".tarif-toni__send").click();
+  await expect(page.locator(".tarif-toni__answer")).toHaveText("Ein Warnstreik ist ein kurzes Drucksignal im Tarifkonflikt.");
+  await expect(page.locator(".tarif-toni__source")).toContainText("KI-Antwort auf Basis von");
+  expect(apiRequests).toBe(1);
+
+  await expectCleanRuntime(runtime);
+});
+
 test("path-boundary: Lokaler Testserver blockiert dekodierte Pfade in gleichnamige Nachbarordner", async ({ request }) => {
   const siblingName = `${repositoryDirectoryName}-escape`;
   const response = await request.get(`/%2e%2e%2f${encodeURIComponent(siblingName)}%2fpackage.json`);

@@ -6,8 +6,9 @@
   "scripts": {
     "build:app": "node scripts/build-app.mjs",
     "check": "npm test",
-    "test": "node --test tests/static-integrity.test.mjs && node --test Flussdiagramm/tests/static-integrity.test.mjs",
+    "test": "node --test tests/static-integrity.test.mjs tests/tarif-toni-api.test.mjs && node --test Flussdiagramm/tests/static-integrity.test.mjs",
     "test:all": "npm test && npm run test:e2e",
+    "test:api": "node --test tests/tarif-toni-api.test.mjs",
     "test:e2e": "playwright test",
     "test:static": "node --test tests/static-integrity.test.mjs"
   },
