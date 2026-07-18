@@ -16,12 +16,17 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm test
+      - name: Install Chromium for browser tests
+        run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
       - run: npm run build:app
       - name: Check generated app files
         run: |
           test -f dist/index.html
           test -f dist/liquid-glass.css
           test -f dist/unterrichtsmaterial.js
+          test -f dist/tarif-toni.css
+          test -f dist/tarif-toni.js
           test -f dist/manifest.webmanifest
           test -f dist/privacy.html
           test -f dist/support.html
