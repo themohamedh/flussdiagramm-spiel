@@ -49,14 +49,19 @@ async function visibleLearningButtons(page) {
   return page.evaluate(() => [...document.querySelectorAll(".slot-learning-btn")].filter((button) => !button.hidden).length);
 }
 
-test("Startzustand lädt vollständig und ohne Konsolenfehler", async ({ page }) => {
+test("Startzustand lädt vollständig und ohne Konsolenfehler", async ({ page }, testInfo) => {
   const runtime = await gotoFresh(page, "start");
 
   await expect(page.locator(".card")).toHaveCount(15);
   await expect(page.locator(".slot")).toHaveCount(15);
   await expect(page.locator("#progress")).toHaveText("0 / 15 richtig");
   await expect(page.locator("#solveBtn")).toBeDisabled();
-  await expect(page.locator(".tarif-toni")).toBeVisible();
+  if (testInfo.project.name === "mobile-chromium") {
+    await expect(page.locator(".tarif-toni")).toBeHidden();
+    await expect(page.locator("#toniOpenBtn")).toBeVisible();
+  } else {
+    await expect(page.locator(".tarif-toni")).toBeVisible();
+  }
 
   await expectCleanRuntime(runtime);
 });
@@ -184,6 +189,7 @@ test("toni-preferences: Ausblenden und Minimieren bleiben nach Neuladen erhalten
   const toni = page.locator(".tarif-toni");
   const restore = page.locator(".tarif-toni__restore");
 
+  await toni.hover();
   await page.getByRole("button", { name: "Tarif Toni ausblenden" }).click();
   await expect(toni).toBeHidden();
   await page.reload();
@@ -192,6 +198,7 @@ test("toni-preferences: Ausblenden und Minimieren bleiben nach Neuladen erhalten
   await expect(page.locator("#toniToggle")).toHaveAttribute("aria-pressed", "false");
 
   await restore.click();
+  await toni.hover();
   await page.getByRole("button", { name: "Tarif Toni minimieren" }).click();
   await expect(toni).toHaveClass(/is-minimized/);
   await page.reload();

@@ -1490,8 +1490,7 @@ button:not(.slot):not(.card):disabled {
   inset: 0;
 }
 
-.tarif-toni:not(.is-asking) .tarif-toni__bubble,
-.tarif-toni:not(.is-asking) .tarif-toni__tools {
+.tarif-toni:not(.is-asking) .tarif-toni__bubble {
   display: none;
 }
 
