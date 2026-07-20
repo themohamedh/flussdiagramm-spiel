@@ -90,6 +90,7 @@ test("learning mode uses only the free router and vetted source context", async 
   assert.equal(response.body.model, "example/free-model:free");
   assert.match(response.body.source.url, /^https:\/\/www\.bpb\.de\//);
   assert.equal(requestBody.model, "openrouter/free");
+  assert.equal(requestBody.provider.data_collection, "deny");
   assert.equal(requestBody.provider.zdr, true);
   assert.match(requestBody.messages[1].content, /Verbindliche Quelle/);
   assert.match(requestBody.messages[1].content, /Warnstreiks sind zeitlich begrenzte Arbeitsniederlegungen/);
