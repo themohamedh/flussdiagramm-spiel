@@ -108,6 +108,7 @@ function setCorsHeaders(response, origin) {
   response.setHeader("Access-Control-Allow-Origin", origin);
   response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  response.setHeader("Access-Control-Expose-Headers", "X-Tarif-Toni-Upstream-Status, X-Tarif-Toni-Upstream-Failure");
   response.setHeader("Access-Control-Max-Age", "600");
 }
 
@@ -226,7 +227,7 @@ export default async function handler(request, response) {
   const timeout = setTimeout(() => controller.abort(), 12_000);
 
   try {
-    const openRouterResponse = await fetch(OPENROUTER_URL, {
+    const requestOpenRouter = (provider) => fetch(OPENROUTER_URL, {
       method: "POST",
       signal: controller.signal,
       headers: {
@@ -239,11 +240,7 @@ export default async function handler(request, response) {
         model,
         temperature: 0.2,
         max_tokens: 180,
-        provider: {
-          data_collection: "deny",
-          zdr: true,
-          allow_fallbacks: true
-        },
+        provider,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "system", content: sourceContext },
@@ -252,8 +249,29 @@ export default async function handler(request, response) {
       })
     });
 
+    let openRouterResponse = await requestOpenRouter({
+      data_collection: "deny",
+      zdr: true,
+      allow_fallbacks: true
+    });
+
+    if (openRouterResponse.status === 404) {
+      openRouterResponse = await requestOpenRouter({
+        data_collection: "deny",
+        allow_fallbacks: true
+      });
+    }
+
     if (!openRouterResponse.ok) {
-      return sendJson(response, 503, { error: "Die kostenlose KI ist gerade ausgelastet." });
+      response.setHeader("X-Tarif-Toni-Upstream-Status", String(openRouterResponse.status || 0));
+      console.warn("Tarif Toni: OpenRouter request failed", {
+        status: Number(openRouterResponse.status || 0),
+        retryAfter: String(openRouterResponse.headers?.get?.("retry-after") || "").slice(0, 20)
+      });
+      return sendJson(response, 503, {
+        error: "Die kostenlose KI ist gerade ausgelastet.",
+        providerStatus: String(openRouterResponse.status || 0)
+      });
     }
 
     const data = await openRouterResponse.json();
@@ -266,8 +284,15 @@ export default async function handler(request, response) {
       source: { label: knowledge.label, url: knowledge.url },
       model: String(data?.model || model).slice(0, 120)
     });
-  } catch {
-    return sendJson(response, 503, { error: "Die kostenlose KI ist gerade nicht erreichbar." });
+  } catch (error) {
+    response.setHeader("X-Tarif-Toni-Upstream-Failure", String(error?.name || "Error").slice(0, 40));
+    console.warn("Tarif Toni: OpenRouter request failed before a response", {
+      name: String(error?.name || "Error").slice(0, 40)
+    });
+    return sendJson(response, 503, {
+      error: "Die kostenlose KI ist gerade nicht erreichbar.",
+      providerFailure: String(error?.name || "Error").slice(0, 40)
+    });
   } finally {
     clearTimeout(timeout);
   }
