@@ -448,6 +448,7 @@ test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () =
 
   assert.match(toniApiSource, /const DEFAULT_MODEL = "openrouter\/free";/, "The backend must default to the free router");
   assert.match(toniApiSource, /model === "openrouter\/free" \|\| model\.endsWith\(":free"\)/, "The backend must reject paid model identifiers");
+  assert.match(toniApiSource, /data_collection: "deny"/, "Provider data collection must be denied");
   assert.match(toniApiSource, /zdr: true/, "Only zero-data-retention providers should be used");
   assert.match(toniApiSource, /if \(mode === "exam"\)/, "The backend needs its own exam guard");
 });
