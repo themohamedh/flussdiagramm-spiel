@@ -412,8 +412,8 @@
       const data = await response.json().catch(() => ({}));
       if (!response.ok || typeof data.reply !== "string" || !data.reply.trim()) {
         const error = new Error("AI unavailable");
-        error.providerStatus = response.headers.get("X-Tarif-Toni-Upstream-Status") || "";
-        error.providerFailure = response.headers.get("X-Tarif-Toni-Upstream-Failure") || "";
+        error.providerStatus = String(data.providerStatus || response.headers.get("X-Tarif-Toni-Upstream-Status") || "");
+        error.providerFailure = String(data.providerFailure || response.headers.get("X-Tarif-Toni-Upstream-Failure") || "");
         throw error;
       }
       answerEl.textContent = data.reply.trim().slice(0, 900);
