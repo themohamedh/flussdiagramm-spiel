@@ -253,6 +253,7 @@ export default async function handler(request, response) {
     });
 
     if (!openRouterResponse.ok) {
+      response.setHeader("X-Tarif-Toni-Upstream-Status", String(openRouterResponse.status || 0));
       console.warn("Tarif Toni: OpenRouter request failed", {
         status: Number(openRouterResponse.status || 0),
         retryAfter: String(openRouterResponse.headers?.get?.("retry-after") || "").slice(0, 20)
@@ -271,6 +272,7 @@ export default async function handler(request, response) {
       model: String(data?.model || model).slice(0, 120)
     });
   } catch (error) {
+    response.setHeader("X-Tarif-Toni-Upstream-Failure", String(error?.name || "Error").slice(0, 40));
     console.warn("Tarif Toni: OpenRouter request failed before a response", {
       name: String(error?.name || "Error").slice(0, 40)
     });
