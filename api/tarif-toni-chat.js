@@ -256,7 +256,6 @@ export default async function handler(request, response) {
     });
 
     if (openRouterResponse.status === 404) {
-      await openRouterResponse.body?.cancel?.();
       openRouterResponse = await requestOpenRouter({
         data_collection: "deny",
         allow_fallbacks: true
