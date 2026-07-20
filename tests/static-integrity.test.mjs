@@ -452,3 +452,13 @@ test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () =
   assert.match(toniApiSource, /zdr: true/, "Only zero-data-retention providers should be used");
   assert.match(toniApiSource, /if \(mode === "exam"\)/, "The backend needs its own exam guard");
 });
+
+test("GitHub Pages routes Tarif Toni to the public Vercel API", () => {
+  const apiConfiguration = 'window.TARIF_TONI_API_URL = "https://flussdiagramm-spiel.vercel.app/api/tarif-toni-chat";';
+  const toniScript = '<script src="tarif-toni.js?v=2026-07-18-free-ai"></script>';
+
+  assert.match(html, /window\.location\.hostname === "themohamedh\.github\.io"/, "Only GitHub Pages should use the cross-origin API URL");
+  assert.match(html, /https:\/\/flussdiagramm-spiel\.vercel\.app\/api\/tarif-toni-chat/, "GitHub Pages must use the stable public Vercel production endpoint");
+  assert.ok(html.indexOf(apiConfiguration) < html.indexOf(toniScript), "The API URL must be configured before Tarif Toni starts");
+  assert.doesNotMatch(apiConfiguration, /OPENROUTER_API_KEY|sk-or-v1-/, "The browser configuration must never contain provider credentials");
+});
