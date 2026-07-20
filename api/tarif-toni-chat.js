@@ -108,6 +108,7 @@ function setCorsHeaders(response, origin) {
   response.setHeader("Access-Control-Allow-Origin", origin);
   response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  response.setHeader("Access-Control-Expose-Headers", "X-Tarif-Toni-Upstream-Status, X-Tarif-Toni-Upstream-Failure");
   response.setHeader("Access-Control-Max-Age", "600");
 }
 
