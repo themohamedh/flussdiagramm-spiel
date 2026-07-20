@@ -224,7 +224,7 @@ export default async function handler(request, response) {
 
   const sourceContext = `Verbindliche Quelle: ${knowledge.label}\nQuellenadresse: ${knowledge.url}\nFakten: ${knowledge.facts}`;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12_000);
+  const timeout = setTimeout(() => controller.abort(), 22_000);
 
   try {
     const requestOpenRouter = (provider) => fetch(OPENROUTER_URL, {
