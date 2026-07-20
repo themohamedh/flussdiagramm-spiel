@@ -436,7 +436,7 @@ test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () =
   assert.match(requestAiAnswerBody, /body: JSON\.stringify\(\{ message: question, mode: "learn" \}\)/, "Only learning mode may reach the AI route");
   assert.match(
     requestAiAnswerBody,
-    /providerFailure === "AbortError"[\s\S]*Die kostenlose KI hat nicht rechtzeitig geantwortet\.[\s\S]*showLocalTip\(localResult, reason\)/,
+    /catch\s*\{\s*showLocalTip\(localResult,\s*"Die kostenlose KI ist gerade nicht erreichbar\."\);\s*\}/,
     "AI timeouts must fall back to the local source tip",
   );
   assert.doesNotMatch(
@@ -449,13 +449,15 @@ test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () =
   assert.match(toniApiSource, /const DEFAULT_MODEL = "openrouter\/free";/, "The backend must default to the free router");
   assert.match(toniApiSource, /model === "openrouter\/free" \|\| model\.endsWith\(":free"\)/, "The backend must reject paid model identifiers");
   assert.match(toniApiSource, /data_collection: "deny"/, "Provider data collection must be denied");
+  assert.match(toniApiSource, /setTimeout\(\(\) => controller\.abort\(\), 22_000\)/, "The server must leave enough time for the approved second provider attempt");
+  assert.match(toniSource, /window\.setTimeout\(\(\) => controller\.abort\(\), 25_000\)/, "The browser must wait slightly longer than the server");
   assert.match(toniApiSource, /zdr: true/, "Only zero-data-retention providers should be used");
   assert.match(toniApiSource, /if \(mode === "exam"\)/, "The backend needs its own exam guard");
 });
 
 test("GitHub Pages routes Tarif Toni to the public Vercel API", () => {
   const apiConfiguration = 'window.TARIF_TONI_API_URL = "https://flussdiagramm-spiel.vercel.app/api/tarif-toni-chat";';
-  const toniScript = '<script src="tarif-toni.js?v=2026-07-20-api-fix"></script>';
+  const toniScript = '<script src="tarif-toni.js?v=2026-07-20-api-fallback"></script>';
 
   assert.match(html, /window\.location\.hostname === "themohamedh\.github\.io"/, "Only GitHub Pages should use the cross-origin API URL");
   assert.match(html, /https:\/\/flussdiagramm-spiel\.vercel\.app\/api\/tarif-toni-chat/, "GitHub Pages must use the stable public Vercel production endpoint");
@@ -463,10 +465,8 @@ test("GitHub Pages routes Tarif Toni to the public Vercel API", () => {
   assert.doesNotMatch(apiConfiguration, /OPENROUTER_API_KEY|sk-or-v1-/, "The browser configuration must never contain provider credentials");
 });
 
-test("Tarif Toni exposes only sanitized provider diagnostics to the browser", () => {
-  assert.match(toniApiSource, /Access-Control-Expose-Headers/);
-  assert.match(toniApiSource, /X-Tarif-Toni-Upstream-Status/);
-  assert.match(toniSource, /providerReasons/);
-  assert.match(toniSource, /OpenRouter findet gerade kein verfügbares kostenloses Modell/);
-  assert.doesNotMatch(toniSource, /Authorization.*Bearer/);
+test("Tarif Toni returns a source-bound local answer when the provider is unavailable", () => {
+  assert.match(toniApiSource, /createLocalKnowledgeReply\(knowledge\)/);
+  assert.match(toniApiSource, /return sendJson\(response, 200, createLocalKnowledgeReply\(knowledge\)\)/);
+  assert.doesNotMatch(toniApiSource, /X-Tarif-Toni-Upstream-(?:Status|Failure)/);
 });

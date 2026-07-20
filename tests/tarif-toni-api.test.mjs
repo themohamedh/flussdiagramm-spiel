@@ -151,9 +151,11 @@ test("a strict ZDR 404 retries at most once when the approved fallback also fail
   const response = await callApi({ message: "Was ist ein Warnstreik?", mode: "learn" });
 
   assert.equal(fetchCalls, 2);
-  assert.equal(response.statusCode, 503);
-  assert.equal(response.body.providerStatus, "429");
-  assert.match(response.body.error, /ausgelastet/);
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.kind, "local");
+  assert.match(response.body.reply, /Warnstreik/);
+  assert.match(response.body.source.url, /^https:\/\/www\.bpb\.de\//);
+  assert.equal(Object.hasOwn(response.body, "providerStatus"), false);
 });
 
 test("paid model configuration is rejected before any provider request", async () => {
@@ -233,7 +235,7 @@ test("foreign origins and oversized messages are rejected", async () => {
   assert.equal(fetchCalls, 0);
 });
 
-test("provider failures return a generic error for the local frontend fallback", async () => {
+test("provider failures return a source-bound local reply without exposing diagnostics", async () => {
   let fetchCalls = 0;
   global.fetch = async () => {
     fetchCalls += 1;
@@ -247,10 +249,12 @@ test("provider failures return a generic error for the local frontend fallback",
 
   const response = await callApi({ message: "Was ist eine Schlichtung?", mode: "learn" });
 
-  assert.equal(response.statusCode, 503);
+  assert.equal(response.statusCode, 200);
   assert.equal(fetchCalls, 1);
-  assert.equal(response.headers["X-Tarif-Toni-Upstream-Status"], "503");
-  assert.equal(response.body.providerStatus, "503");
-  assert.match(response.body.error, /ausgelastet/);
+  assert.equal(response.body.kind, "local");
+  assert.match(response.body.reply, /Schlichtung/);
+  assert.match(response.body.source.url, /^https:\/\/www\.bpb\.de\//);
+  assert.equal(response.headers["X-Tarif-Toni-Upstream-Status"], undefined);
+  assert.equal(Object.hasOwn(response.body, "providerStatus"), false);
   assert.doesNotMatch(JSON.stringify(response.body), /test-key-not-secret/);
 });
