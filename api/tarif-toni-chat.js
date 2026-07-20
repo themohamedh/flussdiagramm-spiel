@@ -227,7 +227,7 @@ export default async function handler(request, response) {
   const timeout = setTimeout(() => controller.abort(), 12_000);
 
   try {
-    const openRouterResponse = await fetch(OPENROUTER_URL, {
+    const requestOpenRouter = (provider) => fetch(OPENROUTER_URL, {
       method: "POST",
       signal: controller.signal,
       headers: {
@@ -240,11 +240,7 @@ export default async function handler(request, response) {
         model,
         temperature: 0.2,
         max_tokens: 180,
-        provider: {
-          data_collection: "deny",
-          zdr: true,
-          allow_fallbacks: true
-        },
+        provider,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "system", content: sourceContext },
@@ -252,6 +248,20 @@ export default async function handler(request, response) {
         ]
       })
     });
+
+    let openRouterResponse = await requestOpenRouter({
+      data_collection: "deny",
+      zdr: true,
+      allow_fallbacks: true
+    });
+
+    if (openRouterResponse.status === 404) {
+      await openRouterResponse.body?.cancel?.();
+      openRouterResponse = await requestOpenRouter({
+        data_collection: "deny",
+        allow_fallbacks: true
+      });
+    }
 
     if (!openRouterResponse.ok) {
       response.setHeader("X-Tarif-Toni-Upstream-Status", String(openRouterResponse.status || 0));
