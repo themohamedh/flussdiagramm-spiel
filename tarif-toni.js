@@ -400,7 +400,7 @@
     answerEl.textContent = "Tarif Toni prüft die Quellen und denkt kurz nach.";
     const controller = new AbortController();
     activeAiController = controller;
-    const timeout = window.setTimeout(() => controller.abort(), 15_000);
+    const timeout = window.setTimeout(() => controller.abort(), 25_000);
 
     try {
       const response = await fetch(apiUrl, {
