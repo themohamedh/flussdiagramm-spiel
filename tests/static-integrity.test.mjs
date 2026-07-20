@@ -462,3 +462,11 @@ test("GitHub Pages routes Tarif Toni to the public Vercel API", () => {
   assert.ok(html.indexOf(apiConfiguration) < html.indexOf(toniScript), "The API URL must be configured before Tarif Toni starts");
   assert.doesNotMatch(apiConfiguration, /OPENROUTER_API_KEY|sk-or-v1-/, "The browser configuration must never contain provider credentials");
 });
+
+test("Tarif Toni exposes only sanitized provider diagnostics to the browser", () => {
+  assert.match(toniApiSource, /Access-Control-Expose-Headers/);
+  assert.match(toniApiSource, /X-Tarif-Toni-Upstream-Status/);
+  assert.match(toniSource, /providerReasons/);
+  assert.match(toniSource, /OpenRouter findet gerade kein verfügbares kostenloses Modell/);
+  assert.doesNotMatch(toniSource, /Authorization.*Bearer/);
+});
