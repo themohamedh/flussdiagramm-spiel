@@ -170,6 +170,7 @@ test("provider failures return a generic error for the local frontend fallback",
 
   assert.equal(response.statusCode, 503);
   assert.equal(response.headers["X-Tarif-Toni-Upstream-Status"], "503");
+  assert.equal(response.body.providerStatus, "503");
   assert.match(response.body.error, /ausgelastet/);
   assert.doesNotMatch(JSON.stringify(response.body), /test-key-not-secret/);
 });
