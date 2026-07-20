@@ -455,7 +455,7 @@ test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () =
 
 test("GitHub Pages routes Tarif Toni to the public Vercel API", () => {
   const apiConfiguration = 'window.TARIF_TONI_API_URL = "https://flussdiagramm-spiel.vercel.app/api/tarif-toni-chat";';
-  const toniScript = '<script src="tarif-toni.js?v=2026-07-18-free-ai"></script>';
+  const toniScript = '<script src="tarif-toni.js?v=2026-07-20-api-fix"></script>';
 
   assert.match(html, /window\.location\.hostname === "themohamedh\.github\.io"/, "Only GitHub Pages should use the cross-origin API URL");
   assert.match(html, /https:\/\/flussdiagramm-spiel\.vercel\.app\/api\/tarif-toni-chat/, "GitHub Pages must use the stable public Vercel production endpoint");
