@@ -213,6 +213,18 @@
   margin: 0 0 10px;
 }
 
+.tarif-toni__notice {
+  margin: 0 0 10px;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 210, 107, .38);
+  border-radius: 10px;
+  background: rgba(255, 196, 74, .09);
+  color: #fff0bd;
+  font-size: .7rem;
+  font-weight: 600;
+  line-height: 1.38;
+}
+
 .tarif-toni__form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -256,6 +268,11 @@
   background: #0b79ad;
   outline: 2px solid rgba(80, 225, 255, .5);
   outline-offset: 2px;
+}
+
+.tarif-toni__send:disabled {
+  cursor: wait;
+  opacity: .62;
 }
 
 .tarif-toni__source {

@@ -41,10 +41,11 @@
       <span class="tarif-toni__message"></span>
     </div>
     <section class="tarif-toni__ask" aria-label="Tarif Toni fragen" hidden>
-      <p class="tarif-toni__answer">Frag mich nach einem Denkanstoß. Ich nutze die bpb-Quellen aus dem Spiel und verrate keine fertige Lösung.</p>
+      <p class="tarif-toni__answer" role="status" aria-live="polite">Frag mich nach einem Denkanstoß. Ich nutze die bpb-Quellen aus dem Spiel und verrate keine fertige Lösung.</p>
+      <p class="tarif-toni__notice" id="tarifToniAiNotice">Im Lernmodus kann eine kostenlose KI antworten. Sie kann Fehler machen. Gib keine persönlichen Daten ein.</p>
       <form class="tarif-toni__form">
-        <input class="tarif-toni__input" type="text" maxlength="120" autocomplete="off" placeholder="Kurze Frage an Toni" aria-label="Kurze Frage an Tarif Toni">
-        <button class="tarif-toni__send" type="submit">Tipp</button>
+        <input class="tarif-toni__input" type="text" maxlength="240" autocomplete="off" placeholder="Kurze Frage an Toni" aria-label="Kurze Frage an Tarif Toni" aria-describedby="tarifToniAiNotice">
+        <button class="tarif-toni__send" type="submit">Fragen</button>
       </form>
       <a class="tarif-toni__source" href="${DEFAULT_SOURCE_URL}" target="_blank" rel="noopener noreferrer">Quelle: bpb</a>
     </section>
@@ -111,6 +112,7 @@
   const answerEl = root.querySelector(".tarif-toni__answer");
   const formEl = root.querySelector(".tarif-toni__form");
   const inputEl = root.querySelector(".tarif-toni__input");
+  const sendButton = root.querySelector(".tarif-toni__send");
   const sourceEl = root.querySelector(".tarif-toni__source");
   const pauseButton = root.querySelector('[data-toni-action="pause"]');
   const eyes = [...root.querySelectorAll(".tarif-toni__eye")];
@@ -129,6 +131,8 @@
   let cancelTravel = false;
   let greetingTimer = null;
   let deferredMessageTimer = null;
+  let activeAiController = null;
+  let aiPending = false;
   const observers = [];
 
   function clearBehaviorTimer() {
@@ -358,29 +362,81 @@
     };
   }
 
-  function answerQuestion(question) {
+  function setSource(source, prefix = "Quelle") {
+    const safeSource = getSafeSource(source);
+    sourceEl.textContent = `${prefix}: ${safeSource.label}`;
+    sourceEl.href = safeSource.url;
+  }
+
+  function showLocalTip(result, reason = "") {
+    answerEl.textContent = reason ? `${reason} ${result.text}` : result.text;
+    setSource(result.source, "Lokaler Quellentipp");
+  }
+
+  function getAiApiUrl() {
+    const configured = typeof window.TARIF_TONI_API_URL === "string" ? window.TARIF_TONI_API_URL.trim() : "";
+    if (configured) return configured;
+    return /^https?:$/.test(window.location.protocol) ? "/api/tarif-toni-chat" : "";
+  }
+
+  function cancelAiRequest() {
+    activeAiController?.abort();
+    activeAiController = null;
+    aiPending = false;
+    sendButton.disabled = false;
+    inputEl.removeAttribute("aria-busy");
+  }
+
+  async function requestAiAnswer(question, localResult) {
+    const apiUrl = getAiApiUrl();
+    if (!apiUrl) {
+      showLocalTip(localResult, "Die KI ist in dieser App-Version nicht verbunden.");
+      return;
+    }
+
+    aiPending = true;
+    sendButton.disabled = true;
+    inputEl.setAttribute("aria-busy", "true");
+    answerEl.textContent = "Tarif Toni prüft die Quellen und denkt kurz nach.";
+    const controller = new AbortController();
+    activeAiController = controller;
+    const timeout = window.setTimeout(() => controller.abort(), 15_000);
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        signal: controller.signal,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: question, mode: "learn" })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || typeof data.reply !== "string" || !data.reply.trim()) throw new Error("AI unavailable");
+      answerEl.textContent = data.reply.trim().slice(0, 900);
+      setSource(data.source, data.kind === "ai" ? "KI-Antwort auf Basis von" : "Lokaler Quellentipp");
+    } catch {
+      showLocalTip(localResult, "Die kostenlose KI ist gerade nicht erreichbar.");
+    } finally {
+      window.clearTimeout(timeout);
+      if (activeAiController === controller) cancelAiRequest();
+    }
+  }
+
+  async function answerQuestion(question) {
     const trimmedQuestion = question.trim();
-    if (!trimmedQuestion) return;
+    if (!trimmedQuestion || aiPending) return;
     setMotion("thinking", 1600);
 
     if (getMode() === "exam") {
-      answerEl.textContent = "Im Prüfungsmodus bleibe ich neutral: Ich kann dich motivieren, aber keine fachlichen Hinweise geben. Denk Schritt für Schritt an den Ablauf.";
-      sourceEl.textContent = "Prüfungsmodus: keine Quelle als Tipp";
+      cancelAiRequest();
+      answerEl.textContent = "Im Prüfungsmodus bleibt die KI aus. Ich kann dich motivieren, aber keine fachlichen Hinweise oder Lösungen geben.";
+      sourceEl.textContent = "Prüfungsmodus: keine KI-Anfrage";
       sourceEl.removeAttribute("href");
       showMessage("Im Prüfungsmodus keine Tipps von mir.");
       return;
     }
 
     const result = findSourceTip(trimmedQuestion);
-    answerEl.textContent = result.text;
-    if (result.source) {
-      const safeSource = getSafeSource(result.source);
-      sourceEl.textContent = `Quelle: ${safeSource.label}`;
-      sourceEl.href = safeSource.url;
-    } else {
-      sourceEl.textContent = "Quelle: bpb-Quellen im Spiel";
-      sourceEl.href = DEFAULT_SOURCE_URL;
-    }
+    await requestAiAnswer(trimmedQuestion, result);
     showMessage("Ich gebe dir einen kleinen Tipp, keine fertige Lösung.");
   }
 
@@ -396,8 +452,9 @@
       applyPosition();
       clearBubbleTimer(true);
       inputEl.focus();
-    } else if (!preferences.paused && !preferences.hidden && !preferences.minimized) {
-      scheduleBehavior();
+    } else {
+      cancelAiRequest();
+      if (!preferences.paused && !preferences.hidden && !preferences.minimized) scheduleBehavior();
     }
   }
 
@@ -592,6 +649,12 @@
 
   document.querySelectorAll(".mode-option").forEach((button) => {
     button.addEventListener("click", () => {
+      cancelAiRequest();
+      if (button.dataset.mode === "exam") {
+        answerEl.textContent = "Im Prüfungsmodus bleibt die KI aus. Ich kann dich motivieren, aber keine fachlichen Hinweise oder Lösungen geben.";
+        sourceEl.textContent = "Prüfungsmodus: keine KI-Anfrage";
+        sourceEl.removeAttribute("href");
+      }
       clearTimeout(deferredMessageTimer);
       deferredMessageTimer = window.setTimeout(() => {
         deferredMessageTimer = null;
@@ -664,6 +727,7 @@
     clearMotionTimer();
     clearTimeout(greetingTimer);
     clearTimeout(deferredMessageTimer);
+    cancelAiRequest();
     stopTravel();
     observers.forEach((observer) => observer.disconnect());
     observers.length = 0;

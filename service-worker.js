@@ -1,8 +1,8 @@
 const CACHE_PREFIX = "flussdiagramm-spiel-";
-const CACHE_NAME = `${CACHE_PREFIX}v19`;
+const CACHE_NAME = `${CACHE_PREFIX}v21`;
 const CONTENT_VERSION = "2026-06-30-mobile-a11y";
-const TONI_VERSION = "2026-07-17-state-fixes";
-const DESIGN_VERSION = "2026-07-04-premium-ui";
+const TONI_VERSION = "2026-07-18-free-ai";
+const DESIGN_VERSION = "2026-07-18-toni-tools";
 const REQUIRED_APP_SHELL = [
   "./",
   "./index.html",

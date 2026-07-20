@@ -49,14 +49,19 @@ async function visibleLearningButtons(page) {
   return page.evaluate(() => [...document.querySelectorAll(".slot-learning-btn")].filter((button) => !button.hidden).length);
 }
 
-test("Startzustand lädt vollständig und ohne Konsolenfehler", async ({ page }) => {
+test("Startzustand lädt vollständig und ohne Konsolenfehler", async ({ page }, testInfo) => {
   const runtime = await gotoFresh(page, "start");
 
   await expect(page.locator(".card")).toHaveCount(15);
   await expect(page.locator(".slot")).toHaveCount(15);
   await expect(page.locator("#progress")).toHaveText("0 / 15 richtig");
   await expect(page.locator("#solveBtn")).toBeDisabled();
-  await expect(page.locator(".tarif-toni")).toBeVisible();
+  if (testInfo.project.name === "mobile-chromium") {
+    await expect(page.locator(".tarif-toni")).toBeHidden();
+    await expect(page.locator("#toniOpenBtn")).toBeVisible();
+  } else {
+    await expect(page.locator(".tarif-toni")).toBeVisible();
+  }
 
   await expectCleanRuntime(runtime);
 });
@@ -184,6 +189,7 @@ test("toni-preferences: Ausblenden und Minimieren bleiben nach Neuladen erhalten
   const toni = page.locator(".tarif-toni");
   const restore = page.locator(".tarif-toni__restore");
 
+  await toni.hover();
   await page.getByRole("button", { name: "Tarif Toni ausblenden" }).click();
   await expect(toni).toBeHidden();
   await page.reload();
@@ -192,6 +198,7 @@ test("toni-preferences: Ausblenden und Minimieren bleiben nach Neuladen erhalten
   await expect(page.locator("#toniToggle")).toHaveAttribute("aria-pressed", "false");
 
   await restore.click();
+  await toni.hover();
   await page.getByRole("button", { name: "Tarif Toni minimieren" }).click();
   await expect(toni).toHaveClass(/is-minimized/);
   await page.reload();
@@ -199,6 +206,43 @@ test("toni-preferences: Ausblenden und Minimieren bleiben nach Neuladen erhalten
   await expect(toni).toBeVisible();
   await expect(restore).toBeHidden();
   await expect(page.locator("#toniToggle")).toHaveAttribute("aria-pressed", "true");
+
+  await expectCleanRuntime(runtime);
+});
+
+test("toni-ai-mode: Prüfungsmodus bleibt lokal, Lernmodus darf die KI-Route nutzen", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "Die Toni KI-Modusgrenze wird einmal im Desktop-Projekt geprüft.");
+  let apiRequests = 0;
+  await page.route("**/api/tarif-toni-chat", async (route) => {
+    apiRequests += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        reply: "Ein Warnstreik ist ein kurzes Drucksignal im Tarifkonflikt.",
+        kind: "ai",
+        source: {
+          label: "bpb: FAQ Was ist ein Streik?",
+          url: "https://www.bpb.de/kurz-knapp/hintergrund-aktuell/547428/faq-was-ist-ein-streik/"
+        }
+      })
+    });
+  });
+
+  const runtime = await gotoFresh(page, "toni-ai-mode");
+  await page.locator('[data-mode="exam"]').click();
+  await page.locator(".tarif-toni__character").click();
+  await page.locator(".tarif-toni__input").fill("Welche Karte kommt zuerst?");
+  await page.locator(".tarif-toni__send").click();
+  await expect(page.locator(".tarif-toni__answer")).toContainText("Im Prüfungsmodus bleibt die KI aus");
+  expect(apiRequests).toBe(0);
+
+  await page.locator('[data-mode="learn"]').click();
+  await page.locator(".tarif-toni__input").fill("Was ist ein Warnstreik?");
+  await page.locator(".tarif-toni__send").click();
+  await expect(page.locator(".tarif-toni__answer")).toHaveText("Ein Warnstreik ist ein kurzes Drucksignal im Tarifkonflikt.");
+  await expect(page.locator(".tarif-toni__source")).toContainText("KI-Antwort auf Basis von");
+  expect(apiRequests).toBe(1);
 
   await expectCleanRuntime(runtime);
 });
