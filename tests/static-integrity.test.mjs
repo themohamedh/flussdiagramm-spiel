@@ -436,7 +436,7 @@ test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () =
   assert.match(requestAiAnswerBody, /body: JSON\.stringify\(\{ message: question, mode: "learn" \}\)/, "Only learning mode may reach the AI route");
   assert.match(
     requestAiAnswerBody,
-    /providerFailure === "AbortError"[\s\S]*Die kostenlose KI hat nicht rechtzeitig geantwortet\.[\s\S]*showLocalTip\(localResult, reason\)/,
+    /catch\s*\{\s*showLocalTip\(localResult,\s*"Die kostenlose KI ist gerade nicht erreichbar\."\);\s*\}/,
     "AI timeouts must fall back to the local source tip",
   );
   assert.doesNotMatch(
@@ -465,10 +465,8 @@ test("GitHub Pages routes Tarif Toni to the public Vercel API", () => {
   assert.doesNotMatch(apiConfiguration, /OPENROUTER_API_KEY|sk-or-v1-/, "The browser configuration must never contain provider credentials");
 });
 
-test("Tarif Toni exposes only sanitized provider diagnostics to the browser", () => {
-  assert.match(toniApiSource, /Access-Control-Expose-Headers/);
-  assert.match(toniApiSource, /X-Tarif-Toni-Upstream-Status/);
-  assert.match(toniSource, /providerReasons/);
-  assert.match(toniSource, /OpenRouter findet gerade kein verfügbares kostenloses Modell/);
-  assert.doesNotMatch(toniSource, /Authorization.*Bearer/);
+test("Tarif Toni returns a source-bound local answer when the provider is unavailable", () => {
+  assert.match(toniApiSource, /createLocalKnowledgeReply\(knowledge\)/);
+  assert.match(toniApiSource, /return sendJson\(response, 200, createLocalKnowledgeReply\(knowledge\)\)/);
+  assert.doesNotMatch(toniApiSource, /X-Tarif-Toni-Upstream-(?:Status|Failure)/);
 });
