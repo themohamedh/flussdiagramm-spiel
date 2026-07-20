@@ -422,6 +422,7 @@
       const providerReasons = {
         "401": "Der OpenRouter-Schlüssel wurde abgelehnt.",
         "402": "Das kostenlose OpenRouter-Kontingent ist derzeit nicht verfügbar.",
+        "404": "OpenRouter findet gerade kein verfügbares kostenloses Modell.",
         "429": "Das kostenlose OpenRouter-Limit ist gerade erreicht.",
         "503": "OpenRouter findet gerade kein verfügbares kostenloses Modell."
       };
