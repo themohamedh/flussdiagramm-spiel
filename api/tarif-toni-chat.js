@@ -241,7 +241,6 @@ export default async function handler(request, response) {
         temperature: 0.2,
         max_tokens: 180,
         provider: {
-          data_collection: "deny",
           zdr: true,
           allow_fallbacks: true
         },
