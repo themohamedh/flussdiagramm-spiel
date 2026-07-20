@@ -410,27 +410,11 @@
         body: JSON.stringify({ message: question, mode: "learn" })
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok || typeof data.reply !== "string" || !data.reply.trim()) {
-        const error = new Error("AI unavailable");
-        error.providerStatus = String(data.providerStatus || response.headers.get("X-Tarif-Toni-Upstream-Status") || "");
-        error.providerFailure = String(data.providerFailure || response.headers.get("X-Tarif-Toni-Upstream-Failure") || "");
-        throw error;
-      }
+      if (!response.ok || typeof data.reply !== "string" || !data.reply.trim()) throw new Error("AI unavailable");
       answerEl.textContent = data.reply.trim().slice(0, 900);
       setSource(data.source, data.kind === "ai" ? "KI-Antwort auf Basis von" : "Lokaler Quellentipp");
-    } catch (error) {
-      const providerReasons = {
-        "401": "Der OpenRouter-Schlüssel wurde abgelehnt.",
-        "402": "Das kostenlose OpenRouter-Kontingent ist derzeit nicht verfügbar.",
-        "404": "OpenRouter findet gerade kein verfügbares kostenloses Modell.",
-        "429": "Das kostenlose OpenRouter-Limit ist gerade erreicht.",
-        "503": "OpenRouter findet gerade kein verfügbares kostenloses Modell."
-      };
-      const reason = providerReasons[error?.providerStatus]
-        || (error?.providerFailure === "AbortError"
-          ? "Die kostenlose KI hat nicht rechtzeitig geantwortet."
-          : "Die kostenlose KI ist gerade nicht erreichbar.");
-      showLocalTip(localResult, reason);
+    } catch {
+      showLocalTip(localResult, "Die kostenlose KI ist gerade nicht erreichbar.");
     } finally {
       window.clearTimeout(timeout);
       if (activeAiController === controller) cancelAiRequest();
