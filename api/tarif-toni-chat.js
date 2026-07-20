@@ -259,7 +259,10 @@ export default async function handler(request, response) {
         status: Number(openRouterResponse.status || 0),
         retryAfter: String(openRouterResponse.headers?.get?.("retry-after") || "").slice(0, 20)
       });
-      return sendJson(response, 503, { error: "Die kostenlose KI ist gerade ausgelastet." });
+      return sendJson(response, 503, {
+        error: "Die kostenlose KI ist gerade ausgelastet.",
+        providerStatus: String(openRouterResponse.status || 0)
+      });
     }
 
     const data = await openRouterResponse.json();
@@ -277,7 +280,10 @@ export default async function handler(request, response) {
     console.warn("Tarif Toni: OpenRouter request failed before a response", {
       name: String(error?.name || "Error").slice(0, 40)
     });
-    return sendJson(response, 503, { error: "Die kostenlose KI ist gerade nicht erreichbar." });
+    return sendJson(response, 503, {
+      error: "Die kostenlose KI ist gerade nicht erreichbar.",
+      providerFailure: String(error?.name || "Error").slice(0, 40)
+    });
   } finally {
     clearTimeout(timeout);
   }
