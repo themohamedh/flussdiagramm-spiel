@@ -136,6 +136,26 @@ test("a strict ZDR 404 retries once without ZDR while keeping the privacy and fr
   assert.deepEqual(requestBodies[1].messages, requestBodies[0].messages);
 });
 
+test("a strict ZDR 404 retries at most once when the approved fallback also fails", async () => {
+  let fetchCalls = 0;
+  global.fetch = async () => {
+    fetchCalls += 1;
+    return {
+      ok: false,
+      status: fetchCalls === 1 ? 404 : 429,
+      body: fetchCalls === 1 ? { async cancel() {} } : undefined,
+      headers: { get() { return null; } }
+    };
+  };
+
+  const response = await callApi({ message: "Was ist ein Warnstreik?", mode: "learn" });
+
+  assert.equal(fetchCalls, 2);
+  assert.equal(response.statusCode, 503);
+  assert.equal(response.body.providerStatus, "429");
+  assert.match(response.body.error, /ausgelastet/);
+});
+
 test("paid model configuration is rejected before any provider request", async () => {
   process.env.OPENROUTER_MODEL = "openai/gpt-4o-mini";
   let fetchCalls = 0;
@@ -147,6 +167,22 @@ test("paid model configuration is rejected before any provider request", async (
   assert.equal(fetchCalls, 0);
   assert.match(response.body.error, /nur kostenlose/);
   process.env.OPENROUTER_MODEL = "openrouter/free";
+});
+
+test("a missing API key never calls the provider", async () => {
+  const configuredKey = process.env.OPENROUTER_API_KEY;
+  delete process.env.OPENROUTER_API_KEY;
+  let fetchCalls = 0;
+  global.fetch = async () => { fetchCalls += 1; };
+
+  try {
+    const response = await callApi({ message: "Was ist ein Warnstreik?", mode: "learn" });
+    assert.equal(response.statusCode, 503);
+    assert.equal(fetchCalls, 0);
+    assert.match(response.body.error, /noch nicht eingerichtet/);
+  } finally {
+    process.env.OPENROUTER_API_KEY = configuredKey;
+  }
 });
 
 test("off-topic questions stay local and do not consume the free quota", async () => {
