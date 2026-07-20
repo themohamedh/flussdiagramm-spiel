@@ -97,6 +97,45 @@ test("learning mode uses only the free router and vetted source context", async 
   assert.equal(requestBody.messages[2].content, "Was ist ein Warnstreik?");
 });
 
+test("a strict ZDR 404 retries once without ZDR while keeping the privacy and free-model guards", async () => {
+  const requestBodies = [];
+  global.fetch = async (_url, options) => {
+    requestBodies.push(JSON.parse(options.body));
+    if (requestBodies.length === 1) {
+      return {
+        ok: false,
+        status: 404,
+        body: { async cancel() {} }
+      };
+    }
+    return {
+      ok: true,
+      status: 200,
+      async json() {
+        return {
+          model: "example/free-model:free",
+          choices: [{ message: { content: "Ein Warnstreik ist ein zeitlich begrenztes Druckmittel im Tarifkonflikt." } }]
+        };
+      }
+    };
+  };
+
+  const response = await callApi({ message: "Was ist ein Warnstreik?", mode: "learn" });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.kind, "ai");
+  assert.equal(requestBodies.length, 2);
+  assert.equal(requestBodies[0].model, "openrouter/free");
+  assert.equal(requestBodies[0].provider.data_collection, "deny");
+  assert.equal(requestBodies[0].provider.zdr, true);
+  assert.equal(requestBodies[0].provider.allow_fallbacks, true);
+  assert.equal(requestBodies[1].model, "openrouter/free");
+  assert.equal(requestBodies[1].provider.data_collection, "deny");
+  assert.equal(requestBodies[1].provider.allow_fallbacks, true);
+  assert.equal(Object.hasOwn(requestBodies[1].provider, "zdr"), false);
+  assert.deepEqual(requestBodies[1].messages, requestBodies[0].messages);
+});
+
 test("paid model configuration is rejected before any provider request", async () => {
   process.env.OPENROUTER_MODEL = "openai/gpt-4o-mini";
   let fetchCalls = 0;
@@ -159,16 +198,21 @@ test("foreign origins and oversized messages are rejected", async () => {
 });
 
 test("provider failures return a generic error for the local frontend fallback", async () => {
-  global.fetch = async () => ({
+  let fetchCalls = 0;
+  global.fetch = async () => {
+    fetchCalls += 1;
+    return ({
     ok: false,
     status: 503,
     headers: { get() { return null; } },
     async json() { return {}; }
-  });
+    });
+  };
 
   const response = await callApi({ message: "Was ist eine Schlichtung?", mode: "learn" });
 
   assert.equal(response.statusCode, 503);
+  assert.equal(fetchCalls, 1);
   assert.equal(response.headers["X-Tarif-Toni-Upstream-Status"], "503");
   assert.equal(response.body.providerStatus, "503");
   assert.match(response.body.error, /ausgelastet/);
