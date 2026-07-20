@@ -108,7 +108,6 @@ function setCorsHeaders(response, origin) {
   response.setHeader("Access-Control-Allow-Origin", origin);
   response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  response.setHeader("Access-Control-Expose-Headers", "X-Tarif-Toni-Upstream-Status, X-Tarif-Toni-Upstream-Failure");
   response.setHeader("Access-Control-Max-Age", "600");
 }
 
@@ -182,6 +181,14 @@ function cleanReply(value) {
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, MAX_REPLY_LENGTH);
+}
+
+function createLocalKnowledgeReply(knowledge) {
+  return {
+    reply: knowledge.fallback,
+    kind: "local",
+    source: { label: knowledge.label, url: knowledge.url }
+  };
 }
 
 export default async function handler(request, response) {
@@ -263,20 +270,16 @@ export default async function handler(request, response) {
     }
 
     if (!openRouterResponse.ok) {
-      response.setHeader("X-Tarif-Toni-Upstream-Status", String(openRouterResponse.status || 0));
       console.warn("Tarif Toni: OpenRouter request failed", {
         status: Number(openRouterResponse.status || 0),
         retryAfter: String(openRouterResponse.headers?.get?.("retry-after") || "").slice(0, 20)
       });
-      return sendJson(response, 503, {
-        error: "Die kostenlose KI ist gerade ausgelastet.",
-        providerStatus: String(openRouterResponse.status || 0)
-      });
+      return sendJson(response, 200, createLocalKnowledgeReply(knowledge));
     }
 
     const data = await openRouterResponse.json();
     const reply = cleanReply(data?.choices?.[0]?.message?.content);
-    if (!reply) return sendJson(response, 503, { error: "Die KI hat keine Antwort geliefert." });
+    if (!reply) return sendJson(response, 200, createLocalKnowledgeReply(knowledge));
 
     return sendJson(response, 200, {
       reply: looksLikeFullSolution(reply) ? knowledge.fallback : reply,
@@ -285,14 +288,10 @@ export default async function handler(request, response) {
       model: String(data?.model || model).slice(0, 120)
     });
   } catch (error) {
-    response.setHeader("X-Tarif-Toni-Upstream-Failure", String(error?.name || "Error").slice(0, 40));
     console.warn("Tarif Toni: OpenRouter request failed before a response", {
       name: String(error?.name || "Error").slice(0, 40)
     });
-    return sendJson(response, 503, {
-      error: "Die kostenlose KI ist gerade nicht erreichbar.",
-      providerFailure: String(error?.name || "Error").slice(0, 40)
-    });
+    return sendJson(response, 200, createLocalKnowledgeReply(knowledge));
   } finally {
     clearTimeout(timeout);
   }
