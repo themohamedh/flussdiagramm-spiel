@@ -253,6 +253,10 @@ export default async function handler(request, response) {
     });
 
     if (!openRouterResponse.ok) {
+      console.warn("Tarif Toni: OpenRouter request failed", {
+        status: Number(openRouterResponse.status || 0),
+        retryAfter: String(openRouterResponse.headers?.get?.("retry-after") || "").slice(0, 20)
+      });
       return sendJson(response, 503, { error: "Die kostenlose KI ist gerade ausgelastet." });
     }
 
@@ -266,7 +270,10 @@ export default async function handler(request, response) {
       source: { label: knowledge.label, url: knowledge.url },
       model: String(data?.model || model).slice(0, 120)
     });
-  } catch {
+  } catch (error) {
+    console.warn("Tarif Toni: OpenRouter request failed before a response", {
+      name: String(error?.name || "Error").slice(0, 40)
+    });
     return sendJson(response, 503, { error: "Die kostenlose KI ist gerade nicht erreichbar." });
   } finally {
     clearTimeout(timeout);
