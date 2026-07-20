@@ -159,11 +159,17 @@ test("foreign origins and oversized messages are rejected", async () => {
 });
 
 test("provider failures return a generic error for the local frontend fallback", async () => {
-  global.fetch = async () => ({ ok: false, async json() { return {}; } });
+  global.fetch = async () => ({
+    ok: false,
+    status: 503,
+    headers: { get() { return null; } },
+    async json() { return {}; }
+  });
 
   const response = await callApi({ message: "Was ist eine Schlichtung?", mode: "learn" });
 
   assert.equal(response.statusCode, 503);
+  assert.equal(response.headers["X-Tarif-Toni-Upstream-Status"], "503");
   assert.match(response.body.error, /ausgelastet/);
   assert.doesNotMatch(JSON.stringify(response.body), /test-key-not-secret/);
 });
