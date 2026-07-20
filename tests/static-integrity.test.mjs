@@ -436,7 +436,7 @@ test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () =
   assert.match(requestAiAnswerBody, /body: JSON\.stringify\(\{ message: question, mode: "learn" \}\)/, "Only learning mode may reach the AI route");
   assert.match(
     requestAiAnswerBody,
-    /catch\s*\{\s*showLocalTip\(localResult,\s*"Die kostenlose KI ist gerade nicht erreichbar\."\);\s*\}/,
+    /providerFailure === "AbortError"[\s\S]*Die kostenlose KI hat nicht rechtzeitig geantwortet\.[\s\S]*showLocalTip\(localResult, reason\)/,
     "AI timeouts must fall back to the local source tip",
   );
   assert.doesNotMatch(
