@@ -97,64 +97,30 @@ test("learning mode uses only the free router and vetted source context", async 
   assert.equal(requestBody.messages[2].content, "Was ist ein Warnstreik?");
 });
 
-test("a strict ZDR 404 retries once without ZDR while keeping the privacy and free-model guards", async () => {
-  const requestBodies = [];
-  global.fetch = async (_url, options) => {
-    requestBodies.push(JSON.parse(options.body));
-    if (requestBodies.length === 1) {
-      return {
-        ok: false,
-        status: 404,
-        body: { async cancel() {} }
-      };
-    }
-    return {
-      ok: true,
-      status: 200,
-      async json() {
-        return {
-          model: "example/free-model:free",
-          choices: [{ message: { content: "Ein Warnstreik ist ein zeitlich begrenztes Druckmittel im Tarifkonflikt." } }]
-        };
-      }
-    };
-  };
-
-  const response = await callApi({ message: "Was ist ein Warnstreik?", mode: "learn" });
-
-  assert.equal(response.statusCode, 200);
-  assert.equal(response.body.kind, "ai");
-  assert.equal(requestBodies.length, 2);
-  assert.equal(requestBodies[0].model, "openrouter/free");
-  assert.equal(requestBodies[0].provider.data_collection, "deny");
-  assert.equal(requestBodies[0].provider.zdr, true);
-  assert.equal(requestBodies[0].provider.allow_fallbacks, true);
-  assert.equal(requestBodies[1].model, "openrouter/free");
-  assert.equal(requestBodies[1].provider.data_collection, "deny");
-  assert.equal(requestBodies[1].provider.allow_fallbacks, true);
-  assert.equal(Object.hasOwn(requestBodies[1].provider, "zdr"), false);
-  assert.deepEqual(requestBodies[1].messages, requestBodies[0].messages);
-});
-
-test("a strict ZDR 404 retries at most once when the approved fallback also fails", async () => {
+test("a strict ZDR 404 falls back locally without a non-ZDR retry", async () => {
   let fetchCalls = 0;
-  global.fetch = async () => {
+  let requestBody;
+  global.fetch = async (_url, options) => {
     fetchCalls += 1;
+    requestBody = JSON.parse(options.body);
     return {
       ok: false,
-      status: fetchCalls === 1 ? 404 : 429,
-      body: fetchCalls === 1 ? { async cancel() {} } : undefined,
+      status: 404,
       headers: { get() { return null; } }
     };
   };
 
   const response = await callApi({ message: "Was ist ein Warnstreik?", mode: "learn" });
 
-  assert.equal(fetchCalls, 2);
+  assert.equal(fetchCalls, 1);
   assert.equal(response.statusCode, 200);
   assert.equal(response.body.kind, "local");
   assert.match(response.body.reply, /Warnstreik/);
   assert.match(response.body.source.url, /^https:\/\/www\.bpb\.de\//);
+  assert.equal(requestBody.model, "openrouter/free");
+  assert.equal(requestBody.provider.data_collection, "deny");
+  assert.equal(requestBody.provider.zdr, true);
+  assert.equal(requestBody.provider.allow_fallbacks, true);
   assert.equal(Object.hasOwn(response.body, "providerStatus"), false);
 });
 
