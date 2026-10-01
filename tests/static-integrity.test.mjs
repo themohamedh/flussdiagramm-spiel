@@ -436,8 +436,13 @@ test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () =
   assert.match(requestAiAnswerBody, /body: JSON\.stringify\(\{ message: question, mode: "learn" \}\)/, "Only learning mode may reach the AI route");
   assert.match(
     requestAiAnswerBody,
-    /catch\s*\{\s*showLocalTip\(localResult,\s*"Die kostenlose KI ist gerade nicht erreichbar\."\);\s*\}/,
+    /catch\s*\{\s*(?:\/\/[^\n]*\n\s*)?if \(activeAiController !== controller\) return;\s*showLocalTip\(localResult,\s*"Die kostenlose KI ist gerade nicht erreichbar\."\);\s*\}/,
     "AI timeouts must fall back to the local source tip",
+  );
+  assert.equal(
+    (requestAiAnswerBody.match(/if \(activeAiController !== controller\) return;/g) || []).length,
+    2,
+    "Both successful and failed stale requests must leave the current UI untouched",
   );
   assert.doesNotMatch(
     requestAiAnswerBody,
@@ -462,7 +467,7 @@ test("Tarif Toni AI remains free, source-bound, and disabled in exam mode", () =
 
 test("GitHub Pages routes Tarif Toni to the public Vercel API", () => {
   const apiConfiguration = 'window.TARIF_TONI_API_URL = "https://flussdiagramm-spiel.vercel.app/api/tarif-toni-chat";';
-  const toniScript = '<script src="tarif-toni.js?v=2026-07-20-api-fallback"></script>';
+  const toniScript = '<script src="tarif-toni.js?v=2026-10-01-request-isolation"></script>';
 
   assert.match(html, /window\.location\.hostname === "themohamedh\.github\.io"/, "Only GitHub Pages should use the cross-origin API URL");
   assert.match(html, /https:\/\/flussdiagramm-spiel\.vercel\.app\/api\/tarif-toni-chat/, "GitHub Pages must use the stable public Vercel production endpoint");

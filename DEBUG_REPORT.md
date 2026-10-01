@@ -1,5 +1,17 @@
 # Debug-Report
 
+## Verbesserungsrunde 2026-10-01: Toni-Anfragen bei Abbruch isolieren
+
+- `main` erneut geprüft: weiterhin `71ba5aa`. Runde 1 ist als PR #58 offen und wird nicht erneut bearbeitet. Diese Runde baut für konfliktfreie Prüfung auf dessen Branch auf.
+- Regression am unveränderten main bestätigt: Nach Wechsel von Lern- in Prüfungsmodus kann ein verspäteter Fehler den lokalen Lernhinweis anzeigen; eine verspätete erfolgreiche Antwort kann ebenfalls die Prüfungsanzeige überschreiben.
+- Erfolgs- und Fehlerpfad prüfen nun die Identität der aktuellen Anfrage vor jeder Anzeigeänderung. Abbruch durch Moduswechsel oder Ausblenden invalidiert die Anfrage; ein echter Timeout behält dagegen den lokalen Quellentipp bei.
+- Fünf neue E2E-Fälle in Desktop- und Touch-Emulation prüfen verspäteten Erfolg/Fehler im Prüfungsmodus, alte Anfragen neben einer neuen Anfrage und den 25-Sekunden-Timeout mit virtueller Uhr. Browserfehler und Warnungen werden geprüft; ausschließlich die durch die bestehende Playwright-Konfiguration erzeugte Warnung zur blockierten Service-Worker-Registrierung wird ausgenommen.
+- Die Tests verwenden simulierte Antworten und verbrauchen keine KI-Quota. Die API und ihre kostenlosen Modelle, ZDR-Vorgaben und Datenschutzregeln bleiben unverändert.
+- Geprüft: `npm run test:all`, `npm run build:app`, `git diff --check`. Toni-Asset-Version aktualisiert und PWA-Cache auf v25 erhöht.
+- Neue Tests wurden korrigiert, um Toni auf Mobile über den vorhandenen sichtbaren Öffnen-Button wieder aufzurufen. Beim Kombinieren der beiden Runden wurde der Cache-Versionskonflikt zugunsten v25 aufgelöst.
+- Grenzen: WebKit/Safari und native iOS-Builds sind hier nicht ausführbar. Siehe Runde 1. PR 2 basiert auf `fix/modal-dialog-focus`; nach Übernahme von #58 ist seine Basis auf main umzustellen. Kein automatischer Merge.
+
+
 ## Verbesserungsrunde 2026-10-01: Modale Dialoge
 
 - Ausgangspunkt: `main` bei `71ba5aa`; keine offenen PRs. Der Fokus konnte per Tab aus Lerninfo und Erfolgsdialog ins Hintergrundspiel wechseln. Am unveränderten Ausgangsstand im Chromium-Browser reproduziert.
