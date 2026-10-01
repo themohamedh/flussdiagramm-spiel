@@ -282,3 +282,64 @@ test("Mobile Startansicht bleibt ohne horizontales Overflow und Toni verdeckt de
 
   await expectCleanRuntime(runtime);
 });
+
+for (const viewport of [
+  { width: 320, height: 568 }, { width: 375, height: 667 },
+  { width: 390, height: 844 }, { width: 414, height: 896 },
+  { width: 1280, height: 720 }
+]) {
+  test(`modal-focus: Lerninfo bei ${viewport.width} × ${viewport.height}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    const runtime = await gotoFresh(page, `modal-focus-${viewport.width}`);
+    const opener = page.locator('.info-btn').first();
+    await opener.focus();
+    await opener.press('Enter');
+    const close = page.locator('#closeInfoBtn');
+    await expect(close).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(close).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(close).toBeFocused();
+    await page.locator('#resetBtn').evaluate((button) => button.focus());
+    await expect(close).toBeFocused();
+    expect(await page.locator('#resetBtn').evaluate((button) => Boolean(button.closest('[inert]')))).toBe(true);
+    expect(await page.locator('.tarif-toni').evaluate((toni) => toni.inert)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2)).toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#infoPopup')).not.toHaveClass(/open/);
+    await expect(opener).toBeFocused();
+    expect(await page.locator('[inert]').count()).toBe(0);
+    await opener.press('Enter');
+    await close.click();
+    await expect(opener).toBeFocused();
+    await expectCleanRuntime(runtime);
+  });
+}
+
+test('modal-focus: Erfolgsdialog begrenzt Fokus und gibt ihn nach Escape zurück', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'Ein vollständiger Prüfungsdurchlauf genügt.');
+  const runtime = await gotoFresh(page, 'modal-focus-completion');
+  await page.locator('[data-mode="exam"]').click();
+  await fillCorrectSolution(page);
+  const check = page.locator('#checkBtn');
+  await check.focus();
+  await check.press('Enter');
+  const restart = page.locator('#finalRestartBtn');
+  await expect(restart).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(restart).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(restart).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(check).toBeFocused();
+  expect(await page.locator('[inert]').count()).toBe(0);
+  await page.locator('#resetBtn').click();
+  await fillCorrectSolution(page);
+  await check.focus();
+  await check.press('Enter');
+  await restart.click();
+  await expect(page.locator('.slot.empty')).toHaveCount(15);
+  await expect(check).toBeFocused();
+  expect(await page.locator('[inert]').count()).toBe(0);
+  await expectCleanRuntime(runtime);
+});

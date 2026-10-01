@@ -1,5 +1,16 @@
 # Debug-Report
 
+## Verbesserungsrunde 2026-10-01: Modale Dialoge
+
+- Ausgangspunkt: `main` bei `71ba5aa`; keine offenen PRs. Der Fokus konnte per Tab aus Lerninfo und Erfolgsdialog ins Hintergrundspiel wechseln. Am unveränderten Ausgangsstand im Chromium-Browser reproduziert.
+- Beide Dialoge begrenzen nun Tab/Shift+Tab und programmatische Fokuswechsel. Hintergrund und Toni werden währenddessen `inert`; vorherige Zustände und der Fokus werden beim Schließen wiederhergestellt. Escape schließt zuerst den sichtbaren Dialog.
+- Service-Worker-Cache auf v24 erhöht, damit die geänderte HTML-App offline aktualisiert wird.
+- Regressionstests: Lerninfo bei 320×568, 375×667, 390×844, 414×896 und 1280×720 in Desktop- und Touch-Emulation; Erfolgsdialog mit Escape und Neustart.
+- Prüfung: `npm test` (38 Tests), `npm run test:e2e`, `npm run build:app` und `git diff --check`.
+- Ein erster neuer Erfolgsdialog-Test wollte einen bereits abgeschlossenen Versuch erneut öffnen. Das entspricht nicht dem bestehenden Spielablauf; der Test startet für die Neustart-Prüfung nun einen neuen vollständigen Versuch.
+- Grenze: WebKit heruntergeladen, aber fehlende Systembibliotheken verhindern den Start. Installation mit `playwright install-deps webkit` scheitert an fehlenden Administratorrechten. Keine echte Safari-/iPhone- oder Screenreader-Prüfung. Native SwiftUI-Version nicht geändert; die Web-Container-Assets werden beim Build übernommen.
+
+
 ## Finaler Stand vom 2026-06-30
 
 Dieser obere Abschnitt ist der gültige Abschlussbericht nach Integration aller Subagenten-Ergebnisse und nach eigener Browser-Nachprüfung. Der darunter stehende Rohbericht dokumentiert einen früheren Zwischenstand.
