@@ -410,10 +410,13 @@
         body: JSON.stringify({ message: question, mode: "learn" })
       });
       const data = await response.json().catch(() => ({}));
+      if (activeAiController !== controller) return;
       if (!response.ok || typeof data.reply !== "string" || !data.reply.trim()) throw new Error("AI unavailable");
       answerEl.textContent = data.reply.trim().slice(0, 900);
       setSource(data.source, data.kind === "ai" ? "KI-Antwort auf Basis von" : "Lokaler Quellentipp");
     } catch {
+      // Explicit cancellation invalidates this request; a timeout keeps it current.
+      if (activeAiController !== controller) return;
       showLocalTip(localResult, "Die kostenlose KI ist gerade nicht erreichbar.");
     } finally {
       window.clearTimeout(timeout);
