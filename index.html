@@ -1773,6 +1773,42 @@
     let soundEnabled = true;
     let currentMode = "learn";
     let lastFocusedElement = null;
+    let activeDialog = null;
+    const dialogBackgroundState = new Map();
+
+    function activateDialog(dialog, initialFocus) {
+      lastFocusedElement = document.activeElement;
+      activeDialog = dialog;
+      // Both overlays are direct body children, as are the modern Toni controls.
+      for (const element of document.body.children) {
+        if (!(element instanceof HTMLElement) || element === dialog) continue;
+        dialogBackgroundState.set(element, element.inert);
+        element.inert = true;
+      }
+      initialFocus.focus();
+    }
+
+    function deactivateDialog(dialog) {
+      if (activeDialog !== dialog) return;
+      activeDialog = null;
+      for (const [element, wasInert] of dialogBackgroundState) element.inert = wasInert;
+      dialogBackgroundState.clear();
+      const returnFocus = lastFocusedElement;
+      lastFocusedElement = null;
+      if (returnFocus instanceof HTMLElement && returnFocus.isConnected) returnFocus.focus();
+    }
+
+    function getDialogFocusTargets() {
+      return [...activeDialog.querySelectorAll('button, a[href], input, select, textarea, [tabindex]')]
+        .filter((element) => element.tabIndex >= 0 && !element.disabled
+          && !element.closest('[inert]') && element.getClientRects().length > 0);
+    }
+
+    document.addEventListener("focusin", (event) => {
+      if (activeDialog && !activeDialog.contains(event.target)) {
+        (getDialogFocusTargets()[0] || activeDialog.firstElementChild).focus();
+      }
+    });
     let toniEnabled = true;
     let toniChatOpen = false;
     let toniMessageTimer = null;
@@ -1946,11 +1982,10 @@
     }
 
     function showInfoDialog(title) {
-      lastFocusedElement = document.activeElement;
       infoTitleEl.textContent = title;
       infoPopupEl.classList.add("open");
       infoPopupEl.setAttribute("aria-hidden", "false");
-      closeInfoBtnEl.focus();
+      activateDialog(infoPopupEl, closeInfoBtnEl);
     }
 
     function openLearningPopup(key) {
@@ -2450,13 +2485,13 @@
     function closeInfoPopup() {
       infoPopupEl.classList.remove("open");
       infoPopupEl.setAttribute("aria-hidden", "true");
-      if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
-      lastFocusedElement = null;
+      deactivateDialog(infoPopupEl);
     }
 
     function closeFinalOverlay() {
       finalOverlayEl.classList.remove("open");
       finalOverlayEl.setAttribute("aria-hidden", "true");
+      deactivateDialog(finalOverlayEl);
       clearCelebration();
     }
 
@@ -2535,8 +2570,7 @@
       showToniMessage(chooseToniMessage(TONI_SUCCESS), 6500);
       notifyTarifToni("complete", chooseToniMessage(TONI_SUCCESS));
       updateLearningButtons();
-      lastFocusedElement = document.activeElement;
-      finalRestartBtnEl.focus();
+      activateDialog(finalOverlayEl, finalRestartBtnEl);
     }
 
     function updateFinalStats() {
@@ -3019,20 +3053,32 @@
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") return;
-      if (toniChatOpen) {
-        setToniChatOpen(false);
+      if (event.key === "Tab" && activeDialog) {
+        const targets = getDialogFocusTargets();
+        const first = targets[0];
+        const last = targets[targets.length - 1];
+        if (!first) {
+          event.preventDefault();
+          activeDialog.firstElementChild.focus();
+        } else if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
         return;
       }
+      if (event.key !== "Escape") return;
       if (infoPopupEl.classList.contains("open")) {
         closeInfoPopup();
         return;
       }
       if (finalOverlayEl.classList.contains("open")) {
         closeFinalOverlay();
-        if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
-        lastFocusedElement = null;
+        return;
       }
+      if (toniChatOpen) setToniChatOpen(false);
     });
 
     window.addEventListener("resize", () => {
